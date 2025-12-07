@@ -2,7 +2,6 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { KoompiAuth } from "@koompi/oauth";
 
 import { useAuth } from "@/contexts/auth-context";
 
@@ -20,21 +19,22 @@ function CallbackContent() {
       const errorParam = searchParams.get("error");
 
       console.log("code", code);
-      
 
       if (errorParam) {
         setError(errorParam);
         setIsProcessing(false);
+
         return;
       }
 
       if (!code) {
         // Only show error if we've finished checking params and truly found nothing
-        // But for effect dependencies, this might run early. 
+        // But for effect dependencies, this might run early.
         // Let's assume if no code and no error, maybe we shouldn't error immediately if it's just mounting?
         // But this page is specifically for callback.
         setError("No authorization code received");
         setIsProcessing(false);
+
         return;
       }
 
@@ -52,11 +52,47 @@ function CallbackContent() {
         console.log("response", response);
         if (response.ok) {
           const data = await response.json();
+
           // Assuming data matches AuthResponse: { access_token, user, ... }
           setAuth(data.access_token, data.user);
-          router.push("/auth");
+          
+          // Check if user has any school memberships
+          try {
+            const membershipResponse = await fetch("http://localhost:8080/graphql", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${data.access_token}`,
+              },
+              body: JSON.stringify({
+                query: `
+                  query {
+                    myMemberships {
+                      school_id
+                    }
+                  }
+                `,
+              }),
+            });
+
+            const membershipResult = await membershipResponse.json();
+            
+            // If user has no memberships and is not SuperAdmin, redirect to registration
+            if (
+              membershipResult.data?.myMemberships?.length === 0 &&
+              data.user.role !== "SuperAdmin"
+            ) {
+              router.push("/auth/register");
+            } else {
+              router.push("/auth");
+            }
+          } catch (membershipError) {
+            console.error("Membership check error:", membershipError);
+            // If membership check fails, just go to dashboard
+            router.push("/auth");
+          }
         } else {
-             throw new Error("Failed to exchange token");
+          throw new Error("Failed to exchange token");
         }
       } catch (err) {
         console.error("Callback error:", err);
@@ -78,8 +114,8 @@ function CallbackContent() {
           <h1 className="text-2xl font-bold mb-2">Authentication Failed</h1>
           <p className="text-muted-foreground mb-4">{error}</p>
           <a
-            href="/"
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            href="/"
           >
             Go Back Home
           </a>

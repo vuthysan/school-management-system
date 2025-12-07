@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { Plus, Building2, Building } from "lucide-react";
+
 import { title } from "@/components/primitives";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -10,7 +12,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Building2, Building } from "lucide-react";
 import { useSchools, useCreateSchool } from "@/hooks/useSchools";
 import { useBranches, useCreateBranch } from "@/hooks/useBranches";
 import { SchoolsTable } from "@/components/settings/schools-table";
@@ -27,11 +28,17 @@ export default function SettingsPage() {
   const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
 
   // Hooks
-  const { schools, loading: schoolsLoading, refetch: refetchSchools } = useSchools();
+  const {
+    schools,
+    loading: schoolsLoading,
+    refetch: refetchSchools,
+  } = useSchools();
   const { createSchool, loading: creatingSchool } = useCreateSchool();
-  const { branches, loading: branchesLoading, refetch: refetchBranches } = useBranches(
-    selectedSchool?.id
-  );
+  const {
+    branches,
+    loading: branchesLoading,
+    refetch: refetchBranches,
+  } = useBranches(selectedSchool?.id);
   const { createBranch, loading: creatingBranch } = useCreateBranch();
 
   const handleCreateSchool = async (data: SchoolFormData) => {
@@ -44,6 +51,7 @@ export default function SettingsPage() {
       contact_email: data.contactEmail,
       contact_phone: data.contactPhone,
     };
+
     await createSchool(input);
     setIsSchoolModalOpen(false);
     refetchSchools();
@@ -57,6 +65,7 @@ export default function SettingsPage() {
       contact_email: data.contactEmail,
       contact_phone: data.contactPhone,
     };
+
     await createBranch(input);
     setIsBranchModalOpen(false);
     refetchBranches();
@@ -90,18 +99,21 @@ export default function SettingsPage() {
         )}
       </div>
 
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "schools" | "branches")}>
+      <Tabs
+        value={activeTab}
+        onValueChange={(v) => setActiveTab(v as "schools" | "branches")}
+      >
         <TabsList className="w-full justify-start border-b rounded-none bg-transparent p-0 h-auto">
           <TabsTrigger
-            value="schools"
             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3 gap-2"
+            value="schools"
           >
             <Building2 className="w-4 h-4" />
             Schools
           </TabsTrigger>
           <TabsTrigger
-            value="branches"
             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3 gap-2"
+            value="branches"
           >
             <Building className="w-4 h-4" />
             Branches
@@ -112,17 +124,17 @@ export default function SettingsPage() {
             )}
           </TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="schools" className="mt-6">
+
+        <TabsContent className="mt-6" value="schools">
           <SchoolsTable
+            loading={schoolsLoading}
             schools={schools}
             selectedSchoolId={selectedSchool?.id}
             onSelectSchool={handleSelectSchool}
-            loading={schoolsLoading}
           />
         </TabsContent>
-        
-        <TabsContent value="branches" className="mt-6">
+
+        <TabsContent className="mt-6" value="branches">
           {selectedSchool ? (
             <div className="space-y-4">
               <div className="flex items-center gap-2 p-4 bg-muted/50 rounded-lg">
@@ -130,9 +142,9 @@ export default function SettingsPage() {
                 <span className="font-medium">Branches for:</span>
                 <span className="text-primary">{selectedSchool.name}</span>
                 <Button
-                  variant="ghost"
-                  size="sm"
                   className="ml-auto"
+                  size="sm"
+                  variant="ghost"
                   onClick={() => setActiveTab("schools")}
                 >
                   Change School
@@ -162,9 +174,9 @@ export default function SettingsPage() {
             <DialogTitle>Create New School</DialogTitle>
           </DialogHeader>
           <SchoolForm
-            onSubmit={handleCreateSchool}
-            onCancel={() => setIsSchoolModalOpen(false)}
             isLoading={creatingSchool}
+            onCancel={() => setIsSchoolModalOpen(false)}
+            onSubmit={handleCreateSchool}
           />
         </DialogContent>
       </Dialog>
@@ -177,10 +189,10 @@ export default function SettingsPage() {
           </DialogHeader>
           {selectedSchool && (
             <BranchForm
-              schoolId={selectedSchool.id}
-              onSubmit={handleCreateBranch}
-              onCancel={() => setIsBranchModalOpen(false)}
               isLoading={creatingBranch}
+              schoolId={selectedSchool.id}
+              onCancel={() => setIsBranchModalOpen(false)}
+              onSubmit={handleCreateBranch}
             />
           )}
         </DialogContent>

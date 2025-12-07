@@ -1,6 +1,13 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+
 import { translations, SupportedLang } from "@/config/translations";
 
 type LanguageContextType = {
@@ -9,13 +16,16 @@ type LanguageContextType = {
   t: (key: keyof typeof translations.en) => string;
 };
 
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+const LanguageContext = createContext<LanguageContextType | undefined>(
+  undefined,
+);
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [language, setLanguage] = useState<SupportedLang>("en");
 
   useEffect(() => {
     const savedLang = localStorage.getItem("sms-language") as SupportedLang;
+
     if (savedLang && (savedLang === "en" || savedLang === "km")) {
       setLanguage(savedLang);
     }
@@ -31,7 +41,9 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage: handleSetLanguage, t }}>
+    <LanguageContext.Provider
+      value={{ language, setLanguage: handleSetLanguage, t }}
+    >
       {children}
     </LanguageContext.Provider>
   );
@@ -39,8 +51,10 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
 export const useLanguage = () => {
   const context = useContext(LanguageContext);
+
   if (context === undefined) {
     throw new Error("useLanguage must be used within a LanguageProvider");
   }
+
   return context;
 };

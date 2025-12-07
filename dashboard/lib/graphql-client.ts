@@ -9,7 +9,7 @@ interface GraphQLResponse<T> {
 
 export async function graphqlRequest<T>(
   query: string,
-  variables?: Record<string, unknown>
+  variables?: Record<string, unknown>,
 ): Promise<T> {
   const response = await fetch(`${API_URL}/graphql`, {
     method: "POST",
@@ -68,7 +68,7 @@ export const SCHOOL_QUERIES = {
   `,
 };
 
-// Branch mutations and queries  
+// Branch mutations and queries
 export const BRANCH_QUERIES = {
   GET_ALL: `
     query GetBranches {

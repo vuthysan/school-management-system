@@ -1,10 +1,6 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { useLanguage } from "@/contexts/language-context";
-import { Student } from "@/types/student";
 import {
   Users,
   UserCheck,
@@ -13,6 +9,11 @@ import {
   TrendingUp,
   TrendingDown,
 } from "lucide-react";
+
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/contexts/language-context";
+import { Student } from "@/types/student";
 import { cn } from "@/lib/utils";
 
 interface StudentStatsProps {
@@ -26,13 +27,15 @@ export const StudentStats: React.FC<StudentStatsProps> = ({ students }) => {
   const stats = useMemo(() => {
     const total = students.length;
     const activeCount = students.filter((s) => s.status === "active").length;
-    
+
     // Calculate students enrolled in last 30 days
     const thirtyDaysAgo = new Date();
+
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const newThisMonth = students.filter((s) => {
       if (!s.enrollmentDate) return false;
       const enrollDate = new Date(s.enrollmentDate);
+
       return enrollDate >= thirtyDaysAgo;
     }).length;
 
@@ -47,13 +50,20 @@ export const StudentStats: React.FC<StudentStatsProps> = ({ students }) => {
     const otherCount = students.filter((s) => s.gender === "other").length;
 
     // Calculate percentages
-    const activePercentage = total > 0 ? ((activeCount / total) * 100).toFixed(1) : "0";
-    const grade10Percentage = total > 0 ? ((grade10 / total) * 100).toFixed(1) : "0";
-    const grade11Percentage = total > 0 ? ((grade11 / total) * 100).toFixed(1) : "0";
-    const grade12Percentage = total > 0 ? ((grade12 / total) * 100).toFixed(1) : "0";
-    const malePercentage = total > 0 ? ((maleCount / total) * 100).toFixed(1) : "0";
-    const femalePercentage = total > 0 ? ((femaleCount / total) * 100).toFixed(1) : "0";
-    const otherPercentage = total > 0 ? ((otherCount / total) * 100).toFixed(1) : "0";
+    const activePercentage =
+      total > 0 ? ((activeCount / total) * 100).toFixed(1) : "0";
+    const grade10Percentage =
+      total > 0 ? ((grade10 / total) * 100).toFixed(1) : "0";
+    const grade11Percentage =
+      total > 0 ? ((grade11 / total) * 100).toFixed(1) : "0";
+    const grade12Percentage =
+      total > 0 ? ((grade12 / total) * 100).toFixed(1) : "0";
+    const malePercentage =
+      total > 0 ? ((maleCount / total) * 100).toFixed(1) : "0";
+    const femalePercentage =
+      total > 0 ? ((femaleCount / total) * 100).toFixed(1) : "0";
+    const otherPercentage =
+      total > 0 ? ((otherCount / total) * 100).toFixed(1) : "0";
 
     return {
       total,
@@ -103,18 +113,22 @@ export const StudentStats: React.FC<StudentStatsProps> = ({ students }) => {
         <CardContent className="gap-4 p-6">
           <div className="flex justify-between items-start">
             <div className="flex flex-col gap-2 flex-1">
-              <span className="text-sm font-medium text-muted-foreground">{title}</span>
+              <span className="text-sm font-medium text-muted-foreground">
+                {title}
+              </span>
               <span className="text-3xl font-bold text-foreground">
                 {value}
               </span>
               {subtitle && (
-                <span className="text-xs text-muted-foreground">{subtitle}</span>
+                <span className="text-xs text-muted-foreground">
+                  {subtitle}
+                </span>
               )}
             </div>
             <div
               className={cn(
                 "p-4 rounded-2xl shadow-lg group-hover:scale-110 transition-all duration-300",
-                colorClasses[color]
+                colorClasses[color],
               )}
             >
               <Icon className="w-6 h-6" />
@@ -122,10 +136,12 @@ export const StudentStats: React.FC<StudentStatsProps> = ({ students }) => {
           </div>
           {trend && (
             <div className="flex items-center gap-2 mt-4">
-              <div className={cn(
-                "flex items-center gap-1 px-2 py-1 rounded-lg",
-                trend.isPositive ? "bg-green-500/10" : "bg-red-500/10"
-              )}>
+              <div
+                className={cn(
+                  "flex items-center gap-1 px-2 py-1 rounded-lg",
+                  trend.isPositive ? "bg-green-500/10" : "bg-red-500/10",
+                )}
+              >
                 {trend.isPositive ? (
                   <TrendingUp className="w-4 h-4 text-green-600" />
                 ) : (
@@ -134,13 +150,15 @@ export const StudentStats: React.FC<StudentStatsProps> = ({ students }) => {
                 <span
                   className={cn(
                     "text-sm font-semibold",
-                    trend.isPositive ? "text-green-600" : "text-red-600"
+                    trend.isPositive ? "text-green-600" : "text-red-600",
                   )}
                 >
                   {trend.value}%
                 </span>
               </div>
-              <span className="text-xs text-muted-foreground">{t("last_30_days")}</span>
+              <span className="text-xs text-muted-foreground">
+                {t("last_30_days")}
+              </span>
             </div>
           )}
         </CardContent>
@@ -153,23 +171,30 @@ export const StudentStats: React.FC<StudentStatsProps> = ({ students }) => {
     items,
   }: {
     title: string;
-    items: Array<{ label: string; value: number; percentage: string; color: string }>;
+    items: Array<{
+      label: string;
+      value: number;
+      percentage: string;
+      color: string;
+    }>;
   }) => (
     <Card className="border hover:shadow-lg transition-all duration-300">
       <CardContent className="gap-5 p-6">
-        <h3 className="text-base font-bold text-foreground mb-4">
-          {title}
-        </h3>
+        <h3 className="text-base font-bold text-foreground mb-4">{title}</h3>
         <div className="flex flex-col gap-4">
           {items.map((item, index) => (
             <div key={index} className="flex flex-col gap-2 group">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-muted-foreground">{item.label}</span>
+                <span className="text-sm font-medium text-muted-foreground">
+                  {item.label}
+                </span>
                 <div className="flex items-center gap-3">
-                  <span className="text-base font-bold text-foreground">{item.value}</span>
-                  <Badge 
-                    variant="secondary"
+                  <span className="text-base font-bold text-foreground">
+                    {item.value}
+                  </span>
+                  <Badge
                     className="font-semibold transition-all duration-200 group-hover:scale-110"
+                    variant="secondary"
                   >
                     {item.percentage}%
                   </Badge>
@@ -177,7 +202,10 @@ export const StudentStats: React.FC<StudentStatsProps> = ({ students }) => {
               </div>
               <div className="relative w-full bg-muted rounded-full h-2.5 overflow-hidden">
                 <div
-                  className={cn("h-2.5 rounded-full transition-all duration-1000 ease-out", item.color)}
+                  className={cn(
+                    "h-2.5 rounded-full transition-all duration-1000 ease-out",
+                    item.color,
+                  )}
                   style={{ width: `${item.percentage}%` }}
                 />
               </div>
@@ -194,9 +222,7 @@ export const StudentStats: React.FC<StudentStatsProps> = ({ students }) => {
       <div className="space-y-4">
         <div className="flex items-center gap-3">
           <div className="h-8 w-1 bg-gradient-to-b from-primary to-primary/50 rounded-full" />
-          <h2 className="text-xl font-bold text-foreground">
-            {t("overview")}
-          </h2>
+          <h2 className="text-xl font-bold text-foreground">{t("overview")}</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard

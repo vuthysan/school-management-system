@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import { Search, Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+
 import {
   Table,
   TableBody,
@@ -17,7 +19,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Search, Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { Subject } from "@/types/academic";
 
@@ -27,7 +28,11 @@ interface SubjectsTableProps {
   onDelete: (sub: Subject) => void;
 }
 
-export const SubjectsTable: React.FC<SubjectsTableProps> = ({ subjects, onEdit, onDelete }) => {
+export const SubjectsTable: React.FC<SubjectsTableProps> = ({
+  subjects,
+  onEdit,
+  onDelete,
+}) => {
   const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
@@ -43,14 +48,16 @@ export const SubjectsTable: React.FC<SubjectsTableProps> = ({ subjects, onEdit, 
   ];
 
   const filteredSubjects = useMemo(() => {
-    return subjects.filter((sub) =>
-      sub.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      sub.code.toLowerCase().includes(searchQuery.toLowerCase())
+    return subjects.filter(
+      (sub) =>
+        sub.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        sub.code.toLowerCase().includes(searchQuery.toLowerCase()),
     );
   }, [subjects, searchQuery]);
 
   const paginatedSubjects = useMemo(() => {
     const start = (page - 1) * rowsPerPage;
+
     return filteredSubjects.slice(start, start + rowsPerPage);
   }, [filteredSubjects, page]);
 
@@ -69,13 +76,16 @@ export const SubjectsTable: React.FC<SubjectsTableProps> = ({ subjects, onEdit, 
           />
         </div>
       </div>
-      
+
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
               {columns.map((column) => (
-                <TableHead key={column.key} className={column.key === "actions" ? "text-center" : ""}>
+                <TableHead
+                  key={column.key}
+                  className={column.key === "actions" ? "text-center" : ""}
+                >
                   {column.label}
                 </TableHead>
               ))}
@@ -84,17 +94,27 @@ export const SubjectsTable: React.FC<SubjectsTableProps> = ({ subjects, onEdit, 
           <TableBody>
             {paginatedSubjects.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  className="h-24 text-center"
+                  colSpan={columns.length}
+                >
                   {t("no_results")}
                 </TableCell>
               </TableRow>
             ) : (
               paginatedSubjects.map((sub) => (
-                <TableRow key={sub.id} className="cursor-pointer hover:bg-muted/50 transition-colors">
+                <TableRow
+                  key={sub.id}
+                  className="cursor-pointer hover:bg-muted/50 transition-colors"
+                >
                   <TableCell>
                     <div className="flex flex-col">
-                      <p className="font-semibold text-sm capitalize">{sub.name}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{sub.description}</p>
+                      <p className="font-semibold text-sm capitalize">
+                        {sub.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground capitalize">
+                        {sub.description}
+                      </p>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -107,7 +127,12 @@ export const SubjectsTable: React.FC<SubjectsTableProps> = ({ subjects, onEdit, 
                     <p className="text-sm">{sub.credits}</p>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={sub.status === "active" ? "default" : "secondary"} className="capitalize">
+                    <Badge
+                      className="capitalize"
+                      variant={
+                        sub.status === "active" ? "default" : "secondary"
+                      }
+                    >
                       {sub.status}
                     </Badge>
                   </TableCell>
@@ -116,9 +141,9 @@ export const SubjectsTable: React.FC<SubjectsTableProps> = ({ subjects, onEdit, 
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
-                            variant="ghost"
-                            size="icon"
                             className="h-8 w-8"
+                            size="icon"
+                            variant="ghost"
                             onClick={() => onEdit(sub)}
                           >
                             <Edit className="h-4 w-4" />
@@ -129,9 +154,9 @@ export const SubjectsTable: React.FC<SubjectsTableProps> = ({ subjects, onEdit, 
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
-                            variant="ghost"
-                            size="icon"
                             className="h-8 w-8 text-destructive"
+                            size="icon"
+                            variant="ghost"
                             onClick={() => onDelete(sub)}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -147,14 +172,14 @@ export const SubjectsTable: React.FC<SubjectsTableProps> = ({ subjects, onEdit, 
           </TableBody>
         </Table>
       </div>
-      
+
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
           <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setPage(Math.max(1, page - 1))}
             disabled={page === 1}
+            size="icon"
+            variant="outline"
+            onClick={() => setPage(Math.max(1, page - 1))}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -162,10 +187,10 @@ export const SubjectsTable: React.FC<SubjectsTableProps> = ({ subjects, onEdit, 
             Page {page} of {totalPages}
           </span>
           <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setPage(Math.min(totalPages, page + 1))}
             disabled={page === totalPages}
+            size="icon"
+            variant="outline"
+            onClick={() => setPage(Math.min(totalPages, page + 1))}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>

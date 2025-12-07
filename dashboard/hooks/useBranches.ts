@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+
 import { graphqlRequest, BRANCH_QUERIES } from "@/lib/graphql-client";
 import { Branch, CreateBranchInput } from "@/types/branch";
 
@@ -29,11 +30,15 @@ export function useBranches(schoolId?: string): UseBranchesReturn {
       if (schoolId) {
         const data = await graphqlRequest<{ branchesBySchool: Branch[] }>(
           BRANCH_QUERIES.GET_BY_SCHOOL,
-          { schoolId }
+          { schoolId },
         );
+
         setBranches(data.branchesBySchool || []);
       } else {
-        const data = await graphqlRequest<{ branches: Branch[] }>(BRANCH_QUERIES.GET_ALL);
+        const data = await graphqlRequest<{ branches: Branch[] }>(
+          BRANCH_QUERIES.GET_ALL,
+        );
+
         setBranches(data.branches || []);
       }
     } catch (err) {
@@ -60,11 +65,14 @@ export function useCreateBranch(): UseCreateBranchReturn {
     try {
       const data = await graphqlRequest<{ createBranch: Branch }>(
         BRANCH_QUERIES.CREATE,
-        { input }
+        { input },
       );
+
       return data.createBranch;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to create branch";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to create branch";
+
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {

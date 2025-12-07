@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import { Loader2 } from "lucide-react";
+
 import {
   Dialog,
   DialogContent,
@@ -11,7 +13,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Student } from "@/types/student";
-import { Loader2 } from "lucide-react";
 
 interface DeleteStudentModalProps {
   isOpen: boolean;
@@ -43,19 +44,19 @@ export const DeleteStudentModal: React.FC<DeleteStudentModalProps> = ({
             ?
           </DialogDescription>
         </DialogHeader>
-        
+
         <p className="text-muted-foreground text-sm">
-          This action cannot be undone. All student records and associated
-          data will be permanently removed.
+          This action cannot be undone. All student records and associated data
+          will be permanently removed.
         </p>
-        
+
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
           <Button
-            variant="destructive"
             disabled={isDeleting}
+            variant="destructive"
             onClick={onConfirm}
           >
             {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

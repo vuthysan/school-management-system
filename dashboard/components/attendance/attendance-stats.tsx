@@ -1,15 +1,11 @@
 "use client";
 
 import React from "react";
+import { CalendarCheck, UserCheck, UserX, Clock } from "lucide-react";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/language-context";
 import { AttendanceStats as AttendanceStatsType } from "@/types/attendance";
-import {
-  CalendarCheck,
-  UserCheck,
-  UserX,
-  Clock,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface AttendanceStatsProps {
@@ -45,18 +41,22 @@ export const AttendanceStats: React.FC<AttendanceStatsProps> = ({ stats }) => {
         <CardContent className="gap-4 p-6">
           <div className="flex justify-between items-start">
             <div className="flex flex-col gap-2 flex-1">
-              <span className="text-sm font-medium text-muted-foreground">{title}</span>
+              <span className="text-sm font-medium text-muted-foreground">
+                {title}
+              </span>
               <span className="text-3xl font-bold text-foreground">
                 {value}
               </span>
               {subtitle && (
-                <span className="text-xs text-muted-foreground">{subtitle}</span>
+                <span className="text-xs text-muted-foreground">
+                  {subtitle}
+                </span>
               )}
             </div>
             <div
               className={cn(
                 "p-4 rounded-2xl shadow-lg group-hover:scale-110 transition-all duration-300",
-                colorClasses[color]
+                colorClasses[color],
               )}
             >
               <Icon className="w-6 h-6" />

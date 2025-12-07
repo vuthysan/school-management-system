@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { Plus, Languages } from "lucide-react";
+
 import { title } from "@/components/primitives";
 import { StudentsTable } from "@/components/students/students-table";
 import { StudentForm } from "@/components/students/student-form";
@@ -19,7 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Languages } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { Student } from "@/types/student";
 
@@ -39,7 +40,10 @@ export default function StudentsPage() {
         </div>
         <div className="flex gap-3 items-center">
           {/* Language Selector */}
-          <Select value={language} onValueChange={(v) => setLanguage(v as "en" | "km")}>
+          <Select
+            value={language}
+            onValueChange={(v) => setLanguage(v as "en" | "km")}
+          >
             <SelectTrigger className="w-[140px]">
               <Languages className="w-4 h-4 mr-2" />
               <SelectValue />
@@ -49,7 +53,7 @@ export default function StudentsPage() {
               <SelectItem value="km">ខ្មែរ</SelectItem>
             </SelectContent>
           </Select>
-          
+
           {/* Add Student Button */}
           <Button onClick={() => setIsAddModalOpen(true)}>
             <Plus className="w-4 h-4 mr-2" />

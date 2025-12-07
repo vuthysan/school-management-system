@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Building, ChevronDown, Plus, Check } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,9 +37,9 @@ export function BranchSidebar({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            variant="outline"
             className="w-full justify-between h-auto py-2"
             disabled={loading}
+            variant="outline"
           >
             <div className="flex items-center gap-2 text-left">
               <Building className="h-4 w-4 text-primary flex-shrink-0" />
@@ -56,19 +57,17 @@ export function BranchSidebar({
             <ChevronDown className="h-4 w-4 flex-shrink-0 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56" align="start">
+        <DropdownMenuContent align="start" className="w-56">
           <DropdownMenuLabel>Branches</DropdownMenuLabel>
           <DropdownMenuSeparator />
           {branches.length === 0 ? (
-            <DropdownMenuItem disabled>
-              No branches available
-            </DropdownMenuItem>
+            <DropdownMenuItem disabled>No branches available</DropdownMenuItem>
           ) : (
             branches.map((branch) => (
               <DropdownMenuItem
                 key={branch.id}
-                onClick={() => onSelectBranch(branch)}
                 className="gap-2"
+                onClick={() => onSelectBranch(branch)}
               >
                 <Building className="h-4 w-4" />
                 <span className="flex-1">{branch.name}</span>
@@ -81,7 +80,7 @@ export function BranchSidebar({
           {onAddBranch && (
             <>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={onAddBranch} className="gap-2">
+              <DropdownMenuItem className="gap-2" onClick={onAddBranch}>
                 <Plus className="h-4 w-4" />
                 Add New Branch
               </DropdownMenuItem>
@@ -104,10 +103,10 @@ export function BranchSelector({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="ghost"
-          size="sm"
           className="gap-2"
           disabled={loading || branches.length === 0}
+          size="sm"
+          variant="ghost"
         >
           <Building className="h-4 w-4" />
           <span className="max-w-[120px] truncate">
@@ -122,11 +121,11 @@ export function BranchSelector({
         {branches.map((branch) => (
           <DropdownMenuItem
             key={branch.id}
-            onClick={() => onSelectBranch(branch)}
             className={cn(
               "gap-2",
-              selectedBranch?.id === branch.id && "bg-primary/10"
+              selectedBranch?.id === branch.id && "bg-primary/10",
             )}
+            onClick={() => onSelectBranch(branch)}
           >
             <Building className="h-4 w-4" />
             <span className="flex-1">{branch.name}</span>

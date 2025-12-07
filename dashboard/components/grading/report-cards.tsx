@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import { Search, Download, Eye, ChevronLeft, ChevronRight } from "lucide-react";
+
 import {
   Table,
   TableBody,
@@ -19,17 +21,51 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Download, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { cn } from "@/lib/utils";
 
 // Mock Data
 const REPORTS = [
-  { id: "1", name: "Alice Johnson", className: "Grade 10-A", gpa: 3.8, credits: 24, status: "passed" },
-  { id: "2", name: "Bob Smith", className: "Grade 10-A", gpa: 3.2, credits: 24, status: "passed" },
-  { id: "3", name: "Charlie Brown", className: "Grade 10-A", gpa: 2.5, credits: 24, status: "passed" },
-  { id: "4", name: "Diana Prince", className: "Grade 10-B", gpa: 4.0, credits: 24, status: "passed" },
-  { id: "5", name: "Evan Wright", className: "Grade 10-B", gpa: 1.8, credits: 20, status: "failed" },
+  {
+    id: "1",
+    name: "Alice Johnson",
+    className: "Grade 10-A",
+    gpa: 3.8,
+    credits: 24,
+    status: "passed",
+  },
+  {
+    id: "2",
+    name: "Bob Smith",
+    className: "Grade 10-A",
+    gpa: 3.2,
+    credits: 24,
+    status: "passed",
+  },
+  {
+    id: "3",
+    name: "Charlie Brown",
+    className: "Grade 10-A",
+    gpa: 2.5,
+    credits: 24,
+    status: "passed",
+  },
+  {
+    id: "4",
+    name: "Diana Prince",
+    className: "Grade 10-B",
+    gpa: 4.0,
+    credits: 24,
+    status: "passed",
+  },
+  {
+    id: "5",
+    name: "Evan Wright",
+    className: "Grade 10-B",
+    gpa: 1.8,
+    credits: 20,
+    status: "failed",
+  },
 ];
 
 export const ReportCards = () => {
@@ -50,14 +86,20 @@ export const ReportCards = () => {
 
   const filteredReports = React.useMemo(() => {
     return REPORTS.filter((report) => {
-      const matchesSearch = report.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesClass = selectedClass ? report.className === selectedClass : true;
+      const matchesSearch = report.name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+      const matchesClass = selectedClass
+        ? report.className === selectedClass
+        : true;
+
       return matchesSearch && matchesClass;
     });
   }, [searchQuery, selectedClass]);
 
   const paginatedReports = React.useMemo(() => {
     const start = (page - 1) * rowsPerPage;
+
     return filteredReports.slice(start, start + rowsPerPage);
   }, [filteredReports, page]);
 
@@ -91,7 +133,10 @@ export const ReportCards = () => {
           <TableHeader>
             <TableRow>
               {columns.map((column) => (
-                <TableHead key={column.key} className={column.key === "actions" ? "text-center" : ""}>
+                <TableHead
+                  key={column.key}
+                  className={column.key === "actions" ? "text-center" : ""}
+                >
                   {column.label}
                 </TableHead>
               ))}
@@ -100,24 +145,38 @@ export const ReportCards = () => {
           <TableBody>
             {paginatedReports.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  className="h-24 text-center"
+                  colSpan={columns.length}
+                >
                   {t("no_results")}
                 </TableCell>
               </TableRow>
             ) : (
               paginatedReports.map((report) => (
-                <TableRow key={report.id} className="cursor-pointer hover:bg-muted/50 transition-colors">
+                <TableRow
+                  key={report.id}
+                  className="cursor-pointer hover:bg-muted/50 transition-colors"
+                >
                   <TableCell>
                     <p className="font-semibold text-sm">{report.name}</p>
                   </TableCell>
                   <TableCell>
-                    <p className="text-sm text-muted-foreground">{report.className}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {report.className}
+                    </p>
                   </TableCell>
                   <TableCell>
-                    <p className={cn(
-                      "font-semibold text-sm",
-                      report.gpa >= 3.5 ? "text-green-600" : report.gpa >= 2.0 ? "text-primary" : "text-red-600"
-                    )}>
+                    <p
+                      className={cn(
+                        "font-semibold text-sm",
+                        report.gpa >= 3.5
+                          ? "text-green-600"
+                          : report.gpa >= 2.0
+                            ? "text-primary"
+                            : "text-red-600",
+                      )}
+                    >
                       {report.gpa.toFixed(2)}
                     </p>
                   </TableCell>
@@ -125,16 +184,25 @@ export const ReportCards = () => {
                     <p className="text-sm">{report.credits}</p>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={report.status === "passed" ? "default" : "destructive"} className="capitalize">
+                    <Badge
+                      className="capitalize"
+                      variant={
+                        report.status === "passed" ? "default" : "destructive"
+                      }
+                    >
                       {report.status}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-center">
                     <div className="flex items-center justify-center gap-2">
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button className="h-8 w-8" size="icon" variant="ghost">
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-primary">
+                      <Button
+                        className="h-8 w-8 text-primary"
+                        size="icon"
+                        variant="ghost"
+                      >
                         <Download className="h-4 w-4" />
                       </Button>
                     </div>
@@ -149,10 +217,10 @@ export const ReportCards = () => {
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
           <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setPage(Math.max(1, page - 1))}
             disabled={page === 1}
+            size="icon"
+            variant="outline"
+            onClick={() => setPage(Math.max(1, page - 1))}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -160,10 +228,10 @@ export const ReportCards = () => {
             Page {page} of {totalPages}
           </span>
           <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setPage(Math.min(totalPages, page + 1))}
             disabled={page === totalPages}
+            size="icon"
+            variant="outline"
+            onClick={() => setPage(Math.min(totalPages, page + 1))}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>

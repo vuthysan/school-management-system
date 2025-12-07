@@ -14,7 +14,7 @@ export const translations = {
     total_classes: "Total Classes",
     total_subjects: "Total Subjects",
     avg_class_size: "Avg Class Size",
-    
+
     // Class Fields
     class_name: "Class Name",
     section: "Section",
@@ -23,14 +23,14 @@ export const translations = {
     enrolled: "Enrolled",
     teacher: "Teacher",
     academic_year: "Academic Year",
-    
+
     // Subject Fields
     subject_name: "Subject Name",
     subject_code: "Subject Code",
     credits: "Credits",
     department: "Department",
     description: "Description",
-    
+
     // Attendance Management
     attendance_management: "Attendance Management",
     track_attendance: "Track daily attendance for students and staff.",
@@ -38,23 +38,23 @@ export const translations = {
     attendance_history: "Attendance History",
     save_attendance: "Save Attendance",
     view_report: "View Report",
-    
+
     // Attendance Status
     present: "Present",
     absent: "Absent",
     late: "Late",
     excused: "Excused",
-    
+
     // Attendance Stats
     todays_rate: "Today's Rate",
     total_present: "Total Present",
     total_absent: "Total Absent",
     total_late: "Total Late",
-    
+
     // Fields
     select_class: "Select Class",
     remarks: "Remarks",
-    
+
     // Grading Management
     grading_management: "Grading & Reports",
     manage_grading: "Manage exams, scores, and generate report cards.",
@@ -62,7 +62,7 @@ export const translations = {
     report_cards: "Report Cards",
     publish_grades: "Publish Grades",
     download_report: "Download Report",
-    
+
     // Grading Terms
     score: "Score",
     max_score: "Max Score",
@@ -72,17 +72,17 @@ export const translations = {
     pass_rate: "Pass Rate",
     top_performers: "Top Performers",
     average_gpa: "Average GPA",
-    
+
     // Assessment Types
     exam: "Exam",
     quiz: "Quiz",
     assignment: "Assignment",
     project: "Project",
-    
+
     // Fields
     assessment_type: "Assessment Type",
     subject: "Subject",
-    
+
     // Sidebar
     dashboard: "Dashboard",
     students: "Students",
@@ -96,7 +96,7 @@ export const translations = {
     inventory: "Inventory",
     communication: "Communication",
     settings: "Settings",
-    
+
     // Dashboard Home
     welcome: "Welcome back!",
     welcome_subtitle: "Here's what's happening in your school today.",
@@ -104,17 +104,18 @@ export const translations = {
     total_teachers: "Total Teachers",
     attendance_rate: "Attendance Rate",
     revenue: "Revenue",
-    
+
     // Student Management
     student_management: "Student Management",
-    manage_student_records: "Manage student records, enrollments, and information.",
+    manage_student_records:
+      "Manage student records, enrollments, and information.",
     add_student: "Add Student",
     edit_student: "Edit Student",
     view_student: "View Student",
     delete_student: "Delete Student",
     add_new_student: "Add New Student",
     update_student: "Update Student",
-    
+
     // Student Statistics
     statistics: "Statistics",
     overview: "Overview",
@@ -130,7 +131,7 @@ export const translations = {
     last_30_days: "Last 30 Days",
     students_enrolled: "Students Enrolled",
     of_total: "of total",
-    
+
     // Student Form
     student_registration: "Student Registration",
     enter_details: "Enter student details below",
@@ -155,7 +156,7 @@ export const translations = {
     reset: "Reset",
     register_student: "Register Student",
     save_changes: "Save Changes",
-    
+
     // Placeholders
     enter_first_name: "Enter first name",
     enter_last_name: "Enter last name",
@@ -165,7 +166,7 @@ export const translations = {
     enter_address: "Enter full address",
     enter_guardian_name: "Enter guardian name",
     enter_guardian_phone: "Enter guardian phone",
-    
+
     // Table
     name: "Name",
     grade: "Grade",
@@ -178,7 +179,7 @@ export const translations = {
     total_count: "Total: {count} students",
     no_students: "No students registered yet.",
     no_results: "No students found matching your search criteria.",
-    
+
     // Student Details
     student_details: "Student Details",
     academic_info: "Academic Information",
@@ -186,7 +187,7 @@ export const translations = {
     active: "Active",
     inactive: "Inactive",
     graduated: "Graduated",
-    
+
     // Actions
     view_details: "View Details",
     edit_record: "Edit Record",
@@ -194,16 +195,17 @@ export const translations = {
     close: "Close",
     cancel: "Cancel",
     confirm: "Confirm",
-    
+
     // Delete Confirmation
     delete_confirmation: "Are you sure you want to delete",
-    delete_warning: "This action cannot be undone. All student records and associated data will be permanently removed.",
-    
+    delete_warning:
+      "This action cannot be undone. All student records and associated data will be permanently removed.",
+
     // Success Messages
     student_registered: "Student registered successfully!",
     student_updated: "Student updated successfully!",
     student_deleted: "Student deleted successfully!",
-    
+
     // Validation Messages
     required_field: "This field is required",
     invalid_email: "Invalid email address",
@@ -222,7 +224,7 @@ export const translations = {
     total_classes: "ថ្នាក់សរុប",
     total_subjects: "មុខវិជ្ជាសរុប",
     avg_class_size: "ទំហំថ្នាក់មធ្យម",
-    
+
     // Class Fields
     class_name: "ឈ្មោះថ្នាក់",
     section: "ផ្នែក",
@@ -231,14 +233,14 @@ export const translations = {
     enrolled: "បានចុះឈ្មោះ",
     teacher: "គ្រូបង្រៀន",
     academic_year: "ឆ្នាំសិក្សា",
-    
+
     // Subject Fields
     subject_name: "ឈ្មោះមុខវិជ្ជា",
     subject_code: "កូដមុខវិជ្ជា",
     credits: "ក្រេឌីត",
     department: "ដេប៉ាតឺម៉ង់",
     description: "ការពិពណ៌នា",
-    
+
     // Attendance Management
     attendance_management: "ការគ្រប់គ្រងវត្តមាន",
     track_attendance: "តាមដានវត្តមានប្រចាំថ្ងៃសម្រាប់សិស្ស និងបុគ្គលិក។",
@@ -246,23 +248,23 @@ export const translations = {
     attendance_history: "ប្រវត្តាវត្តមាន",
     save_attendance: "រក្សាទុកវត្តមាន",
     view_report: "មើលរបាយការណ៍",
-    
+
     // Attendance Status
     present: "វត្តមាន",
     absent: "អវត្តមាន",
     late: "យឺត",
     excused: "ច្បាប់",
-    
+
     // Attendance Stats
     todays_rate: "អត្រាថ្ងៃនេះ",
     total_present: "វត្តមានសរុប",
     total_absent: "អវត្តមានសរុប",
     total_late: "យឺតសរុប",
-    
+
     // Fields
     select_class: "ជ្រើសរើសថ្នាក់",
     remarks: "សម្គាល់",
-    
+
     // Grading Management
     grading_management: "ការដាក់ពិន្ទុ & របាយការណ៍",
     manage_grading: "គ្រប់គ្រងការប្រឡង ពិន្ទុ និងបង្កើតព្រឹត្តិបត្រពិន្ទុ។",
@@ -270,7 +272,7 @@ export const translations = {
     report_cards: "ព្រឹត្តិបត្រពិន្ទុ",
     publish_grades: "ផ្សព្វផ្សាយពិន្ទុ",
     download_report: "ទាញយករបាយការណ៍",
-    
+
     // Grading Terms
     score: "ពិន្ទុ",
     max_score: "ពិន្ទុអតិបរមា",
@@ -280,17 +282,17 @@ export const translations = {
     pass_rate: "អត្រាជាប់",
     top_performers: "សិស្សឆ្នើម",
     average_gpa: "មធ្យមភាគរួម",
-    
+
     // Assessment Types
     exam: "ការប្រឡង",
     quiz: "សំណួរខ្លី",
     assignment: "កិច្ចការ",
     project: "គម្រោង",
-    
+
     // Fields
     assessment_type: "ប្រភេទការវាយតម្លៃ",
     subject: "មុខវិជ្ជា",
-    
+
     // Sidebar
     dashboard: "ផ្ទាំងគ្រប់គ្រង",
     students: "សិស្ស",
@@ -304,7 +306,7 @@ export const translations = {
     inventory: "សារពើភ័ណ្ឌ",
     communication: "ទំនាក់ទំនង",
     settings: "ការកំណត់",
-    
+
     // Dashboard Home
     welcome: "សូមស្វាគមន៍!",
     welcome_subtitle: "នេះគឺជាអ្វីដែលកំពុងកើតឡើងនៅក្នុងសាលារបស់អ្នកនៅថ្ងៃនេះ។",
@@ -312,7 +314,7 @@ export const translations = {
     total_teachers: "គ្រូបង្រៀនសរុប",
     attendance_rate: "អត្រាវត្តមាន",
     revenue: "ចំណូល",
-    
+
     // Student Management
     student_management: "ការគ្រប់គ្រងសិស្ស",
     manage_student_records: "គ្រប់គ្រងកំណត់ត្រាសិស្ស ការចុះឈ្មោះ និងព័ត៌មាន។",
@@ -322,7 +324,7 @@ export const translations = {
     delete_student: "លុបសិស្ស",
     add_new_student: "បន្ថែមសិស្សថ្មី",
     update_student: "ធ្វើបច្ចុប្បន្នភាពសិស្ស",
-    
+
     // Student Statistics
     statistics: "ស្ថិតិ",
     overview: "ទិដ្ឋភាពទូទៅ",
@@ -338,7 +340,7 @@ export const translations = {
     last_30_days: "៣០ ថ្ងៃចុងក្រោយ",
     students_enrolled: "សិស្សបានចុះឈ្មោះ",
     of_total: "នៃសរុប",
-    
+
     // Student Form
     student_registration: "ការចុះឈ្មោះសិស្ស",
     enter_details: "បញ្ចូលព័ត៌មានលម្អិតរបស់សិស្សខាងក្រោម",
@@ -363,7 +365,7 @@ export const translations = {
     reset: "កំណត់ឡើងវិញ",
     register_student: "ចុះឈ្មោះសិស្ស",
     save_changes: "រក្សាទុកការផ្លាស់ប្តូរ",
-    
+
     // Placeholders
     enter_first_name: "បញ្ចូលនាមត្រកូល",
     enter_last_name: "បញ្ចូលនាមខ្លួន",
@@ -373,7 +375,7 @@ export const translations = {
     enter_address: "បញ្ចូលអាសយដ្ឋានពេញលេញ",
     enter_guardian_name: "បញ្ចូលឈ្មោះអាណាព្យាបាល",
     enter_guardian_phone: "បញ្ចូលលេខទូរស័ព្ទអាណាព្យាបាល",
-    
+
     // Table
     name: "ឈ្មោះ",
     grade: "ថ្នាក់",
@@ -386,7 +388,7 @@ export const translations = {
     total_count: "សរុប: {count} សិស្ស",
     no_students: "មិនទាន់មានសិស្សចុះឈ្មោះនៅឡើយទេ។",
     no_results: "រកមិនឃើញសិស្សដែលត្រូវគ្នានឹងលក្ខណៈវិនិច្ឆ័យស្វែងរករបស់អ្នក។",
-    
+
     // Student Details
     student_details: "ព័ត៌មានលម្អិតសិស្ស",
     academic_info: "ព័ត៌មានសិក្សា",
@@ -394,7 +396,7 @@ export const translations = {
     active: "សកម្ម",
     inactive: "អសកម្ម",
     graduated: "បានបញ្ចប់ការសិក្សា",
-    
+
     // Actions
     view_details: "មើលព័ត៌មានលម្អិត",
     edit_record: "កែសម្រួលកំណត់ត្រា",
@@ -402,20 +404,20 @@ export const translations = {
     close: "បិទ",
     cancel: "បោះបង់",
     confirm: "បញ្ជាក់",
-    
+
     // Delete Confirmation
     delete_confirmation: "តើអ្នកប្រាកដថាចង់លុប",
-    delete_warning: "សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។ កំណត់ត្រាសិស្សទាំងអស់ និងទិន្នន័យដែលពាក់ព័ន្ធនឹងត្រូវបានលុបចោលជាអចិន្ត្រៃយ៍។",
-    
+    delete_warning:
+      "សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។ កំណត់ត្រាសិស្សទាំងអស់ និងទិន្នន័យដែលពាក់ព័ន្ធនឹងត្រូវបានលុបចោលជាអចិន្ត្រៃយ៍។",
+
     // Success Messages
     student_registered: "ចុះឈ្មោះសិស្សបានជោគជ័យ!",
     student_updated: "ធ្វើបច្ចុប្បន្នភាពសិស្សបានជោគជ័យ!",
     student_deleted: "លុបសិស្សបានជោគជ័យ!",
-    
+
     // Validation Messages
     required_field: "វាលនេះត្រូវបានទាមទារ",
     invalid_email: "អាសយដ្ឋានអ៊ីមែលមិនត្រឹមត្រូវ",
     select_option: "សូមជ្រើសរើសជម្រើសមួយ",
   },
 };
-

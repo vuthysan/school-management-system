@@ -1,8 +1,9 @@
 "use client";
 
-import { useAuth } from "@/contexts/auth-context";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
+
+import { useAuth } from "@/contexts/auth-context";
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();

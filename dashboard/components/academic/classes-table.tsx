@@ -2,6 +2,15 @@
 
 import React, { useMemo, useState } from "react";
 import {
+  Search,
+  Edit,
+  Trash2,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+
+import {
   Table,
   TableBody,
   TableCell,
@@ -17,7 +26,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Search, Edit, Trash2, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { Class } from "@/types/academic";
 
@@ -27,7 +35,11 @@ interface ClassesTableProps {
   onDelete: (cls: Class) => void;
 }
 
-export const ClassesTable: React.FC<ClassesTableProps> = ({ classes, onEdit, onDelete }) => {
+export const ClassesTable: React.FC<ClassesTableProps> = ({
+  classes,
+  onEdit,
+  onDelete,
+}) => {
   const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
@@ -44,14 +56,16 @@ export const ClassesTable: React.FC<ClassesTableProps> = ({ classes, onEdit, onD
   ];
 
   const filteredClasses = useMemo(() => {
-    return classes.filter((cls) =>
-      cls.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      cls.teacherName.toLowerCase().includes(searchQuery.toLowerCase())
+    return classes.filter(
+      (cls) =>
+        cls.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        cls.teacherName.toLowerCase().includes(searchQuery.toLowerCase()),
     );
   }, [classes, searchQuery]);
 
   const paginatedClasses = useMemo(() => {
     const start = (page - 1) * rowsPerPage;
+
     return filteredClasses.slice(start, start + rowsPerPage);
   }, [filteredClasses, page]);
 
@@ -70,13 +84,16 @@ export const ClassesTable: React.FC<ClassesTableProps> = ({ classes, onEdit, onD
           />
         </div>
       </div>
-      
+
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
               {columns.map((column) => (
-                <TableHead key={column.key} className={column.key === "actions" ? "text-center" : ""}>
+                <TableHead
+                  key={column.key}
+                  className={column.key === "actions" ? "text-center" : ""}
+                >
                   {column.label}
                 </TableHead>
               ))}
@@ -85,17 +102,27 @@ export const ClassesTable: React.FC<ClassesTableProps> = ({ classes, onEdit, onD
           <TableBody>
             {paginatedClasses.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  className="h-24 text-center"
+                  colSpan={columns.length}
+                >
                   {t("no_results")}
                 </TableCell>
               </TableRow>
             ) : (
               paginatedClasses.map((cls) => (
-                <TableRow key={cls.id} className="cursor-pointer hover:bg-muted/50 transition-colors">
+                <TableRow
+                  key={cls.id}
+                  className="cursor-pointer hover:bg-muted/50 transition-colors"
+                >
                   <TableCell>
                     <div className="flex flex-col">
-                      <p className="font-semibold text-sm capitalize">{cls.name}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{cls.gradeLevel}</p>
+                      <p className="font-semibold text-sm capitalize">
+                        {cls.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground capitalize">
+                        {cls.gradeLevel}
+                      </p>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -113,15 +140,22 @@ export const ClassesTable: React.FC<ClassesTableProps> = ({ classes, onEdit, onD
                         {cls.enrolledCount} / {cls.capacity}
                       </p>
                       <div className="w-full bg-muted rounded-full h-1.5 mt-1">
-                        <div 
-                          className="bg-primary h-1.5 rounded-full" 
-                          style={{ width: `${(cls.enrolledCount / cls.capacity) * 100}%` }}
+                        <div
+                          className="bg-primary h-1.5 rounded-full"
+                          style={{
+                            width: `${(cls.enrolledCount / cls.capacity) * 100}%`,
+                          }}
                         />
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={cls.status === "active" ? "default" : "secondary"} className="capitalize">
+                    <Badge
+                      className="capitalize"
+                      variant={
+                        cls.status === "active" ? "default" : "secondary"
+                      }
+                    >
                       {cls.status}
                     </Badge>
                   </TableCell>
@@ -129,7 +163,11 @@ export const ClassesTable: React.FC<ClassesTableProps> = ({ classes, onEdit, onD
                     <div className="flex items-center justify-center gap-2">
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Button
+                            className="h-8 w-8"
+                            size="icon"
+                            variant="ghost"
+                          >
                             <Eye className="h-4 w-4" />
                           </Button>
                         </TooltipTrigger>
@@ -138,9 +176,9 @@ export const ClassesTable: React.FC<ClassesTableProps> = ({ classes, onEdit, onD
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
-                            variant="ghost"
-                            size="icon"
                             className="h-8 w-8"
+                            size="icon"
+                            variant="ghost"
                             onClick={() => onEdit(cls)}
                           >
                             <Edit className="h-4 w-4" />
@@ -151,9 +189,9 @@ export const ClassesTable: React.FC<ClassesTableProps> = ({ classes, onEdit, onD
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
-                            variant="ghost"
-                            size="icon"
                             className="h-8 w-8 text-destructive"
+                            size="icon"
+                            variant="ghost"
                             onClick={() => onDelete(cls)}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -169,14 +207,14 @@ export const ClassesTable: React.FC<ClassesTableProps> = ({ classes, onEdit, onD
           </TableBody>
         </Table>
       </div>
-      
+
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
           <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setPage(Math.max(1, page - 1))}
             disabled={page === 1}
+            size="icon"
+            variant="outline"
+            onClick={() => setPage(Math.max(1, page - 1))}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -184,10 +222,10 @@ export const ClassesTable: React.FC<ClassesTableProps> = ({ classes, onEdit, onD
             Page {page} of {totalPages}
           </span>
           <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setPage(Math.min(totalPages, page + 1))}
             disabled={page === totalPages}
+            size="icon"
+            variant="outline"
+            onClick={() => setPage(Math.min(totalPages, page + 1))}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>

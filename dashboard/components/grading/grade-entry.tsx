@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import { Save, Loader2 } from "lucide-react";
+
 import {
   Table,
   TableBody,
@@ -22,7 +24,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/language-context";
-import { Save, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Mock Data
@@ -38,11 +39,31 @@ const SUBJECTS = [
 ];
 
 const STUDENTS = [
-  { id: "s1", name: "Alice Johnson", avatar: "https://i.pravatar.cc/150?u=a042581f4e29026024d" },
-  { id: "s2", name: "Bob Smith", avatar: "https://i.pravatar.cc/150?u=a042581f4e29026704d" },
-  { id: "s3", name: "Charlie Brown", avatar: "https://i.pravatar.cc/150?u=a04258114e29026302d" },
-  { id: "s4", name: "Diana Prince", avatar: "https://i.pravatar.cc/150?u=a04258114e29026702d" },
-  { id: "s5", name: "Evan Wright", avatar: "https://i.pravatar.cc/150?u=a04258114e29026708c" },
+  {
+    id: "s1",
+    name: "Alice Johnson",
+    avatar: "https://i.pravatar.cc/150?u=a042581f4e29026024d",
+  },
+  {
+    id: "s2",
+    name: "Bob Smith",
+    avatar: "https://i.pravatar.cc/150?u=a042581f4e29026704d",
+  },
+  {
+    id: "s3",
+    name: "Charlie Brown",
+    avatar: "https://i.pravatar.cc/150?u=a04258114e29026302d",
+  },
+  {
+    id: "s4",
+    name: "Diana Prince",
+    avatar: "https://i.pravatar.cc/150?u=a04258114e29026702d",
+  },
+  {
+    id: "s5",
+    name: "Evan Wright",
+    avatar: "https://i.pravatar.cc/150?u=a04258114e29026708c",
+  },
 ];
 
 export const GradeEntry = () => {
@@ -56,7 +77,10 @@ export const GradeEntry = () => {
 
   const handleScoreChange = (studentId: string, value: string) => {
     // Validate number
-    if (value === "" || (/^\d*\.?\d*$/.test(value) && Number(value) <= Number(maxScore))) {
+    if (
+      value === "" ||
+      (/^\d*\.?\d*$/.test(value) && Number(value) <= Number(maxScore))
+    ) {
       setScores((prev) => ({ ...prev, [studentId]: value }));
     }
   };
@@ -76,10 +100,12 @@ export const GradeEntry = () => {
 
   const getGradeLetter = (score: string) => {
     const percentage = Number(score) / Number(maxScore);
+
     if (percentage >= 0.9) return { letter: "A", color: "text-green-600" };
     if (percentage >= 0.8) return { letter: "B", color: "text-primary" };
     if (percentage >= 0.7) return { letter: "C", color: "text-yellow-600" };
     if (percentage >= 0.6) return { letter: "D", color: "text-orange-600" };
+
     return { letter: "F", color: "text-red-600" };
   };
 
@@ -135,8 +161,8 @@ export const GradeEntry = () => {
           <div className="space-y-2">
             <Label>{t("max_score")}</Label>
             <Input
-              type="number"
               placeholder="100"
+              type="number"
               value={maxScore}
               onChange={(e) => setMaxScore(e.target.value)}
             />
@@ -163,38 +189,61 @@ export const GradeEntry = () => {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src={student.avatar} alt={student.name} />
-                          <AvatarFallback>{student.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                          <AvatarImage
+                            alt={student.name}
+                            src={student.avatar}
+                          />
+                          <AvatarFallback>
+                            {student.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col">
-                          <span className="text-sm font-medium">{student.name}</span>
-                          <span className="text-xs text-muted-foreground">ID: {student.id.toUpperCase()}</span>
+                          <span className="text-sm font-medium">
+                            {student.name}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            ID: {student.id.toUpperCase()}
+                          </span>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <Input
-                          type="text"
-                          placeholder="0"
                           className="max-w-[80px] h-8"
+                          placeholder="0"
+                          type="text"
                           value={scores[student.id] || ""}
-                          onChange={(e) => handleScoreChange(student.id, e.target.value)}
+                          onChange={(e) =>
+                            handleScoreChange(student.id, e.target.value)
+                          }
                         />
-                        <span className="text-muted-foreground text-sm">/{maxScore}</span>
+                        <span className="text-muted-foreground text-sm">
+                          /{maxScore}
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell>
                       {scores[student.id] ? (
-                        <span className={cn("font-bold", getGradeLetter(scores[student.id]).color)}>
+                        <span
+                          className={cn(
+                            "font-bold",
+                            getGradeLetter(scores[student.id]).color,
+                          )}
+                        >
                           {getGradeLetter(scores[student.id]).letter}
                         </span>
-                      ) : "-"}
+                      ) : (
+                        "-"
+                      )}
                     </TableCell>
                     <TableCell>
                       <Input
-                        placeholder="Optional remarks"
                         className="max-w-[200px] h-8"
+                        placeholder="Optional remarks"
                       />
                     </TableCell>
                   </TableRow>
@@ -205,12 +254,16 @@ export const GradeEntry = () => {
 
           <div className="flex justify-end sticky bottom-6 z-20">
             <Button
-              size="lg"
-              disabled={isSaving}
-              onClick={handleSave}
               className="shadow-lg"
+              disabled={isSaving}
+              size="lg"
+              onClick={handleSave}
             >
-              {isSaving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
+              {isSaving ? (
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              ) : (
+                <Save className="mr-2 h-5 w-5" />
+              )}
               {t("save_changes")}
             </Button>
           </div>

@@ -1,15 +1,11 @@
 "use client";
 
 import React, { useMemo } from "react";
+import { BookOpen, Users, School, GraduationCap } from "lucide-react";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/language-context";
 import { Class, Subject } from "@/types/academic";
-import {
-  BookOpen,
-  Users,
-  School,
-  GraduationCap,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface AcademicStatsProps {
@@ -17,16 +13,23 @@ interface AcademicStatsProps {
   subjects: Subject[];
 }
 
-export const AcademicStats: React.FC<AcademicStatsProps> = ({ classes, subjects }) => {
+export const AcademicStats: React.FC<AcademicStatsProps> = ({
+  classes,
+  subjects,
+}) => {
   const { t } = useLanguage();
 
   const stats = useMemo(() => {
     const totalClasses = classes.length;
     const totalSubjects = subjects.length;
-    
+
     // Calculate average class size
-    const totalEnrolled = classes.reduce((acc, cls) => acc + cls.enrolledCount, 0);
-    const avgClassSize = totalClasses > 0 ? Math.round(totalEnrolled / totalClasses) : 0;
+    const totalEnrolled = classes.reduce(
+      (acc, cls) => acc + cls.enrolledCount,
+      0,
+    );
+    const avgClassSize =
+      totalClasses > 0 ? Math.round(totalEnrolled / totalClasses) : 0;
 
     // Calculate total credits
     const totalCredits = subjects.reduce((acc, sub) => acc + sub.credits, 0);
@@ -65,18 +68,22 @@ export const AcademicStats: React.FC<AcademicStatsProps> = ({ classes, subjects 
         <CardContent className="gap-4 p-6">
           <div className="flex justify-between items-start">
             <div className="flex flex-col gap-2 flex-1">
-              <span className="text-sm font-medium text-muted-foreground">{title}</span>
+              <span className="text-sm font-medium text-muted-foreground">
+                {title}
+              </span>
               <span className="text-3xl font-bold text-foreground">
                 {value}
               </span>
               {subtitle && (
-                <span className="text-xs text-muted-foreground">{subtitle}</span>
+                <span className="text-xs text-muted-foreground">
+                  {subtitle}
+                </span>
               )}
             </div>
             <div
               className={cn(
                 "p-4 rounded-2xl shadow-lg group-hover:scale-110 transition-all duration-300",
-                colorClasses[color]
+                colorClasses[color],
               )}
             >
               <Icon className="w-6 h-6" />

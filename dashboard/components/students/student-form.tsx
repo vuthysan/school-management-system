@@ -4,6 +4,8 @@ import React, { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Loader2 } from "lucide-react";
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,12 +15,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/language-context";
 import { Student, StudentFormData } from "@/types/student";
-import { Loader2 } from "lucide-react";
 
 interface StudentFormProps {
   student?: Student | null;
@@ -112,10 +119,13 @@ export const StudentForm: React.FC<StudentFormProps> = ({
       guardianName: data.guardianName,
       guardianPhone: data.guardianPhone,
       status: student?.status || "active",
-      enrollmentDate: student?.enrollmentDate || new Date().toISOString().split("T")[0],
+      enrollmentDate:
+        student?.enrollmentDate || new Date().toISOString().split("T")[0],
     };
 
-    const message = mode === "edit" ? t("student_updated") : t("student_registered");
+    const message =
+      mode === "edit" ? t("student_updated") : t("student_registered");
+
     alert(message);
 
     if (onSuccess) {
@@ -141,9 +151,7 @@ export const StudentForm: React.FC<StudentFormProps> = ({
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <div className="w-1 h-6 bg-primary rounded-full" />
-              <h3 className="text-lg font-semibold">
-                {t("personal_info")}
-              </h3>
+              <h3 className="text-lg font-semibold">{t("personal_info")}</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Controller
@@ -154,12 +162,14 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                     <Label htmlFor="firstName">{t("first_name")}</Label>
                     <Input
                       {...field}
+                      className={errors.firstName ? "border-destructive" : ""}
                       id="firstName"
                       placeholder={t("enter_first_name")}
-                      className={errors.firstName ? "border-destructive" : ""}
                     />
                     {errors.firstName && (
-                      <p className="text-sm text-destructive">{errors.firstName.message}</p>
+                      <p className="text-sm text-destructive">
+                        {errors.firstName.message}
+                      </p>
                     )}
                   </div>
                 )}
@@ -172,12 +182,14 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                     <Label htmlFor="lastName">{t("last_name")}</Label>
                     <Input
                       {...field}
+                      className={errors.lastName ? "border-destructive" : ""}
                       id="lastName"
                       placeholder={t("enter_last_name")}
-                      className={errors.lastName ? "border-destructive" : ""}
                     />
                     {errors.lastName && (
-                      <p className="text-sm text-destructive">{errors.lastName.message}</p>
+                      <p className="text-sm text-destructive">
+                        {errors.lastName.message}
+                      </p>
                     )}
                   </div>
                 )}
@@ -190,13 +202,15 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                     <Label htmlFor="email">{t("email")}</Label>
                     <Input
                       {...field}
-                      id="email"
-                      type="email"
-                      placeholder={t("enter_email")}
                       className={errors.email ? "border-destructive" : ""}
+                      id="email"
+                      placeholder={t("enter_email")}
+                      type="email"
                     />
                     {errors.email && (
-                      <p className="text-sm text-destructive">{errors.email.message}</p>
+                      <p className="text-sm text-destructive">
+                        {errors.email.message}
+                      </p>
                     )}
                   </div>
                 )}
@@ -209,12 +223,14 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                     <Label htmlFor="dob">{t("dob")}</Label>
                     <Input
                       {...field}
+                      className={errors.dob ? "border-destructive" : ""}
                       id="dob"
                       type="date"
-                      className={errors.dob ? "border-destructive" : ""}
                     />
                     {errors.dob && (
-                      <p className="text-sm text-destructive">{errors.dob.message}</p>
+                      <p className="text-sm text-destructive">
+                        {errors.dob.message}
+                      </p>
                     )}
                   </div>
                 )}
@@ -226,7 +242,9 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                   <div className="space-y-2">
                     <Label>{t("gender")}</Label>
                     <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger className={errors.gender ? "border-destructive" : ""}>
+                      <SelectTrigger
+                        className={errors.gender ? "border-destructive" : ""}
+                      >
                         <SelectValue placeholder={t("select_gender")} />
                       </SelectTrigger>
                       <SelectContent>
@@ -236,7 +254,9 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                       </SelectContent>
                     </Select>
                     {errors.gender && (
-                      <p className="text-sm text-destructive">{errors.gender.message}</p>
+                      <p className="text-sm text-destructive">
+                        {errors.gender.message}
+                      </p>
                     )}
                   </div>
                 )}
@@ -249,12 +269,14 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                     <Label htmlFor="phone">{t("phone")}</Label>
                     <Input
                       {...field}
+                      className={errors.phone ? "border-destructive" : ""}
                       id="phone"
                       placeholder={t("enter_phone")}
-                      className={errors.phone ? "border-destructive" : ""}
                     />
                     {errors.phone && (
-                      <p className="text-sm text-destructive">{errors.phone.message}</p>
+                      <p className="text-sm text-destructive">
+                        {errors.phone.message}
+                      </p>
                     )}
                   </div>
                 )}
@@ -268,9 +290,7 @@ export const StudentForm: React.FC<StudentFormProps> = ({
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <div className="w-1 h-6 bg-secondary rounded-full" />
-              <h3 className="text-lg font-semibold">
-                {t("academic_contact")}
-              </h3>
+              <h3 className="text-lg font-semibold">{t("academic_contact")}</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Controller
@@ -280,7 +300,11 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                   <div className="space-y-2">
                     <Label>{t("grade_level")}</Label>
                     <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger className={errors.gradeLevel ? "border-destructive" : ""}>
+                      <SelectTrigger
+                        className={
+                          errors.gradeLevel ? "border-destructive" : ""
+                        }
+                      >
                         <SelectValue placeholder={t("select_grade")} />
                       </SelectTrigger>
                       <SelectContent>
@@ -292,7 +316,9 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                       </SelectContent>
                     </Select>
                     {errors.gradeLevel && (
-                      <p className="text-sm text-destructive">{errors.gradeLevel.message}</p>
+                      <p className="text-sm text-destructive">
+                        {errors.gradeLevel.message}
+                      </p>
                     )}
                   </div>
                 )}
@@ -305,12 +331,14 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                     <Label htmlFor="address">{t("address")}</Label>
                     <Input
                       {...field}
+                      className={errors.address ? "border-destructive" : ""}
                       id="address"
                       placeholder={t("enter_address")}
-                      className={errors.address ? "border-destructive" : ""}
                     />
                     {errors.address && (
-                      <p className="text-sm text-destructive">{errors.address.message}</p>
+                      <p className="text-sm text-destructive">
+                        {errors.address.message}
+                      </p>
                     )}
                   </div>
                 )}
@@ -324,9 +352,7 @@ export const StudentForm: React.FC<StudentFormProps> = ({
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <div className="w-1 h-6 bg-green-500 rounded-full" />
-              <h3 className="text-lg font-semibold">
-                {t("guardian_info")}
-              </h3>
+              <h3 className="text-lg font-semibold">{t("guardian_info")}</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Controller
@@ -337,12 +363,16 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                     <Label htmlFor="guardianName">{t("guardian_name")}</Label>
                     <Input
                       {...field}
+                      className={
+                        errors.guardianName ? "border-destructive" : ""
+                      }
                       id="guardianName"
                       placeholder={t("enter_guardian_name")}
-                      className={errors.guardianName ? "border-destructive" : ""}
                     />
                     {errors.guardianName && (
-                      <p className="text-sm text-destructive">{errors.guardianName.message}</p>
+                      <p className="text-sm text-destructive">
+                        {errors.guardianName.message}
+                      </p>
                     )}
                   </div>
                 )}
@@ -355,12 +385,16 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                     <Label htmlFor="guardianPhone">{t("guardian_phone")}</Label>
                     <Input
                       {...field}
+                      className={
+                        errors.guardianPhone ? "border-destructive" : ""
+                      }
                       id="guardianPhone"
                       placeholder={t("enter_guardian_phone")}
-                      className={errors.guardianPhone ? "border-destructive" : ""}
                     />
                     {errors.guardianPhone && (
-                      <p className="text-sm text-destructive">{errors.guardianPhone.message}</p>
+                      <p className="text-sm text-destructive">
+                        {errors.guardianPhone.message}
+                      </p>
                     )}
                   </div>
                 )}
@@ -373,19 +407,17 @@ export const StudentForm: React.FC<StudentFormProps> = ({
           {/* Action Buttons */}
           <div className="flex justify-end gap-3 mt-4">
             <Button
+              size="lg"
               type="button"
               variant="outline"
-              size="lg"
               onClick={() => reset()}
             >
               {t("reset")}
             </Button>
-            <Button
-              type="submit"
-              size="lg"
-              disabled={isSubmitting}
-            >
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button disabled={isSubmitting} size="lg" type="submit">
+              {isSubmitting && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               {mode === "edit" ? t("save_changes") : t("register_student")}
             </Button>
           </div>

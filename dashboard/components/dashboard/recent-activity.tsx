@@ -1,6 +1,13 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import React from "react";
+
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const activities = [
   {
@@ -47,8 +54,13 @@ export const RecentActivity = () => {
           {activities.map((activity) => (
             <li key={activity.id} className="flex items-center gap-3">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={activity.avatar} alt={activity.user} />
-                <AvatarFallback>{activity.user.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                <AvatarImage alt={activity.user} src={activity.avatar} />
+                <AvatarFallback>
+                  {activity.user
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")}
+                </AvatarFallback>
               </Avatar>
               <div className="flex flex-col">
                 <span className="text-sm text-foreground">

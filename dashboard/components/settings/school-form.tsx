@@ -3,10 +3,11 @@
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Loader2 } from "lucide-react";
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Loader2 } from "lucide-react";
 import { SchoolFormData } from "@/types/school";
 
 const schoolSchema = z.object({
@@ -23,7 +24,11 @@ interface SchoolFormProps {
   isLoading?: boolean;
 }
 
-export function SchoolForm({ onSubmit, onCancel, isLoading = false }: SchoolFormProps) {
+export function SchoolForm({
+  onSubmit,
+  onCancel,
+  isLoading = false,
+}: SchoolFormProps) {
   const {
     control,
     handleSubmit,
@@ -52,21 +57,26 @@ export function SchoolForm({ onSubmit, onCancel, isLoading = false }: SchoolForm
   };
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="flex flex-col gap-4">
+    <form
+      className="flex flex-col gap-4"
+      onSubmit={handleSubmit(handleFormSubmit)}
+    >
       <Controller
-        name="name"
         control={control}
+        name="name"
         render={({ field }) => (
           <div className="space-y-2">
             <Label htmlFor="name">School Name *</Label>
             <Input
               {...field}
+              className={errors.name ? "border-destructive" : ""}
               id="name"
               placeholder="Enter school name"
-              className={errors.name ? "border-destructive" : ""}
             />
             {errors.name && (
-              <p className="text-sm text-destructive">{errors.name.message as string}</p>
+              <p className="text-sm text-destructive">
+                {errors.name.message as string}
+              </p>
             )}
           </div>
         )}
@@ -74,39 +84,43 @@ export function SchoolForm({ onSubmit, onCancel, isLoading = false }: SchoolForm
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Controller
-          name="contactEmail"
           control={control}
+          name="contactEmail"
           render={({ field }) => (
             <div className="space-y-2">
               <Label htmlFor="contactEmail">Contact Email *</Label>
               <Input
                 {...field}
-                id="contactEmail"
-                type="email"
-                placeholder="contact@school.com"
                 className={errors.contactEmail ? "border-destructive" : ""}
+                id="contactEmail"
+                placeholder="contact@school.com"
+                type="email"
               />
               {errors.contactEmail && (
-                <p className="text-sm text-destructive">{errors.contactEmail.message as string}</p>
+                <p className="text-sm text-destructive">
+                  {errors.contactEmail.message as string}
+                </p>
               )}
             </div>
           )}
         />
 
         <Controller
-          name="contactPhone"
           control={control}
+          name="contactPhone"
           render={({ field }) => (
             <div className="space-y-2">
               <Label htmlFor="contactPhone">Contact Phone *</Label>
               <Input
                 {...field}
+                className={errors.contactPhone ? "border-destructive" : ""}
                 id="contactPhone"
                 placeholder="+855 12 345 678"
-                className={errors.contactPhone ? "border-destructive" : ""}
               />
               {errors.contactPhone && (
-                <p className="text-sm text-destructive">{errors.contactPhone.message as string}</p>
+                <p className="text-sm text-destructive">
+                  {errors.contactPhone.message as string}
+                </p>
               )}
             </div>
           )}
@@ -115,8 +129,8 @@ export function SchoolForm({ onSubmit, onCancel, isLoading = false }: SchoolForm
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Controller
-          name="website"
           control={control}
+          name="website"
           render={({ field }) => (
             <div className="space-y-2">
               <Label htmlFor="website">Website</Label>
@@ -130,8 +144,8 @@ export function SchoolForm({ onSubmit, onCancel, isLoading = false }: SchoolForm
         />
 
         <Controller
-          name="logoUrl"
           control={control}
+          name="logoUrl"
           render={({ field }) => (
             <div className="space-y-2">
               <Label htmlFor="logoUrl">Logo URL</Label>
@@ -149,7 +163,7 @@ export function SchoolForm({ onSubmit, onCancel, isLoading = false }: SchoolForm
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit" disabled={isLoading}>
+        <Button disabled={isLoading} type="submit">
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Create School
         </Button>

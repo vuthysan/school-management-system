@@ -4,6 +4,8 @@ import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Loader2 } from "lucide-react";
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +18,6 @@ import {
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/language-context";
 import { Class, ClassFormData } from "@/types/academic";
-import { Loader2 } from "lucide-react";
 
 const classSchema = z.object({
   name: z.string().min(1, "Class name is required"),
@@ -24,7 +25,10 @@ const classSchema = z.object({
   section: z.string().min(1, "Section is required"),
   teacherName: z.string().min(1, "Teacher name is required"),
   room: z.string().min(1, "Room is required"),
-  capacity: z.preprocess((val) => Number(val), z.number().min(1, "Capacity must be at least 1")),
+  capacity: z.preprocess(
+    (val) => Number(val),
+    z.number().min(1, "Capacity must be at least 1"),
+  ),
   status: z.enum(["active", "inactive", "archived"]),
   academicYear: z.string().min(1, "Academic year is required"),
 });
@@ -35,9 +39,13 @@ interface ClassFormProps {
   onCancel?: () => void;
 }
 
-export const ClassForm: React.FC<ClassFormProps> = ({ initialData, onSuccess, onCancel }) => {
+export const ClassForm: React.FC<ClassFormProps> = ({
+  initialData,
+  onSuccess,
+  onCancel,
+}) => {
   const { t } = useLanguage();
-  
+
   const {
     control,
     handleSubmit,
@@ -79,34 +87,38 @@ export const ClassForm: React.FC<ClassFormProps> = ({ initialData, onSuccess, on
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+    <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Controller
-          name="name"
           control={control}
+          name="name"
           render={({ field }) => (
             <div className="space-y-2">
               <Label htmlFor="name">{t("class_name")}</Label>
               <Input
                 {...field}
+                className={errors.name ? "border-destructive" : ""}
                 id="name"
                 placeholder="e.g. Grade 10-A"
-                className={errors.name ? "border-destructive" : ""}
               />
               {errors.name && (
-                <p className="text-sm text-destructive">{errors.name.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.name.message}
+                </p>
               )}
             </div>
           )}
         />
         <Controller
-          name="gradeLevel"
           control={control}
+          name="gradeLevel"
           render={({ field }) => (
             <div className="space-y-2">
               <Label>{t("grade_level")}</Label>
               <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger className={errors.gradeLevel ? "border-destructive" : ""}>
+                <SelectTrigger
+                  className={errors.gradeLevel ? "border-destructive" : ""}
+                >
                   <SelectValue placeholder={t("select_grade")} />
                 </SelectTrigger>
                 <SelectContent>
@@ -116,110 +128,124 @@ export const ClassForm: React.FC<ClassFormProps> = ({ initialData, onSuccess, on
                 </SelectContent>
               </Select>
               {errors.gradeLevel && (
-                <p className="text-sm text-destructive">{errors.gradeLevel.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.gradeLevel.message}
+                </p>
               )}
             </div>
           )}
         />
         <Controller
-          name="section"
           control={control}
+          name="section"
           render={({ field }) => (
             <div className="space-y-2">
               <Label htmlFor="section">{t("section")}</Label>
               <Input
                 {...field}
+                className={errors.section ? "border-destructive" : ""}
                 id="section"
                 placeholder="e.g. A, B, C"
-                className={errors.section ? "border-destructive" : ""}
               />
               {errors.section && (
-                <p className="text-sm text-destructive">{errors.section.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.section.message}
+                </p>
               )}
             </div>
           )}
         />
         <Controller
-          name="teacherName"
           control={control}
+          name="teacherName"
           render={({ field }) => (
             <div className="space-y-2">
               <Label htmlFor="teacherName">{t("teacher")}</Label>
               <Input
                 {...field}
+                className={errors.teacherName ? "border-destructive" : ""}
                 id="teacherName"
                 placeholder="Teacher Name"
-                className={errors.teacherName ? "border-destructive" : ""}
               />
               {errors.teacherName && (
-                <p className="text-sm text-destructive">{errors.teacherName.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.teacherName.message}
+                </p>
               )}
             </div>
           )}
         />
         <Controller
-          name="room"
           control={control}
+          name="room"
           render={({ field }) => (
             <div className="space-y-2">
               <Label htmlFor="room">{t("room")}</Label>
               <Input
                 {...field}
+                className={errors.room ? "border-destructive" : ""}
                 id="room"
                 placeholder="e.g. 101"
-                className={errors.room ? "border-destructive" : ""}
               />
               {errors.room && (
-                <p className="text-sm text-destructive">{errors.room.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.room.message}
+                </p>
               )}
             </div>
           )}
         />
         <Controller
-          name="capacity"
           control={control}
+          name="capacity"
           render={({ field }) => (
             <div className="space-y-2">
               <Label htmlFor="capacity">{t("capacity")}</Label>
               <Input
                 {...field}
-                id="capacity"
-                type="number"
-                placeholder="30"
                 className={errors.capacity ? "border-destructive" : ""}
+                id="capacity"
+                placeholder="30"
+                type="number"
               />
               {errors.capacity && (
-                <p className="text-sm text-destructive">{errors.capacity.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.capacity.message}
+                </p>
               )}
             </div>
           )}
         />
         <Controller
-          name="academicYear"
           control={control}
+          name="academicYear"
           render={({ field }) => (
             <div className="space-y-2">
               <Label htmlFor="academicYear">{t("academic_year")}</Label>
               <Input
                 {...field}
+                className={errors.academicYear ? "border-destructive" : ""}
                 id="academicYear"
                 placeholder="e.g. 2024-2025"
-                className={errors.academicYear ? "border-destructive" : ""}
               />
               {errors.academicYear && (
-                <p className="text-sm text-destructive">{errors.academicYear.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.academicYear.message}
+                </p>
               )}
             </div>
           )}
         />
         <Controller
-          name="status"
           control={control}
+          name="status"
           render={({ field }) => (
             <div className="space-y-2">
               <Label>{t("status")}</Label>
               <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger className={errors.status ? "border-destructive" : ""}>
+                <SelectTrigger
+                  className={errors.status ? "border-destructive" : ""}
+                >
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -229,7 +255,9 @@ export const ClassForm: React.FC<ClassFormProps> = ({ initialData, onSuccess, on
                 </SelectContent>
               </Select>
               {errors.status && (
-                <p className="text-sm text-destructive">{errors.status.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.status.message}
+                </p>
               )}
             </div>
           )}
@@ -237,10 +265,10 @@ export const ClassForm: React.FC<ClassFormProps> = ({ initialData, onSuccess, on
       </div>
 
       <div className="flex justify-end gap-2 mt-4">
-        <Button variant="outline" type="button" onClick={onCancel}>
+        <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit" disabled={isSubmitting}>
+        <Button disabled={isSubmitting} type="submit">
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {initialData ? t("save_changes") : "Create Class"}
         </Button>

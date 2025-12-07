@@ -3,6 +3,8 @@
 import { useState } from "react";
 import NextLink from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Bell, Menu, X } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -29,11 +31,9 @@ import {
 } from "@/components/ui/accordion";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { Logo, SearchIcon } from "@/components/icons";
-import { Bell, Menu, X } from "lucide-react";
 import { roleToMenu, t as tMenu, UserRole } from "@/config/sms-menus";
 import { useLanguage } from "@/contexts/language-context";
 import { SupportedLang } from "@/config/translations";
-import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
 
 export const Navbar = () => {
@@ -48,6 +48,7 @@ export const Navbar = () => {
 
   function updateQuery(next: Partial<{ role: UserRole }>) {
     const params = new URLSearchParams(searchParams.toString());
+
     if (next.role) params.set("role", next.role);
     router.replace(`${pathname}?${params.toString()}`);
   }
@@ -66,7 +67,10 @@ export const Navbar = () => {
         {/* Right side - Desktop */}
         <div className="hidden sm:flex items-center gap-3">
           {/* Language Selector */}
-          <Select value={language} onValueChange={(v) => setLanguage(v as SupportedLang)}>
+          <Select
+            value={language}
+            onValueChange={(v) => setLanguage(v as SupportedLang)}
+          >
             <SelectTrigger className="w-32">
               <SelectValue />
             </SelectTrigger>
@@ -78,16 +82,22 @@ export const Navbar = () => {
 
           <ThemeSwitch />
 
-          <Button variant="ghost" size="icon">
+          <Button size="icon" variant="ghost">
             <Bell className="h-5 w-5 text-muted-foreground" />
           </Button>
 
           {/* User Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0">
+              <Button
+                className="relative h-8 w-8 rounded-full p-0"
+                variant="ghost"
+              >
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="User" />
+                  <AvatarImage
+                    alt="User"
+                    src="https://i.pravatar.cc/150?u=a042581f4e29026704d"
+                  />
                   <AvatarFallback>S</AvatarFallback>
                 </Avatar>
               </Button>
@@ -105,7 +115,7 @@ export const Navbar = () => {
               <DropdownMenuItem>Configurations</DropdownMenuItem>
               <DropdownMenuItem>Help & Feedback</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 className="text-destructive focus:text-destructive cursor-pointer"
                 onClick={logout}
               >
@@ -118,9 +128,9 @@ export const Navbar = () => {
           <div className="hidden lg:flex relative">
             <SearchIcon className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              type="search"
-              placeholder="Search..."
               className="pl-8 w-[200px] h-9 bg-muted"
+              placeholder="Search..."
+              type="search"
             />
             <kbd className="hidden lg:inline-flex absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
               <span className="text-xs">⌘</span>K
@@ -132,11 +142,15 @@ export const Navbar = () => {
         <div className="flex sm:hidden items-center gap-2">
           <ThemeSwitch />
           <Button
-            variant="ghost"
             size="icon"
+            variant="ghost"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
-            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {isMobileMenuOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
           </Button>
         </div>
       </div>
@@ -153,12 +167,25 @@ export const Navbar = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {(["admin", "principal", "teacher", "student", "parent"] as UserRole[]).map((r) => (
-                  <SelectItem key={r} value={r}>{r}</SelectItem>
+                {(
+                  [
+                    "admin",
+                    "principal",
+                    "teacher",
+                    "student",
+                    "parent",
+                  ] as UserRole[]
+                ).map((r) => (
+                  <SelectItem key={r} value={r}>
+                    {r}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Select value={language} onValueChange={(v) => setLanguage(v as SupportedLang)}>
+            <Select
+              value={language}
+              onValueChange={(v) => setLanguage(v as SupportedLang)}
+            >
               <SelectTrigger className="w-32">
                 <SelectValue />
               </SelectTrigger>
@@ -168,8 +195,8 @@ export const Navbar = () => {
               </SelectContent>
             </Select>
           </div>
-          
-          <Accordion type="multiple" className="w-full">
+
+          <Accordion className="w-full" type="multiple">
             {roleToMenu[roleParam].map((group) => (
               <AccordionItem key={group.key} value={group.key}>
                 <AccordionTrigger className="text-sm font-medium">
@@ -180,8 +207,8 @@ export const Navbar = () => {
                     {group.items.map((it) => (
                       <NextLink
                         key={it.key}
-                        href={it.href || "#"}
                         className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1"
+                        href={it.href || "#"}
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         {tMenu(it.label, language)}

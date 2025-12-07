@@ -2,6 +2,20 @@
 
 import React, { useMemo, useState, useCallback } from "react";
 import {
+  Search,
+  Eye,
+  Trash2,
+  Filter,
+  Pencil,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+
+import { ViewStudentModal } from "./view-student-modal";
+import { DeleteStudentModal } from "./delete-student-modal";
+import { StudentForm } from "./student-form";
+
+import {
   Table,
   TableBody,
   TableCell,
@@ -31,11 +45,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Search, Eye, Trash2, Filter, Pencil, ChevronLeft, ChevronRight } from "lucide-react";
 import { Student, StudentFilters, SortDescriptor } from "@/types/student";
-import { ViewStudentModal } from "./view-student-modal";
-import { DeleteStudentModal } from "./delete-student-modal";
-import { StudentForm } from "./student-form";
 import { useLanguage } from "@/contexts/language-context";
 
 // Mock data for demonstration
@@ -174,9 +184,11 @@ interface StudentsTableProps {
   onStudentsChange?: (students: Student[]) => void;
 }
 
-export const StudentsTable: React.FC<StudentsTableProps> = ({ onStudentsChange }) => {
+export const StudentsTable: React.FC<StudentsTableProps> = ({
+  onStudentsChange,
+}) => {
   const { t } = useLanguage();
-  
+
   // Dynamic arrays that use translations
   const GENDERS = [
     { key: "male", label: t("male") },
@@ -193,7 +205,7 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({ onStudentsChange }
     { key: "status", label: t("status").toUpperCase(), sortable: true },
     { key: "actions", label: t("actions").toUpperCase(), sortable: false },
   ];
-  
+
   const [students, setStudents] = useState<Student[]>(MOCK_STUDENTS);
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<StudentFilters>({
@@ -226,24 +238,27 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({ onStudentsChange }
     // Apply search
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
+
       filtered = filtered.filter(
         (student) =>
           student.firstName.toLowerCase().includes(query) ||
           student.lastName.toLowerCase().includes(query) ||
           student.email.toLowerCase().includes(query) ||
-          student.phone.includes(query)
+          student.phone.includes(query),
       );
     }
 
     // Apply filters
     if (filters.gradeLevel) {
       filtered = filtered.filter(
-        (student) => student.gradeLevel === filters.gradeLevel
+        (student) => student.gradeLevel === filters.gradeLevel,
       );
     }
 
     if (filters.gender) {
-      filtered = filtered.filter((student) => student.gender === filters.gender);
+      filtered = filtered.filter(
+        (student) => student.gender === filters.gender,
+      );
     }
 
     return filtered;
@@ -318,7 +333,7 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({ onStudentsChange }
 
   const handleEditSuccess = useCallback((updatedStudent: Student) => {
     setStudents((prev) =>
-      prev.map((s) => (s.id === updatedStudent.id ? updatedStudent : s))
+      prev.map((s) => (s.id === updatedStudent.id ? updatedStudent : s)),
     );
     setIsEditModalOpen(false);
     setSelectedStudent(null);
@@ -401,7 +416,9 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({ onStudentsChange }
         {hasActiveFilters && (
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">
-              {t("showing_results").replace("{count}", sortedStudents.length.toString()).replace("{total}", students.length.toString())}
+              {t("showing_results")
+                .replace("{count}", sortedStudents.length.toString())
+                .replace("{total}", students.length.toString())}
             </span>
             <Button size="sm" variant="outline" onClick={handleClearFilters}>
               {t("clear_filters")}
@@ -416,16 +433,17 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({ onStudentsChange }
           <TableHeader>
             <TableRow>
               {columns.map((column) => (
-                <TableHead key={column.key}>
-                  {column.label}
-                </TableHead>
+                <TableHead key={column.key}>{column.label}</TableHead>
               ))}
             </TableRow>
           </TableHeader>
           <TableBody>
             {paginatedStudents.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  className="h-24 text-center"
+                  colSpan={columns.length}
+                >
                   {hasActiveFilters ? t("no_results") : t("no_students")}
                 </TableCell>
               </TableRow>
@@ -436,17 +454,26 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({ onStudentsChange }
                     <div className="flex items-center gap-3">
                       <Avatar className="h-8 w-8">
                         <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                          {student.firstName.charAt(0)}{student.lastName.charAt(0)}
+                          {student.firstName.charAt(0)}
+                          {student.lastName.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-medium">{student.firstName} {student.lastName}</div>
-                        <div className="text-xs text-muted-foreground">{student.email}</div>
+                        <div className="font-medium">
+                          {student.firstName} {student.lastName}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {student.email}
+                        </div>
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-muted-foreground">{student.email}</TableCell>
-                  <TableCell className="text-muted-foreground">{student.phone}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {student.email}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {student.phone}
+                  </TableCell>
                   <TableCell>
                     <Badge variant="secondary">
                       {t("grade")} {student.gradeLevel}
@@ -456,7 +483,11 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({ onStudentsChange }
                     {t(student.gender)}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={student.status === "active" ? "default" : "secondary"}>
+                    <Badge
+                      variant={
+                        student.status === "active" ? "default" : "secondary"
+                      }
+                    >
                       {t(student.status || "active")}
                     </Badge>
                   </TableCell>
@@ -465,9 +496,9 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({ onStudentsChange }
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
-                            variant="ghost"
-                            size="icon"
                             className="h-8 w-8"
+                            size="icon"
+                            variant="ghost"
                             onClick={() => handleViewStudent(student)}
                           >
                             <Eye className="h-4 w-4" />
@@ -478,9 +509,9 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({ onStudentsChange }
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
-                            variant="ghost"
-                            size="icon"
                             className="h-8 w-8 text-primary"
+                            size="icon"
+                            variant="ghost"
                             onClick={() => handleEditStudent(student)}
                           >
                             <Pencil className="h-4 w-4" />
@@ -491,9 +522,9 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({ onStudentsChange }
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
-                            variant="ghost"
-                            size="icon"
                             className="h-8 w-8 text-destructive"
+                            size="icon"
+                            variant="ghost"
                             onClick={() => handleDeleteStudent(student)}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -514,10 +545,10 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({ onStudentsChange }
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
           <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setPage(Math.max(1, page - 1))}
             disabled={page === 1}
+            size="icon"
+            variant="outline"
+            onClick={() => setPage(Math.max(1, page - 1))}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -525,10 +556,10 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({ onStudentsChange }
             Page {page} of {totalPages}
           </span>
           <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setPage(Math.min(totalPages, page + 1))}
             disabled={page === totalPages}
+            size="icon"
+            variant="outline"
+            onClick={() => setPage(Math.min(totalPages, page + 1))}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -538,10 +569,15 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({ onStudentsChange }
       {/* Rows per page selector */}
       <div className="flex items-center justify-between">
         <span className="text-sm text-muted-foreground">
-          {t("total_count").replace("{count}", sortedStudents.length.toString())}
+          {t("total_count").replace(
+            "{count}",
+            sortedStudents.length.toString(),
+          )}
         </span>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">{t("rows_per_page")}</span>
+          <span className="text-sm text-muted-foreground">
+            {t("rows_per_page")}
+          </span>
           <Select
             value={rowsPerPage.toString()}
             onValueChange={(value) => {

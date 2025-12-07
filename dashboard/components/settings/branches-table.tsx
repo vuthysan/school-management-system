@@ -1,5 +1,7 @@
 "use client";
 
+import { MapPin, Mail, Phone, Building } from "lucide-react";
+
 import {
   Table,
   TableBody,
@@ -8,16 +10,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Branch } from "@/types/branch";
-import { MapPin, Mail, Phone, Building } from "lucide-react";
 
 interface BranchesTableProps {
   branches: Branch[];
   loading?: boolean;
 }
 
-export function BranchesTable({ branches, loading = false }: BranchesTableProps) {
+export function BranchesTable({
+  branches,
+  loading = false,
+}: BranchesTableProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -45,6 +48,7 @@ export function BranchesTable({ branches, loading = false }: BranchesTableProps)
       branch.address.district,
       branch.address.province,
     ].filter(Boolean);
+
     return parts.join(", ");
   };
 

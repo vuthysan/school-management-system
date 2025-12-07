@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+
 import { graphqlRequest, SCHOOL_QUERIES } from "@/lib/graphql-client";
 import { School, CreateSchoolInput } from "@/types/school";
 
@@ -26,7 +27,10 @@ export function useSchools(): UseSchoolsReturn {
     setLoading(true);
     setError(null);
     try {
-      const data = await graphqlRequest<{ schools: School[] }>(SCHOOL_QUERIES.GET_ALL);
+      const data = await graphqlRequest<{ schools: School[] }>(
+        SCHOOL_QUERIES.GET_ALL,
+      );
+
       setSchools(data.schools || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch schools");
@@ -52,11 +56,14 @@ export function useCreateSchool(): UseCreateSchoolReturn {
     try {
       const data = await graphqlRequest<{ createSchool: School }>(
         SCHOOL_QUERIES.CREATE,
-        { input }
+        { input },
       );
+
       return data.createSchool;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to create school";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to create school";
+
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {

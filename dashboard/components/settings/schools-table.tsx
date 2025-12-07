@@ -1,5 +1,7 @@
 "use client";
 
+import { Building2, Globe, Mail, Phone } from "lucide-react";
+
 import {
   Table,
   TableBody,
@@ -11,7 +13,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { School } from "@/types/school";
-import { Building2, Globe, Mail, Phone } from "lucide-react";
 
 interface SchoolsTableProps {
   schools: School[];
@@ -68,9 +69,9 @@ export function SchoolsTable({
                 <div className="flex items-center gap-3">
                   {school.logoUrl ? (
                     <img
-                      src={school.logoUrl}
                       alt={school.name}
                       className="h-10 w-10 rounded-lg object-cover"
+                      src={school.logoUrl}
                     />
                   ) : (
                     <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -80,7 +81,9 @@ export function SchoolsTable({
                   <div>
                     <p className="font-semibold">{school.name}</p>
                     {selectedSchoolId === school.id && (
-                      <Badge variant="secondary" className="mt-1">Selected</Badge>
+                      <Badge className="mt-1" variant="secondary">
+                        Selected
+                      </Badge>
                     )}
                   </div>
                 </div>
@@ -100,10 +103,10 @@ export function SchoolsTable({
               <TableCell>
                 {school.website ? (
                   <a
-                    href={school.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="flex items-center gap-1 text-primary hover:underline"
+                    href={school.website}
+                    rel="noopener noreferrer"
+                    target="_blank"
                   >
                     <Globe className="h-3 w-3" />
                     Visit
@@ -119,8 +122,10 @@ export function SchoolsTable({
               </TableCell>
               <TableCell className="text-right">
                 <Button
-                  variant={selectedSchoolId === school.id ? "secondary" : "outline"}
                   size="sm"
+                  variant={
+                    selectedSchoolId === school.id ? "secondary" : "outline"
+                  }
                   onClick={() => onSelectSchool(school)}
                 >
                   {selectedSchoolId === school.id ? "Selected" : "Select"}

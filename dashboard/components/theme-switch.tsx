@@ -3,6 +3,7 @@
 import { FC } from "react";
 import { useTheme } from "next-themes";
 import { useIsSSR } from "@react-aria/ssr";
+
 import { Button } from "@/components/ui/button";
 import { SunFilledIcon, MoonFilledIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
@@ -23,17 +24,13 @@ export const ThemeSwitch: FC<ThemeSwitchProps> = ({ className }) => {
 
   return (
     <Button
-      variant="ghost"
-      size="icon"
-      onClick={toggleTheme}
       aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
       className={cn("h-9 w-9", className)}
+      size="icon"
+      variant="ghost"
+      onClick={toggleTheme}
     >
-      {isDark ? (
-        <MoonFilledIcon size={20} />
-      ) : (
-        <SunFilledIcon size={20} />
-      )}
+      {isDark ? <MoonFilledIcon size={20} /> : <SunFilledIcon size={20} />}
     </Button>
   );
 };

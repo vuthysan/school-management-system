@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import { Save, Loader2 } from "lucide-react";
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,8 +18,6 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/language-context";
 import { AttendanceStatus } from "@/types/attendance";
-import { Save, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 // Mock data for classes and students
 const CLASSES = [
@@ -27,11 +27,31 @@ const CLASSES = [
 ];
 
 const STUDENTS = [
-  { id: "s1", name: "Alice Johnson", avatar: "https://i.pravatar.cc/150?u=a042581f4e29026024d" },
-  { id: "s2", name: "Bob Smith", avatar: "https://i.pravatar.cc/150?u=a042581f4e29026704d" },
-  { id: "s3", name: "Charlie Brown", avatar: "https://i.pravatar.cc/150?u=a04258114e29026302d" },
-  { id: "s4", name: "Diana Prince", avatar: "https://i.pravatar.cc/150?u=a04258114e29026702d" },
-  { id: "s5", name: "Evan Wright", avatar: "https://i.pravatar.cc/150?u=a04258114e29026708c" },
+  {
+    id: "s1",
+    name: "Alice Johnson",
+    avatar: "https://i.pravatar.cc/150?u=a042581f4e29026024d",
+  },
+  {
+    id: "s2",
+    name: "Bob Smith",
+    avatar: "https://i.pravatar.cc/150?u=a042581f4e29026704d",
+  },
+  {
+    id: "s3",
+    name: "Charlie Brown",
+    avatar: "https://i.pravatar.cc/150?u=a04258114e29026302d",
+  },
+  {
+    id: "s4",
+    name: "Diana Prince",
+    avatar: "https://i.pravatar.cc/150?u=a04258114e29026702d",
+  },
+  {
+    id: "s5",
+    name: "Evan Wright",
+    avatar: "https://i.pravatar.cc/150?u=a04258114e29026708c",
+  },
 ];
 
 interface MarkAttendanceProps {
@@ -41,8 +61,12 @@ interface MarkAttendanceProps {
 export const MarkAttendance: React.FC<MarkAttendanceProps> = ({ onSave }) => {
   const { t } = useLanguage();
   const [selectedClass, setSelectedClass] = useState("");
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
-  const [attendanceData, setAttendanceData] = useState<Record<string, AttendanceStatus>>({});
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().split("T")[0],
+  );
+  const [attendanceData, setAttendanceData] = useState<
+    Record<string, AttendanceStatus>
+  >({});
   const [isSaving, setIsSaving] = useState(false);
 
   const handleStatusChange = (studentId: string, status: string) => {
@@ -61,7 +85,11 @@ export const MarkAttendance: React.FC<MarkAttendanceProps> = ({ onSave }) => {
       date: selectedDate,
       records: attendanceData,
     });
-    onSave({ classId: selectedClass, date: selectedDate, records: attendanceData });
+    onSave({
+      classId: selectedClass,
+      date: selectedDate,
+      records: attendanceData,
+    });
     setIsSaving(false);
   };
 
@@ -100,45 +128,76 @@ export const MarkAttendance: React.FC<MarkAttendanceProps> = ({ onSave }) => {
       {selectedClass && (
         <div className="grid grid-cols-1 gap-4">
           {STUDENTS.map((student) => (
-            <Card key={student.id} className="border hover:bg-muted/50 transition-colors">
+            <Card
+              key={student.id}
+              className="border hover:bg-muted/50 transition-colors"
+            >
               <CardContent className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4">
                 <div className="flex items-center gap-3 w-full sm:w-auto">
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src={student.avatar} alt={student.name} />
-                    <AvatarFallback>{student.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                    <AvatarImage alt={student.name} src={student.avatar} />
+                    <AvatarFallback>
+                      {student.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col">
                     <span className="font-semibold">{student.name}</span>
-                    <span className="text-sm text-muted-foreground">ID: {student.id.toUpperCase()}</span>
+                    <span className="text-sm text-muted-foreground">
+                      ID: {student.id.toUpperCase()}
+                    </span>
                   </div>
                 </div>
 
                 <RadioGroup
+                  className="flex gap-4"
                   value={attendanceData[student.id] || "present"}
                   onValueChange={(val) => handleStatusChange(student.id, val)}
-                  className="flex gap-4"
                 >
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="present" id={`${student.id}-present`} />
-                    <Label htmlFor={`${student.id}-present`} className="text-green-600 font-medium cursor-pointer">
+                    <RadioGroupItem
+                      id={`${student.id}-present`}
+                      value="present"
+                    />
+                    <Label
+                      className="text-green-600 font-medium cursor-pointer"
+                      htmlFor={`${student.id}-present`}
+                    >
                       P
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="absent" id={`${student.id}-absent`} />
-                    <Label htmlFor={`${student.id}-absent`} className="text-red-600 font-medium cursor-pointer">
+                    <RadioGroupItem
+                      id={`${student.id}-absent`}
+                      value="absent"
+                    />
+                    <Label
+                      className="text-red-600 font-medium cursor-pointer"
+                      htmlFor={`${student.id}-absent`}
+                    >
                       A
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="late" id={`${student.id}-late`} />
-                    <Label htmlFor={`${student.id}-late`} className="text-yellow-600 font-medium cursor-pointer">
+                    <RadioGroupItem id={`${student.id}-late`} value="late" />
+                    <Label
+                      className="text-yellow-600 font-medium cursor-pointer"
+                      htmlFor={`${student.id}-late`}
+                    >
                       L
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="excused" id={`${student.id}-excused`} />
-                    <Label htmlFor={`${student.id}-excused`} className="text-primary font-medium cursor-pointer">
+                    <RadioGroupItem
+                      id={`${student.id}-excused`}
+                      value="excused"
+                    />
+                    <Label
+                      className="text-primary font-medium cursor-pointer"
+                      htmlFor={`${student.id}-excused`}
+                    >
                       E
                     </Label>
                   </div>
@@ -152,12 +211,16 @@ export const MarkAttendance: React.FC<MarkAttendanceProps> = ({ onSave }) => {
       {selectedClass && (
         <div className="flex justify-end sticky bottom-6 z-20">
           <Button
-            size="lg"
-            disabled={isSaving}
-            onClick={handleSave}
             className="shadow-lg"
+            disabled={isSaving}
+            size="lg"
+            onClick={handleSave}
           >
-            {isSaving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
+            {isSaving ? (
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+            ) : (
+              <Save className="mr-2 h-5 w-5" />
+            )}
             {t("save_attendance")}
           </Button>
         </div>

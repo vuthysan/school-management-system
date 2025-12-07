@@ -1,6 +1,7 @@
+import React from "react";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import React from "react";
 
 interface StatCardProps {
   title: string;
@@ -24,7 +25,9 @@ export const StatCard = ({
     <Card className={cn("border shadow-sm", className)}>
       <CardContent className="flex flex-row items-center justify-between gap-4 p-4">
         <div className="flex flex-col gap-1">
-          <span className="text-sm font-medium text-muted-foreground">{title}</span>
+          <span className="text-sm font-medium text-muted-foreground">
+            {title}
+          </span>
           <span className="text-2xl font-bold text-foreground">{value}</span>
           {trend && (
             <div

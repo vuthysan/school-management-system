@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { Plus } from "lucide-react";
+
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,7 +11,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus } from "lucide-react";
 import { title } from "@/components/primitives";
 import { useLanguage } from "@/contexts/language-context";
 import { AcademicStats } from "@/components/academic/academic-stats";
@@ -146,9 +147,7 @@ export default function AcademicPage() {
       <div className="flex justify-between items-start gap-4">
         <div className="flex-1">
           <h1 className={title()}>{t("academic_management")}</h1>
-          <p className="mt-2 text-muted-foreground">
-            {t("manage_academic")}
-          </p>
+          <p className="mt-2 text-muted-foreground">{t("manage_academic")}</p>
         </div>
         <Button onClick={handleAdd}>
           <Plus className="w-4 h-4 mr-2" />
@@ -158,40 +157,43 @@ export default function AcademicPage() {
 
       <AcademicStats classes={classes} subjects={subjects} />
 
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "classes" | "subjects")}>
+      <Tabs
+        value={activeTab}
+        onValueChange={(v) => setActiveTab(v as "classes" | "subjects")}
+      >
         <TabsList className="w-full justify-start border-b rounded-none bg-transparent p-0 h-auto">
-          <TabsTrigger 
-            value="classes" 
+          <TabsTrigger
             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
+            value="classes"
           >
             {t("classes")}
           </TabsTrigger>
-          <TabsTrigger 
-            value="subjects"
+          <TabsTrigger
             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
+            value="subjects"
           >
             {t("subjects")}
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="classes" className="mt-4">
-          <ClassesTable 
-            classes={classes} 
-            onEdit={handleEditClass} 
-            onDelete={handleDeleteClass} 
+        <TabsContent className="mt-4" value="classes">
+          <ClassesTable
+            classes={classes}
+            onDelete={handleDeleteClass}
+            onEdit={handleEditClass}
           />
         </TabsContent>
-        <TabsContent value="subjects" className="mt-4">
-          <SubjectsTable 
-            subjects={subjects} 
-            onEdit={handleEditSubject} 
-            onDelete={handleDeleteSubject} 
+        <TabsContent className="mt-4" value="subjects">
+          <SubjectsTable
+            subjects={subjects}
+            onDelete={handleDeleteSubject}
+            onEdit={handleEditSubject}
           />
         </TabsContent>
       </Tabs>
 
       {/* Add/Edit Modal */}
-      <Dialog 
-        open={isAddModalOpen || isEditModalOpen} 
+      <Dialog
+        open={isAddModalOpen || isEditModalOpen}
         onOpenChange={() => {
           setIsAddModalOpen(false);
           setIsEditModalOpen(false);
@@ -201,8 +203,12 @@ export default function AcademicPage() {
           <DialogHeader>
             <DialogTitle>
               {activeTab === "classes"
-                ? (isEditModalOpen ? t("edit_class") : t("add_class"))
-                : (isEditModalOpen ? t("edit_subject") : t("add_subject"))}
+                ? isEditModalOpen
+                  ? t("edit_class")
+                  : t("add_class")
+                : isEditModalOpen
+                  ? t("edit_subject")
+                  : t("add_subject")}
             </DialogTitle>
           </DialogHeader>
           {activeTab === "classes" ? (

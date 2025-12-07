@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import { Search, Eye, ChevronLeft, ChevronRight } from "lucide-react";
+
 import {
   Table,
   TableBody,
@@ -19,16 +21,55 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 
 // Mock Data
 const HISTORY_DATA = [
-  { id: "1", className: "Grade 10-A", date: "2024-03-20", present: 28, absent: 2, late: 0, status: "completed" },
-  { id: "2", className: "Grade 10-B", date: "2024-03-20", present: 25, absent: 5, late: 1, status: "completed" },
-  { id: "3", className: "Grade 11-A", date: "2024-03-20", present: 32, absent: 0, late: 3, status: "completed" },
-  { id: "4", className: "Grade 10-A", date: "2024-03-19", present: 29, absent: 1, late: 0, status: "completed" },
-  { id: "5", className: "Grade 10-B", date: "2024-03-19", present: 26, absent: 4, late: 0, status: "completed" },
+  {
+    id: "1",
+    className: "Grade 10-A",
+    date: "2024-03-20",
+    present: 28,
+    absent: 2,
+    late: 0,
+    status: "completed",
+  },
+  {
+    id: "2",
+    className: "Grade 10-B",
+    date: "2024-03-20",
+    present: 25,
+    absent: 5,
+    late: 1,
+    status: "completed",
+  },
+  {
+    id: "3",
+    className: "Grade 11-A",
+    date: "2024-03-20",
+    present: 32,
+    absent: 0,
+    late: 3,
+    status: "completed",
+  },
+  {
+    id: "4",
+    className: "Grade 10-A",
+    date: "2024-03-19",
+    present: 29,
+    absent: 1,
+    late: 0,
+    status: "completed",
+  },
+  {
+    id: "5",
+    className: "Grade 10-B",
+    date: "2024-03-19",
+    present: 26,
+    absent: 4,
+    late: 0,
+    status: "completed",
+  },
 ];
 
 export const AttendanceHistory = () => {
@@ -50,14 +91,20 @@ export const AttendanceHistory = () => {
 
   const filteredHistory = React.useMemo(() => {
     return HISTORY_DATA.filter((record) => {
-      const matchesSearch = record.className.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesClass = selectedClass ? record.className === selectedClass : true;
+      const matchesSearch = record.className
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+      const matchesClass = selectedClass
+        ? record.className === selectedClass
+        : true;
+
       return matchesSearch && matchesClass;
     });
   }, [searchQuery, selectedClass]);
 
   const paginatedHistory = React.useMemo(() => {
     const start = (page - 1) * rowsPerPage;
+
     return filteredHistory.slice(start, start + rowsPerPage);
   }, [filteredHistory, page]);
 
@@ -92,7 +139,10 @@ export const AttendanceHistory = () => {
           <TableHeader>
             <TableRow>
               {columns.map((column) => (
-                <TableHead key={column.key} className={column.key === "actions" ? "text-center" : ""}>
+                <TableHead
+                  key={column.key}
+                  className={column.key === "actions" ? "text-center" : ""}
+                >
                   {column.label}
                 </TableHead>
               ))}
@@ -101,41 +151,56 @@ export const AttendanceHistory = () => {
           <TableBody>
             {paginatedHistory.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  className="h-24 text-center"
+                  colSpan={columns.length}
+                >
                   {t("no_results")}
                 </TableCell>
               </TableRow>
             ) : (
               paginatedHistory.map((record) => (
-                <TableRow key={record.id} className="cursor-pointer hover:bg-muted/50 transition-colors">
+                <TableRow
+                  key={record.id}
+                  className="cursor-pointer hover:bg-muted/50 transition-colors"
+                >
                   <TableCell>
                     <p className="font-semibold text-sm">{record.className}</p>
                   </TableCell>
                   <TableCell>
-                    <p className="text-sm text-muted-foreground">{record.date}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {record.date}
+                    </p>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="secondary" className="bg-green-500/10 text-green-600">
+                    <Badge
+                      className="bg-green-500/10 text-green-600"
+                      variant="secondary"
+                    >
                       {record.present}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="secondary" className="bg-red-500/10 text-red-600">
+                    <Badge
+                      className="bg-red-500/10 text-red-600"
+                      variant="secondary"
+                    >
                       {record.absent}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-600">
+                    <Badge
+                      className="bg-yellow-500/10 text-yellow-600"
+                      variant="secondary"
+                    >
                       {record.late}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="default">
-                      Completed
-                    </Badge>
+                    <Badge variant="default">Completed</Badge>
                   </TableCell>
                   <TableCell className="text-center">
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Button className="h-8 w-8" size="icon" variant="ghost">
                       <Eye className="h-4 w-4" />
                     </Button>
                   </TableCell>
@@ -149,10 +214,10 @@ export const AttendanceHistory = () => {
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
           <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setPage(Math.max(1, page - 1))}
             disabled={page === 1}
+            size="icon"
+            variant="outline"
+            onClick={() => setPage(Math.max(1, page - 1))}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -160,10 +225,10 @@ export const AttendanceHistory = () => {
             Page {page} of {totalPages}
           </span>
           <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setPage(Math.min(totalPages, page + 1))}
             disabled={page === totalPages}
+            size="icon"
+            variant="outline"
+            onClick={() => setPage(Math.min(totalPages, page + 1))}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>

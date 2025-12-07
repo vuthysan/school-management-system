@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+
 import {
   Dialog,
   DialogContent,
@@ -42,13 +43,11 @@ export const ViewStudentModal: React.FC<ViewStudentModalProps> = ({
             {student.firstName} {student.lastName}
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="flex flex-col gap-4">
           {/* Personal Information */}
           <div>
-            <h3 className="text-lg font-semibold mb-3">
-              Personal Information
-            </h3>
+            <h3 className="text-lg font-semibold mb-3">Personal Information</h3>
             <div className="space-y-1">
               <InfoRow label="First Name" value={student.firstName} />
               <InfoRow label="Last Name" value={student.lastName} />
@@ -70,9 +69,7 @@ export const ViewStudentModal: React.FC<ViewStudentModalProps> = ({
 
           {/* Academic Information */}
           <div>
-            <h3 className="text-lg font-semibold mb-3">
-              Academic Information
-            </h3>
+            <h3 className="text-lg font-semibold mb-3">Academic Information</h3>
             <div className="space-y-1">
               <InfoRow label="Grade Level" value={student.gradeLevel} />
               {student.enrollmentDate && (
@@ -97,23 +94,16 @@ export const ViewStudentModal: React.FC<ViewStudentModalProps> = ({
 
           {/* Guardian Information */}
           <div>
-            <h3 className="text-lg font-semibold mb-3">
-              Guardian Information
-            </h3>
+            <h3 className="text-lg font-semibold mb-3">Guardian Information</h3>
             <div className="space-y-1">
               <InfoRow label="Guardian Name" value={student.guardianName} />
-              <InfoRow
-                label="Guardian Phone"
-                value={student.guardianPhone}
-              />
+              <InfoRow label="Guardian Phone" value={student.guardianPhone} />
             </div>
           </div>
         </div>
-        
+
         <DialogFooter>
-          <Button onClick={onClose}>
-            Close
-          </Button>
+          <Button onClick={onClose}>Close</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
