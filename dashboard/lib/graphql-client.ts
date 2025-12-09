@@ -3,128 +3,47 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081";
 
 interface GraphQLResponse<T> {
-  data?: T;
-  errors?: Array<{ message: string }>;
+	data?: T;
+	errors?: Array<{ message: string }>;
 }
 
+/**
+ * Make a GraphQL request to the backend
+ * @param query - GraphQL query or mutation string
+ * @param variables - Variables for the query
+ * @param token - Optional auth token
+ */
 export async function graphqlRequest<T>(
-  query: string,
-  variables?: Record<string, unknown>,
+	query: string,
+	variables?: Record<string, unknown>,
+	token?: string | null
 ): Promise<T> {
-  const response = await fetch(`${API_URL}/graphql`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ query, variables }),
-  });
+	const headers: Record<string, string> = {
+		"Content-Type": "application/json",
+	};
 
-  const json: GraphQLResponse<T> = await response.json();
+	if (token) {
+		headers["Authorization"] = `Bearer ${token}`;
+	}
 
-  if (json.errors) {
-    throw new Error(json.errors.map((e) => e.message).join(", "));
-  }
+	const response = await fetch(`${API_URL}/graphql`, {
+		method: "POST",
+		headers,
+		body: JSON.stringify({ query, variables }),
+	});
 
-  if (!json.data) {
-    throw new Error("No data returned from GraphQL");
-  }
+	const json: GraphQLResponse<T> = await response.json();
 
-  return json.data;
+	if (json.errors) {
+		throw new Error(json.errors.map((e) => e.message).join(", "));
+	}
+
+	if (!json.data) {
+		throw new Error("No data returned from GraphQL");
+	}
+
+	return json.data;
 }
 
-// School mutations and queries
-export const SCHOOL_QUERIES = {
-  GET_ALL: `
-    query GetSchools {
-      schools {
-        id
-        ownerId
-        name
-        banners
-        logoUrl
-        website
-        contactEmail
-        contactPhone
-        createdAt
-        updatedAt
-      }
-    }
-  `,
-  CREATE: `
-    mutation CreateSchool($input: SchoolInput!) {
-      createSchool(input: $input) {
-        id
-        ownerId
-        name
-        banners
-        logoUrl
-        website
-        contactEmail
-        contactPhone
-        createdAt
-        updatedAt
-      }
-    }
-  `,
-};
-
-// Branch mutations and queries
-export const BRANCH_QUERIES = {
-  GET_ALL: `
-    query GetBranches {
-      branches {
-        id
-        schoolId
-        name
-        address {
-          village
-          commune
-          district
-          province
-        }
-        contactEmail
-        contactPhone
-        createdAt
-        updatedAt
-      }
-    }
-  `,
-  GET_BY_SCHOOL: `
-    query GetBranchesBySchool($schoolId: String!) {
-      branchesBySchool(schoolId: $schoolId) {
-        id
-        schoolId
-        name
-        address {
-          village
-          commune
-          district
-          province
-        }
-        contactEmail
-        contactPhone
-        createdAt
-        updatedAt
-      }
-    }
-  `,
-  CREATE: `
-    mutation CreateBranch($input: BranchInput!) {
-      createBranch(input: $input) {
-        id
-        schoolId
-        name
-        address {
-          village
-          commune
-          district
-          province
-        }
-        contactEmail
-        contactPhone
-        createdAt
-        updatedAt
-      }
-    }
-  `,
-};
+// Re-export all queries and mutations from the graphql directory
+export * from "@/app/graphql";
