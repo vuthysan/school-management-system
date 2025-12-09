@@ -1,0 +1,11 @@
+pub mod attendance;
+pub mod branch;
+pub mod class;
+pub mod finance;
+pub mod grade;
+pub mod hr;
+pub mod member;
+pub mod school;
+pub mod student;
+pub mod subject;
+pub mod user;
