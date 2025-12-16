@@ -4,13 +4,22 @@ export const MEMBER_QUERIES = {
 	MY_MEMBERSHIPS: `
     query MyMemberships {
       myMemberships {
-        id
+        idStr
         userId
         schoolId
         role
         status
         permissions
-        joinedAt
+        title
+        isPrimaryContact
+        user {
+          idStr
+          username
+          email
+          displayName
+          avatarUrl
+          fullName
+        }
       }
     }
   `,
@@ -18,11 +27,22 @@ export const MEMBER_QUERIES = {
 	SCHOOL_MEMBERS: `
     query SchoolMembers($schoolId: String!) {
       schoolMembers(schoolId: $schoolId) {
-        id
+        idStr
         userId
+        schoolId
         role
         status
         permissions
+        title
+        isPrimaryContact
+        user {
+          idStr
+          username
+          email
+          displayName
+          avatarUrl
+          fullName
+        }
       }
     }
   `,
@@ -30,10 +50,32 @@ export const MEMBER_QUERIES = {
 	MEMBERS_BY_ROLE: `
     query MembersByRole($schoolId: String!, $role: String!) {
       membersByRole(schoolId: $schoolId, role: $role) {
-        id
+        idStr
         userId
         role
         status
+        title
+        user {
+          idStr
+          username
+          email
+          displayName
+          avatarUrl
+          fullName
+        }
+      }
+    }
+  `,
+
+	SEARCH_USER: `
+    query SearchUser($query: String!) {
+      searchUser(query: $query) {
+        idStr
+        username
+        email
+        displayName
+        avatarUrl
+        fullName
       }
     }
   `,
@@ -43,7 +85,7 @@ export const MEMBER_MUTATIONS = {
 	ADD_MEMBER: `
     mutation AddMember($input: AddMemberInput!) {
       addMember(input: $input) {
-        id
+        idStr
         userId
         schoolId
         role
@@ -53,17 +95,17 @@ export const MEMBER_MUTATIONS = {
   `,
 
 	UPDATE_MEMBER_ROLE: `
-    mutation UpdateMemberRole($id: String!, $role: String!) {
-      updateMemberRole(id: $id, role: $role) {
-        id
+    mutation UpdateMemberRole($input: UpdateMemberRoleInput!) {
+      updateMemberRole(input: $input) {
+        idStr
         role
       }
     }
   `,
 
 	REMOVE_MEMBER: `
-    mutation RemoveMember($id: String!) {
-      removeMember(id: $id)
+    mutation RemoveMember($input: RemoveMemberInput!) {
+      removeMember(input: $input)
     }
   `,
 };

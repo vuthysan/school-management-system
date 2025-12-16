@@ -2,7 +2,7 @@ use actix_web::{get, post, web, HttpRequest, HttpResponse, Responder};
 use serde::{Deserialize, Serialize};
 use std::env;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug, Serialize)]
 pub struct CallbackInput {
     pub code: String,
     pub state: Option<String>,
@@ -26,14 +26,10 @@ struct UserProfile {
     role: String,
 }
 
-#[derive(Serialize)]
-struct AuthResponse {
-    access_token: String,
-    token_type: String,
-    user: UserProfile,
-}
+// AuthResponse is now handled inline with serde_json::json!
 
 use crate::{
+    models::member::Member,
     models::user::{SystemRole, User},
     utils::jwt_token::sign_token,
 };
@@ -68,11 +64,7 @@ pub async fn auth_callback(
 ) -> impl Responder {
     let client_id = env::var("KOOMPI_CLIENT_ID").unwrap_or_default();
     let client_secret = env::var("KOOMPI_CLIENT_SECRET").unwrap_or_default();
-
-    // Use the frontend URL for redirect_uri to match what initiated the flow
-    let app_url =
-        env::var("NEXT_PUBLIC_APP_URL").unwrap_or_else(|_| "http://localhost:3000".to_string());
-    let redirect_uri = format!("{}/auth/callback", app_url);
+    let redirect_uri = env::var("KOOMPI_REDIRECT_URI").unwrap_or_default();
 
     if client_id.is_empty() || client_secret.is_empty() {
         return HttpResponse::InternalServerError().json(serde_json::json!({
@@ -105,17 +97,35 @@ pub async fn auth_callback(
             }));
         }
     };
-    let token_data: TokenResponse = match token_res.json().await {
+
+    // Check response status and get raw body for debugging
+    let status = token_res.status();
+    let raw_body = match token_res.text().await {
+        Ok(body) => body,
+        Err(err) => {
+            return HttpResponse::InternalServerError().json(serde_json::json!({
+                "error": format!("Failed to read token response body: {}", err)
+            }));
+        }
+    };
+
+    // If not successful, return the error from OAuth server
+    if !status.is_success() {
+        return HttpResponse::BadRequest().json(serde_json::json!({
+            "error": format!("OAuth token exchange failed: {}", raw_body)
+        }));
+    }
+
+    let token_data: TokenResponse = match serde_json::from_str(&raw_body) {
         Ok(data) => data,
         Err(err) => {
             return HttpResponse::InternalServerError().json(serde_json::json!({
-                "error": format!("Failed to parse token response: {}", err)
+                "error": format!("Failed to parse token response: {}. Raw: {}", err, raw_body)
             }));
         }
     };
 
     // Reuse existing client
-
     let mut headers = reqwest::header::HeaderMap::new();
     let auth_header_val = match format!("Bearer {}", token_data.access_token).parse() {
         Ok(v) => v,
@@ -155,6 +165,7 @@ pub async fn auth_callback(
     // Fallback email since Koompi might not provide it with basic scope
     let user_email = koompi_user
         .email
+        .clone()
         .unwrap_or_else(|| format!("{}@koompi.org", koompi_user.username));
 
     // 3. Find or Create User in MongoDB
@@ -167,16 +178,25 @@ pub async fn auth_callback(
         .unwrap_or(0);
 
     let is_first_user = user_count == 0;
+    println!(
+        "User count: {}, is_first_user: {}",
+        user_count, is_first_user
+    );
 
     // Check if user exists by Koompi ID
+    println!("Looking for user with kid: {}", &koompi_user.id);
     let existing_user = users_collection
         .find_one(doc! { "kid": &koompi_user.id }, None)
         .await;
 
     let user_record =
         match existing_user {
-            Ok(Some(user)) => user,
+            Ok(Some(user)) => {
+                println!("Found existing user: {:?}", user.id);
+                user
+            }
             Ok(None) => {
+                println!("User not found, creating new user...");
                 // Create new user - first user gets SuperAdmin, others get User role
                 let mut new_user = User::new(
                     koompi_user.id.clone(),
@@ -187,27 +207,34 @@ pub async fn auth_callback(
                 // Assign SuperAdmin to first user
                 if is_first_user {
                     new_user.system_role = SystemRole::SuperAdmin;
+                    println!("Assigning SuperAdmin role to first user");
                 }
 
                 // Set profile info from Koompi
-                new_user.first_name = koompi_user.first_name;
-                new_user.last_name = koompi_user.last_name;
+                new_user.first_name = koompi_user.first_name.clone();
+                new_user.last_name = koompi_user.last_name.clone();
                 new_user.avatar_url = koompi_user.picture.clone();
 
+                println!("Inserting new user: {:?}", new_user.username);
                 match users_collection.insert_one(&new_user, None).await {
                     Ok(insert_result) => {
+                        println!("User inserted with id: {:?}", insert_result.inserted_id);
                         // Fetch the created user to get the ID
                         match users_collection
                             .find_one(doc! { "_id": insert_result.inserted_id }, None)
                             .await
                         {
-                            Ok(Some(u)) => u,
+                            Ok(Some(u)) => {
+                                println!("Successfully retrieved created user");
+                                u
+                            }
                             _ => return HttpResponse::InternalServerError().json(
                                 serde_json::json!({ "error": "Failed to retrieve created user" }),
                             ),
                         }
                     }
                     Err(err) => {
+                        println!("Failed to insert user: {}", err);
                         return HttpResponse::InternalServerError().json(serde_json::json!({
                             "error": format!("Failed to create user: {}", err)
                         }));
@@ -215,14 +242,38 @@ pub async fn auth_callback(
                 }
             }
             Err(err) => {
+                println!("Database error when finding user: {}", err);
                 return HttpResponse::InternalServerError().json(serde_json::json!({
                     "error": format!("Database error: {}", err)
                 }));
             }
         };
 
+    let user_id_str = user_record.id.map(|oid| oid.to_hex()).unwrap_or_default();
+
+    // 4. Check if user has any memberships (for frontend routing)
+    let members_collection: Collection<Member> = db.collection("members");
+    let user_memberships = members_collection
+        .count_documents(
+            doc! {
+                "user_id": &user_id_str,
+                "status": "Active",
+                "soft_delete.is_deleted": false
+            },
+            None,
+        )
+        .await
+        .unwrap_or(0);
+
+    println!("User {} has {} memberships", user_id_str, user_memberships);
+
+    // Note: We no longer auto-create schools
+    // Users without memberships will be redirected to:
+    // - "Get Started" page where they can register a school
+    // - Or wait for a school owner to add them as a member
+
     let user_profile = UserProfile {
-        id: user_record.id.map(|oid| oid.to_hex()).unwrap_or_default(),
+        id: user_id_str.clone(),
         email: user_record.email.clone(),
         name: user_record.username.clone(),
         picture: koompi_user.picture,
@@ -230,17 +281,14 @@ pub async fn auth_callback(
     };
 
     // Use the actual user role from the database
-    let token = sign_token(
-        user_record.id.map(|oid| oid.to_hex()).unwrap_or_default(),
-        user_record.system_role,
-    )
-    .unwrap();
+    let token = sign_token(user_id_str, user_record.system_role).unwrap();
 
-    HttpResponse::Ok().json(AuthResponse {
-        access_token: token,
-        token_type: "Bearer".to_string(),
-        user: user_profile,
-    })
+    HttpResponse::Ok().json(serde_json::json!({
+        "access_token": token,
+        "token_type": "Bearer",
+        "user": user_profile,
+        "has_membership": user_memberships > 0
+    }))
 }
 
 #[get("/auth/me")]

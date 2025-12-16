@@ -18,7 +18,11 @@ impl MemberQuery {
         let db = ctx.data::<Database>()?;
         let collection = db.collection::<Member>("members");
 
-        let filter = doc! { "user_id": &auth_user.id, "is_active": true };
+        let filter = doc! {
+            "user_id": &auth_user.id,
+            "status": "Active",
+            "soft_delete.is_deleted": false
+        };
         let mut cursor = collection
             .find(filter, None)
             .await
@@ -41,7 +45,11 @@ impl MemberQuery {
         let db = ctx.data::<Database>()?;
         let collection = db.collection::<Member>("members");
 
-        let filter = doc! { "school_id": school_id, "is_active": true };
+        let filter = doc! {
+            "school_id": school_id,
+            "status": "Active",
+            "soft_delete.is_deleted": false
+        };
         let mut cursor = collection
             .find(filter, None)
             .await
@@ -76,7 +84,8 @@ impl MemberQuery {
         let filter = doc! {
             "school_id": school_id,
             "role": mongodb::bson::to_bson(&school_role).unwrap(),
-            "is_active": true
+            "status": "Active",
+            "soft_delete.is_deleted": false
         };
 
         let mut cursor = collection

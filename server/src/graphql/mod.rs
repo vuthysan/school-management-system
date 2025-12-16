@@ -10,6 +10,7 @@ pub mod schema;
 pub mod school;
 pub mod student;
 pub mod subject;
+pub mod user;
 
 use async_graphql::MergedObject;
 
@@ -27,6 +28,7 @@ pub struct QueryRoot(
     attendance::AttendanceQuery,
     grade::GradeQuery,
     member::MemberQuery,
+    user::UserQuery,
 );
 
 // Merged Mutation combining all domain mutations

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import NextLink from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Bell, Menu, X } from "lucide-react";
+import { Bell, Building2, Menu, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +35,7 @@ import { roleToMenu, t as tMenu, UserRole } from "@/config/sms-menus";
 import { useLanguage } from "@/contexts/language-context";
 import { SupportedLang } from "@/config/translations";
 import { useAuth } from "@/contexts/auth-context";
+import { useDashboard } from "@/hooks/useDashboard";
 
 export const Navbar = () => {
 	const pathname = usePathname();
@@ -42,6 +43,7 @@ export const Navbar = () => {
 	const router = useRouter();
 	const { language, setLanguage } = useLanguage();
 	const { logout, user } = useAuth();
+	const { currentSchool } = useDashboard();
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
 	const roleParam = (searchParams.get("role") as UserRole) || "admin";
@@ -53,17 +55,32 @@ export const Navbar = () => {
 		router.replace(`${pathname}?${params.toString()}`);
 	}
 
-	console.log("");
+	// Get school display name
+	const schoolName =
+		currentSchool?.name?.en || currentSchool?.displayName || null;
 
 	return (
 		<nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
 			<div className="flex h-16 items-center justify-between px-4 max-w-full">
-				{/* Left side - Logo */}
+				{/* Left side - Logo and School Name */}
 				<div className="flex items-center gap-4">
 					<NextLink className="flex items-center gap-2" href="/">
 						<Logo />
 						<span className="font-bold">SMS</span>
 					</NextLink>
+
+					{/* School Name */}
+					{schoolName && (
+						<>
+							<span className="text-muted-foreground">/</span>
+							<div className="flex items-center gap-2">
+								<Building2 className="h-4 w-4 text-primary" />
+								<span className="font-medium text-sm truncate max-w-[200px]">
+									{schoolName}
+								</span>
+							</div>
+						</>
+					)}
 				</div>
 
 				{/* Right side - Desktop */}

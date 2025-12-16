@@ -11,10 +11,16 @@ use crate::utils::common_types::{AuditInfo, SoftDelete};
 /// Role within a specific school
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Enum)]
 pub enum SchoolRole {
-    /// School owner/director (full access to school)
+    /// School owner (business owner, full access including billing)
     Owner,
+    /// School Director/Principal (full school management, no billing)
+    Director,
+    /// Deputy Director/Vice Principal (full school management, no billing)
+    DeputyDirector,
     /// School administrator (operational access)
     Admin,
+    /// Department head teacher
+    HeadTeacher,
     /// Teacher
     Teacher,
     /// Student
@@ -211,6 +217,29 @@ impl Member {
     async fn id_str(&self) -> Option<String> {
         self.id.as_ref().map(|id| id.to_hex())
     }
+
+    /// Returns the associated user's information
+    async fn user(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+    ) -> async_graphql::Result<Option<crate::models::user::User>> {
+        let db = ctx.data::<mongodb::Database>()?;
+        let users_collection = db.collection::<crate::models::user::User>("users");
+
+        // user_id is the user's ObjectId hex string, parse it
+        let user_oid = match mongodb::bson::oid::ObjectId::parse_str(&self.user_id) {
+            Ok(oid) => oid,
+            Err(_) => return Ok(None), // Invalid ObjectId, return None
+        };
+
+        // Find user by _id
+        let user = users_collection
+            .find_one(mongodb::bson::doc! { "_id": user_oid }, None)
+            .await
+            .map_err(|e| async_graphql::Error::new(format!("Failed to fetch user: {}", e)))?;
+
+        Ok(user)
+    }
 }
 
 impl Member {
@@ -283,6 +312,66 @@ impl Member {
                 Permission::ManageSettings,
                 Permission::ManageUsers,
                 Permission::ManageRoles,
+            ],
+            // Director and Deputy Director have same access as Owner (except billing)
+            SchoolRole::Director | SchoolRole::DeputyDirector => vec![
+                Permission::ViewDashboard,
+                Permission::ViewStudents,
+                Permission::CreateStudents,
+                Permission::UpdateStudents,
+                Permission::DeleteStudents,
+                Permission::ImportStudents,
+                Permission::ExportStudents,
+                Permission::ViewClasses,
+                Permission::ManageClasses,
+                Permission::ViewAttendance,
+                Permission::MarkAttendance,
+                Permission::EditAttendance,
+                Permission::ViewAttendanceReports,
+                Permission::ViewGrades,
+                Permission::EnterGrades,
+                Permission::ApproveGrades,
+                Permission::ViewGradeReports,
+                Permission::ViewFinance,
+                Permission::RecordPayments,
+                Permission::ManageFeesStructure,
+                Permission::GenerateInvoices,
+                Permission::ViewFinanceReports,
+                Permission::ViewStaff,
+                Permission::ManageStaff,
+                Permission::ManagePayroll,
+                Permission::SendAnnouncements,
+                Permission::SendMessages,
+                Permission::ViewMessages,
+                Permission::ViewEvents,
+                Permission::ManageEvents,
+                Permission::ViewSettings,
+                Permission::ManageSettings,
+                Permission::ManageUsers,
+                Permission::ManageRoles,
+            ],
+            // HeadTeacher has admin-like access
+            SchoolRole::HeadTeacher => vec![
+                Permission::ViewDashboard,
+                Permission::ViewStudents,
+                Permission::CreateStudents,
+                Permission::UpdateStudents,
+                Permission::ViewClasses,
+                Permission::ManageClasses,
+                Permission::ViewAttendance,
+                Permission::MarkAttendance,
+                Permission::EditAttendance,
+                Permission::ViewAttendanceReports,
+                Permission::ViewGrades,
+                Permission::EnterGrades,
+                Permission::ApproveGrades,
+                Permission::ViewGradeReports,
+                Permission::ViewStaff,
+                Permission::SendAnnouncements,
+                Permission::SendMessages,
+                Permission::ViewMessages,
+                Permission::ViewEvents,
+                Permission::ManageEvents,
             ],
             SchoolRole::Admin => vec![
                 Permission::ViewDashboard,

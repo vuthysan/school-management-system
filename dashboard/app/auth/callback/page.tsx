@@ -1,152 +1,160 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
 import { useAuth } from "@/contexts/auth-context";
 
 function CallbackContent() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const { setAuth } = useAuth(); // Get setAuth from context
-  const [error, setError] = useState<string | null>(null);
-  const [isProcessing, setIsProcessing] = useState(true);
+	const searchParams = useSearchParams();
+	const router = useRouter();
+	const { setAuth } = useAuth(); // Get setAuth from context
+	const [error, setError] = useState<string | null>(null);
+	const [isProcessing, setIsProcessing] = useState(true);
+	const hasProcessed = useRef(false); // Guard against double-processing
 
-  useEffect(() => {
-    const handleCallback = async () => {
-      const code = searchParams.get("code");
-      const state = searchParams.get("state");
-      const errorParam = searchParams.get("error");
+	useEffect(() => {
+		const handleCallback = async () => {
+			// Prevent duplicate calls (React Strict Mode double-renders)
+			if (hasProcessed.current) return;
+			hasProcessed.current = true;
 
-      console.log("code", code);
+			const code = searchParams.get("code");
+			const state = searchParams.get("state");
+			const errorParam = searchParams.get("error");
 
-      if (errorParam) {
-        setError(errorParam);
-        setIsProcessing(false);
+			console.log("code", code);
 
-        return;
-      }
+			if (errorParam) {
+				setError(errorParam);
+				setIsProcessing(false);
 
-      if (!code) {
-        // Only show error if we've finished checking params and truly found nothing
-        // But for effect dependencies, this might run early.
-        // Let's assume if no code and no error, maybe we shouldn't error immediately if it's just mounting?
-        // But this page is specifically for callback.
-        setError("No authorization code received");
-        setIsProcessing(false);
+				return;
+			}
 
-        return;
-      }
+			if (!code) {
+				// Only show error if we've finished checking params and truly found nothing
+				// But for effect dependencies, this might run early.
+				// Let's assume if no code and no error, maybe we shouldn't error immediately if it's just mounting?
+				// But this page is specifically for callback.
+				setError("No authorization code received");
+				setIsProcessing(false);
 
-      try {
-        // 1. Exchange code for token via Rust backend
-        // Note: In production, use an environment variable for the backend URL
-        const backendUrl = "http://localhost:8081";
+				return;
+			}
 
-        const response = await fetch(`${backendUrl}/auth/callback`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code, state }),
-        });
+			try {
+				// 1. Exchange code for token via Rust backend
+				// Note: In production, use an environment variable for the backend URL
+				const backendUrl = "http://localhost:8081";
 
-        console.log("response", response);
-        if (response.ok) {
-          const data = await response.json();
+				const response = await fetch(`${backendUrl}/auth/callback`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ code, state }),
+				});
 
-          // Assuming data matches AuthResponse: { access_token, user, ... }
-          setAuth(data.access_token, data.user);
-          
-          // Check if user has any school memberships
-          try {
-            const membershipResponse = await fetch("http://localhost:8080/graphql", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${data.access_token}`,
-              },
-              body: JSON.stringify({
-                query: `
+				console.log("response", response);
+				if (response.ok) {
+					const data = await response.json();
+
+					// Assuming data matches AuthResponse: { access_token, user, ... }
+					setAuth(data.access_token, data.user);
+
+					// Check if user has any school memberships
+					try {
+						const membershipResponse = await fetch(
+							"http://localhost:8080/graphql",
+							{
+								method: "POST",
+								headers: {
+									"Content-Type": "application/json",
+									Authorization: `Bearer ${data.access_token}`,
+								},
+								body: JSON.stringify({
+									query: `
                   query {
                     myMemberships {
-                      school_id
+                      schoolId
                     }
                   }
                 `,
-              }),
-            });
+								}),
+							}
+						);
 
-            const membershipResult = await membershipResponse.json();
-            
-            // If user has no memberships and is not SuperAdmin, redirect to registration
-            if (
-              membershipResult.data?.myMemberships?.length === 0 &&
-              data.user.role !== "SuperAdmin"
-            ) {
-              router.push("/auth/register");
-            } else {
-              router.push("/auth");
-            }
-          } catch (membershipError) {
-            console.error("Membership check error:", membershipError);
-            // If membership check fails, just go to dashboard
-            router.push("/auth");
-          }
-        } else {
-          throw new Error("Failed to exchange token");
-        }
-      } catch (err) {
-        console.error("Callback error:", err);
-        setError(err instanceof Error ? err.message : "Authentication failed");
-        setIsProcessing(false);
-      }
-    };
+						const membershipResult = await membershipResponse.json();
 
-    handleCallback();
-  }, [searchParams, router, setAuth]);
+						// If user has no memberships and is not SuperAdmin, redirect to registration
+						if (
+							membershipResult.data?.myMemberships?.length === 0 &&
+							data.user.role !== "SuperAdmin"
+						) {
+							router.push("/auth/register");
+						} else {
+							router.push("/auth");
+						}
+					} catch (membershipError) {
+						console.error("Membership check error:", membershipError);
+						// If membership check fails, just go to dashboard
+						router.push("/auth");
+					}
+				} else {
+					throw new Error("Failed to exchange token");
+				}
+			} catch (err) {
+				console.error("Callback error:", err);
+				setError(err instanceof Error ? err.message : "Authentication failed");
+				setIsProcessing(false);
+			}
+		};
 
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center max-w-md p-8">
-          <div className="h-16 w-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
-            <span className="text-destructive text-2xl">✕</span>
-          </div>
-          <h1 className="text-2xl font-bold mb-2">Authentication Failed</h1>
-          <p className="text-muted-foreground mb-4">{error}</p>
-          <a
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-            href="/"
-          >
-            Go Back Home
-          </a>
-        </div>
-      </div>
-    );
-  }
+		handleCallback();
+	}, [searchParams, router, setAuth]);
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <div className="h-16 w-16 rounded-full border-4 border-primary border-t-transparent animate-spin mx-auto mb-4" />
-        <h1 className="text-2xl font-bold mb-2">Signing you in...</h1>
-        <p className="text-muted-foreground">
-          Please wait while we complete authentication.
-        </p>
-      </div>
-    </div>
-  );
+	if (error) {
+		return (
+			<div className="min-h-screen flex items-center justify-center bg-background">
+				<div className="text-center max-w-md p-8">
+					<div className="h-16 w-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
+						<span className="text-destructive text-2xl">✕</span>
+					</div>
+					<h1 className="text-2xl font-bold mb-2">Authentication Failed</h1>
+					<p className="text-muted-foreground mb-4">{error}</p>
+					<a
+						className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+						href="/"
+					>
+						Go Back Home
+					</a>
+				</div>
+			</div>
+		);
+	}
+
+	return (
+		<div className="min-h-screen flex items-center justify-center bg-background">
+			<div className="text-center">
+				<div className="h-16 w-16 rounded-full border-4 border-primary border-t-transparent animate-spin mx-auto mb-4" />
+				<h1 className="text-2xl font-bold mb-2">Signing you in...</h1>
+				<p className="text-muted-foreground">
+					Please wait while we complete authentication.
+				</p>
+			</div>
+		</div>
+	);
 }
 
 export default function AuthCallbackPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center bg-background">
-          <div className="h-16 w-16 rounded-full border-4 border-primary border-t-transparent animate-spin" />
-        </div>
-      }
-    >
-      <CallbackContent />
-    </Suspense>
-  );
+	return (
+		<Suspense
+			fallback={
+				<div className="min-h-screen flex items-center justify-center bg-background">
+					<div className="h-16 w-16 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+				</div>
+			}
+		>
+			<CallbackContent />
+		</Suspense>
+	);
 }

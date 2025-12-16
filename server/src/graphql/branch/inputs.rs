@@ -1,8 +1,8 @@
 // Branch GraphQL inputs
+use crate::graphql::common::AddressInput;
+use crate::models::branch::Branch;
 use async_graphql::*;
 use mongodb::bson::oid::ObjectId;
-use crate::models::branch::Branch;
-use crate::graphql::common::AddressInput;
 
 #[derive(InputObject)]
 pub struct BranchInput {
@@ -23,4 +23,12 @@ impl From<BranchInput> for Branch {
             input.contact_phone,
         )
     }
+}
+
+#[derive(InputObject)]
+pub struct UpdateBranchInput {
+    pub name: Option<String>,
+    pub address: Option<AddressInput>,
+    pub contact_email: Option<String>,
+    pub contact_phone: Option<String>,
 }

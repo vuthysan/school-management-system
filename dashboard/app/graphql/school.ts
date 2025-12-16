@@ -4,7 +4,7 @@ export const SCHOOL_QUERIES = {
 	GET_ALL: `
     query GetSchools {
       schools {
-        id
+        idStr
         name {
           en
           km
@@ -31,7 +31,8 @@ export const SCHOOL_QUERIES = {
 	GET_BY_ID: `
     query GetSchool($id: String!) {
       school(id: $id) {
-        id
+        idStr
+        displayName
         name {
           en
           km
@@ -55,11 +56,7 @@ export const SCHOOL_QUERIES = {
           email
         }
         website
-        branding {
-          logoUrl
-          bannerUrl
-          primaryColor
-        }
+        primaryColor
         stats {
           totalStudents
           totalTeachers
@@ -81,7 +78,7 @@ export const SCHOOL_QUERIES = {
 	MY_SCHOOLS: `
     query MySchools($ownerEmail: String!) {
       mySchools(ownerEmail: $ownerEmail) {
-        id
+        idStr
         name {
           en
           km
@@ -101,12 +98,11 @@ export const SCHOOL_QUERIES = {
 	PENDING_SCHOOLS: `
     query PendingSchools {
       pendingSchools {
-        id
+        idStr
         name {
           en
           km
         }
-        ownerEmail
         status
         address {
           province
@@ -118,7 +114,7 @@ export const SCHOOL_QUERIES = {
 	BY_STATUS: `
     query SchoolsByStatus($status: String!) {
       schoolsByStatus(status: $status) {
-        id
+        idStr
         name {
           en
           km
@@ -134,7 +130,7 @@ export const SCHOOL_MUTATIONS = {
 	REGISTER: `
     mutation RegisterSchool($input: RegisterSchoolInput!) {
       registerSchool(input: $input) {
-        id
+        idStr
         name {
           en
           km
@@ -148,7 +144,7 @@ export const SCHOOL_MUTATIONS = {
 	APPROVE: `
     mutation ApproveSchool($input: ApproveSchoolInput!) {
       approveSchool(input: $input) {
-        id
+        idStr
         status
       }
     }
@@ -157,7 +153,7 @@ export const SCHOOL_MUTATIONS = {
 	REJECT: `
     mutation RejectSchool($input: RejectSchoolInput!) {
       rejectSchool(input: $input) {
-        id
+        idStr
         status
         rejectionReason
       }

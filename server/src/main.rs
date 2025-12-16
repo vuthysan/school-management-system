@@ -52,8 +52,9 @@ async fn main() -> std::io::Result<()> {
     let client_options = ClientOptions::parse(&mongo_uri).await.unwrap();
     let client = Client::with_options(client_options).unwrap();
 
-    let db_name = env::var("MONGODB_NAME").unwrap_or_else(|_| "sms_db".to_string());
+    let db_name = env::var("MONGODB_NAME").unwrap_or_else(|_| "sms".to_string());
     let db = client.database(&db_name);
+    println!("📂 Using database: {}", db_name);
 
     println!("✅ MongoDB connected successfully");
     println!("🌐 GraphQL endpoint: http://0.0.0.0:{}/graphql", port);

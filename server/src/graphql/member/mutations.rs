@@ -1,5 +1,6 @@
 use super::inputs::{AddMemberInput, RemoveMemberInput, UpdateMemberRoleInput};
 use crate::models::member::{Member, SchoolRole};
+use crate::utils::permissions::can_manage_members;
 use async_graphql::*;
 use mongodb::{
     bson::{doc, oid::ObjectId},
@@ -11,7 +12,7 @@ pub struct MemberMutation;
 
 #[Object]
 impl MemberMutation {
-    /// Add a member to a school (Owner only)
+    /// Add a member to a school (Owner, Director, or DeputyDirector)
     async fn add_member(&self, ctx: &Context<'_>, input: AddMemberInput) -> Result<Member> {
         use crate::graphql::graphql_context::get_graphql_context;
 
@@ -21,13 +22,14 @@ impl MemberMutation {
         let db = ctx.data::<Database>()?;
         let members_collection = db.collection::<Member>("members");
 
-        // Check if authenticated user is Owner of the school
+        // Check if authenticated user has management rights for the school
         let auth_member = members_collection
             .find_one(
                 doc! {
                     "user_id": &auth_user.id,
                     "school_id": &input.school_id,
-                    "is_active": true
+                    "status": "Active",
+                    "soft_delete.is_deleted": false
                 },
                 None,
             )
@@ -35,9 +37,11 @@ impl MemberMutation {
             .map_err(|e| Error::new(format!("Failed to check permissions: {}", e)))?
             .ok_or_else(|| Error::new("You are not a member of this school"))?;
 
-        // Verify user is Owner
-        if !matches!(auth_member.role, SchoolRole::Owner) {
-            return Err(Error::new("Only school owners can add members"));
+        // Verify user can manage members
+        if !can_manage_members(&auth_member.role) {
+            return Err(Error::new(
+                "You don't have permission to add members. Only owners and directors can add members.",
+            ));
         }
 
         // Parse role string to SchoolRole
@@ -71,7 +75,7 @@ impl MemberMutation {
         Ok(member)
     }
 
-    /// Update a member's role (Owner only)
+    /// Update a member's role (Owner, Director, or DeputyDirector)
     async fn update_member_role(
         &self,
         ctx: &Context<'_>,
@@ -95,13 +99,14 @@ impl MemberMutation {
             .map_err(|e| Error::new(format!("Database error: {}", e)))?
             .ok_or_else(|| Error::new("Member not found"))?;
 
-        // Check if authenticated user is Owner of the same school
+        // Check if authenticated user has management rights for the school
         let auth_member = members_collection
             .find_one(
                 doc! {
                     "user_id": &auth_user.id,
                     "school_id": &member.school_id,
-                    "is_active": true
+                    "status": "Active",
+                    "soft_delete.is_deleted": false
                 },
                 None,
             )
@@ -109,9 +114,11 @@ impl MemberMutation {
             .map_err(|e| Error::new(format!("Failed to check permissions: {}", e)))?
             .ok_or_else(|| Error::new("You are not a member of this school"))?;
 
-        // Verify user is Owner
-        if !matches!(auth_member.role, SchoolRole::Owner) {
-            return Err(Error::new("Only school owners can update member roles"));
+        // Verify user can manage members
+        if !can_manage_members(&auth_member.role) {
+            return Err(Error::new(
+                "You don't have permission to update member roles. Only owners and directors can update member roles.",
+            ));
         }
 
         // Parse new role
@@ -143,7 +150,7 @@ impl MemberMutation {
         Ok(updated_member)
     }
 
-    /// Remove a member from a school (Owner only)
+    /// Remove a member from a school (Owner, Director, or DeputyDirector)
     async fn remove_member(&self, ctx: &Context<'_>, input: RemoveMemberInput) -> Result<bool> {
         use crate::graphql::graphql_context::get_graphql_context;
 
@@ -163,13 +170,14 @@ impl MemberMutation {
             .map_err(|e| Error::new(format!("Database error: {}", e)))?
             .ok_or_else(|| Error::new("Member not found"))?;
 
-        // Check if authenticated user is Owner of the same school
+        // Check if authenticated user has management rights for the school
         let auth_member = members_collection
             .find_one(
                 doc! {
                     "user_id": &auth_user.id,
                     "school_id": &member.school_id,
-                    "is_active": true
+                    "status": "Active",
+                    "soft_delete.is_deleted": false
                 },
                 None,
             )
@@ -177,16 +185,20 @@ impl MemberMutation {
             .map_err(|e| Error::new(format!("Failed to check permissions: {}", e)))?
             .ok_or_else(|| Error::new("You are not a member of this school"))?;
 
-        // Verify user is Owner
-        if !matches!(auth_member.role, SchoolRole::Owner) {
-            return Err(Error::new("Only school owners can remove members"));
+        // Verify user can manage members
+        if !can_manage_members(&auth_member.role) {
+            return Err(Error::new(
+                "You don't have permission to remove members. Only owners and directors can remove members.",
+            ));
         }
 
         // Soft delete by setting is_active to false
         let now = chrono::Utc::now().to_rfc3339();
         let update = doc! {
             "$set": {
-                "is_active": false,
+                "status": "Inactive",
+                "soft_delete.is_deleted": true,
+                "soft_delete.deleted_at": &now,
                 "updated_at": now,
             }
         };

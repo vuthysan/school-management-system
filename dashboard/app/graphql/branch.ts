@@ -7,20 +7,19 @@ export const BRANCH_QUERIES = {
         id
         schoolId
         name
-        code
         address {
           street
           village
           commune
           district
           province
+          postalCode
+          country
         }
-        contact {
-          phone
-          email
-        }
-        isMainBranch
-        status
+        contactEmail
+        contactPhone
+        createdAt
+        updatedAt
       }
     }
   `,
@@ -31,7 +30,6 @@ export const BRANCH_QUERIES = {
         id
         schoolId
         name
-        code
         address {
           street
           village
@@ -39,14 +37,12 @@ export const BRANCH_QUERIES = {
           district
           province
           postalCode
+          country
         }
-        contact {
-          phone
-          email
-        }
-        isMainBranch
-        status
-        managerId
+        contactEmail
+        contactPhone
+        createdAt
+        updatedAt
       }
     }
   `,
@@ -55,14 +51,19 @@ export const BRANCH_QUERIES = {
     query BranchesBySchool($schoolId: String!) {
       branchesBySchool(schoolId: $schoolId) {
         id
+        schoolId
         name
-        code
         address {
-          province
+          street
+          village
+          commune
           district
+          province
         }
-        isMainBranch
-        status
+        contactEmail
+        contactPhone
+        createdAt
+        updatedAt
       }
     }
   `,
@@ -75,7 +76,8 @@ export const BRANCH_MUTATIONS = {
         id
         schoolId
         name
-        code
+        contactEmail
+        contactPhone
       }
     }
   `,
@@ -85,7 +87,9 @@ export const BRANCH_MUTATIONS = {
       updateBranch(id: $id, input: $input) {
         id
         name
-        status
+        contactEmail
+        contactPhone
+        updatedAt
       }
     }
   `,
