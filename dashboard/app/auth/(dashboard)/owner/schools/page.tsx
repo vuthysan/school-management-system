@@ -14,10 +14,11 @@ import {
   Users,
   Globe,
 } from "lucide-react";
+import Link from "next/link";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 
 interface School {
   id: string;
@@ -43,7 +44,8 @@ const translations = {
     subtitle: "Manage your school registrations",
     noSchools: "No Schools Registered",
     registerSchool: "Register a School",
-    registerMessage: "You haven't registered any schools yet. Click below to get started.",
+    registerMessage:
+      "You haven't registered any schools yet. Click below to get started.",
     status: {
       pending: "Pending Review",
       approved: "Approved",
@@ -54,9 +56,12 @@ const translations = {
     approvedOn: "Approved on",
     rejectionReason: "Rejection Reason",
     accessRestricted: "Access Restricted",
-    pendingMessage: "Your school registration is currently under review. You'll receive an email notification once it's approved.",
-    rejectedMessage: "Your school registration was rejected. Please review the reason below and submit a new application.",
-    approvedMessage: "Your school has been approved! You can now access all features.",
+    pendingMessage:
+      "Your school registration is currently under review. You'll receive an email notification once it's approved.",
+    rejectedMessage:
+      "Your school registration was rejected. Please review the reason below and submit a new application.",
+    approvedMessage:
+      "Your school has been approved! You can now access all features.",
     students: "students",
     contactSupport: "Contact Support",
   },
@@ -65,7 +70,8 @@ const translations = {
     subtitle: "គ្រប់គ្រងការចុះឈ្មោះសាលារៀនរបស់អ្នក",
     noSchools: "មិនមានសាលារៀនចុះឈ្មោះ",
     registerSchool: "ចុះឈ្មោះសាលារៀន",
-    registerMessage: "អ្នកមិនទាន់បានចុះឈ្មោះសាលារៀនណាមួយនៅឡើយទេ។ ចុចខាងក្រោមដើម្បីចាប់ផ្តើម។",
+    registerMessage:
+      "អ្នកមិនទាន់បានចុះឈ្មោះសាលារៀនណាមួយនៅឡើយទេ។ ចុចខាងក្រោមដើម្បីចាប់ផ្តើម។",
     status: {
       pending: "កំពុងពិនិត្យ",
       approved: "បានអនុម័ត",
@@ -76,9 +82,12 @@ const translations = {
     approvedOn: "អនុម័តនៅ",
     rejectionReason: "ហេតុផលនៃការបដិសេធ",
     accessRestricted: "ការចូលប្រើត្រូវបានរឹតបន្តឹង",
-    pendingMessage: "ការចុះឈ្មោះសាលារៀនរបស់អ្នកកំពុងស្ថិតក្រោមការពិនិត្យ។ អ្នកនឹងទទួលបានការជូនដំណឹងតាមអ៊ីមែលនៅពេលវាត្រូវបានអនុម័ត។",
-    rejectedMessage: "ការចុះឈ្មោះសាលារៀនរបស់អ្នកត្រូវបានបដិសេធ។ សូមពិនិត្យមើលហេតុផលខាងក្រោម ហើយដាក់ពាក្យស្នើសុំថ្មី។",
-    approvedMessage: "សាលារៀនរបស់អ្នកត្រូវបានអនុម័ត! ឥឡូវនេះអ្នកអាចចូលប្រើលក្ខណៈពិសេសទាំងអស់បាន។",
+    pendingMessage:
+      "ការចុះឈ្មោះសាលារៀនរបស់អ្នកកំពុងស្ថិតក្រោមការពិនិត្យ។ អ្នកនឹងទទួលបានការជូនដំណឹងតាមអ៊ីមែលនៅពេលវាត្រូវបានអនុម័ត។",
+    rejectedMessage:
+      "ការចុះឈ្មោះសាលារៀនរបស់អ្នកត្រូវបានបដិសេធ។ សូមពិនិត្យមើលហេតុផលខាងក្រោម ហើយដាក់ពាក្យស្នើសុំថ្មី។",
+    approvedMessage:
+      "សាលារៀនរបស់អ្នកត្រូវបានអនុម័ត! ឥឡូវនេះអ្នកអាចចូលប្រើលក្ខណៈពិសេសទាំងអស់បាន។",
     students: "សិស្ស",
     contactSupport: "ទាក់ទងផ្នែកជំនួយ",
   },
@@ -99,7 +108,7 @@ export default function OwnerSchoolsPage() {
     try {
       // TODO: Get owner email from auth context
       const ownerEmail = "owner@example.com";
-      
+
       const response = await fetch("http://localhost:8080/graphql", {
         method: "POST",
         headers: {
@@ -132,6 +141,7 @@ export default function OwnerSchoolsPage() {
       });
 
       const result = await response.json();
+
       if (result.data?.mySchools) {
         setSchools(result.data.mySchools);
       }
@@ -174,21 +184,27 @@ export default function OwnerSchoolsPage() {
         return (
           <div className="bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800 rounded-lg p-4 flex items-start gap-3">
             <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-green-800 dark:text-green-200">{t.approvedMessage}</p>
+            <p className="text-sm text-green-800 dark:text-green-200">
+              {t.approvedMessage}
+            </p>
           </div>
         );
       case "rejected":
         return (
           <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-lg p-4 flex items-start gap-3">
             <XCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-red-800 dark:text-red-200">{t.rejectedMessage}</p>
+            <p className="text-sm text-red-800 dark:text-red-200">
+              {t.rejectedMessage}
+            </p>
           </div>
         );
       default:
         return (
           <div className="bg-orange-50 dark:bg-orange-900/20 border-2 border-orange-200 dark:border-orange-800 rounded-lg p-4 flex items-start gap-3">
             <Clock className="h-5 w-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-orange-800 dark:text-orange-200">{t.pendingMessage}</p>
+            <p className="text-sm text-orange-800 dark:text-orange-200">
+              {t.pendingMessage}
+            </p>
           </div>
         );
     }
@@ -206,23 +222,21 @@ export default function OwnerSchoolsPage() {
     <div className="space-y-6">
       {/* Header */}
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center justify-between"
+        initial={{ opacity: 0, y: -20 }}
       >
         <div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-blue-400 dark:to-cyan-400 bg-clip-text text-transparent">
             {t.title}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            {t.subtitle}
-          </p>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">{t.subtitle}</p>
         </div>
         <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setLang(lang === "en" ? "km" : "en")}
           className="gap-2"
+          size="sm"
+          variant="outline"
+          onClick={() => setLang(lang === "en" ? "km" : "en")}
         >
           <Globe className="h-4 w-4" />
           {lang === "en" ? "ភាសាខ្មែរ" : "English"}
@@ -253,8 +267,8 @@ export default function OwnerSchoolsPage() {
           {schools.map((school, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 20 }}
               transition={{ delay: index * 0.1 }}
             >
               <Card className="border-2">
@@ -266,11 +280,18 @@ export default function OwnerSchoolsPage() {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <CardTitle className="text-2xl">{school.name}</CardTitle>
+                          <CardTitle className="text-2xl">
+                            {school.name}
+                          </CardTitle>
                           {getStatusBadge(school.status)}
                         </div>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {t.registeredOn}: {school.registrationDate ? new Date(school.registrationDate).toLocaleDateString() : "N/A"}
+                          {t.registeredOn}:{" "}
+                          {school.registrationDate
+                            ? new Date(
+                                school.registrationDate,
+                              ).toLocaleDateString()
+                            : "N/A"}
                         </p>
                       </div>
                     </div>
@@ -289,7 +310,9 @@ export default function OwnerSchoolsPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                       <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                         <MapPin className="h-4 w-4 text-blue-500" />
-                        <span>{school.province}, {school.district}</span>
+                        <span>
+                          {school.province}, {school.district}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                         <Phone className="h-4 w-4 text-green-500" />
@@ -302,7 +325,9 @@ export default function OwnerSchoolsPage() {
                       {school.estimatedStudents && (
                         <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                           <Users className="h-4 w-4 text-purple-500" />
-                          <span>~{school.estimatedStudents} {t.students}</span>
+                          <span>
+                            ~{school.estimatedStudents} {t.students}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -325,7 +350,7 @@ export default function OwnerSchoolsPage() {
                   {school.status === "rejected" && (
                     <div className="pt-2">
                       <Link href="/register">
-                        <Button variant="outline" className="w-full">
+                        <Button className="w-full" variant="outline">
                           {t.registerSchool}
                         </Button>
                       </Link>

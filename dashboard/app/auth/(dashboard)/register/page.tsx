@@ -3,13 +3,8 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Building,
-  User,
-  CheckCircle,
-  School,
-  Sparkles,
-} from "lucide-react";
+import { Building, User, CheckCircle, School, Sparkles } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -85,7 +80,7 @@ export default function RegisterPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(token && { "Authorization": `Bearer ${token}` }),
+          ...(token && { Authorization: `Bearer ${token}` }),
         },
         body: JSON.stringify({
           query: `
@@ -110,7 +105,9 @@ export default function RegisterPage() {
               ownerName: formData.ownerName,
               ownerEmail: formData.ownerEmail,
               ownerPhone: formData.ownerPhone,
-              estimatedStudents: formData.estimatedStudents ? parseInt(formData.estimatedStudents) : null,
+              estimatedStudents: formData.estimatedStudents
+                ? parseInt(formData.estimatedStudents)
+                : null,
               logoUrl: null,
             },
           },
@@ -133,7 +130,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <Card >
+    <Card>
       <div className="max-w-3xl mx-auto">
         {/* Decorative Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -144,17 +141,17 @@ export default function RegisterPage() {
 
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
           className="text-center mb-8 relative"
+          initial={{ opacity: 0, y: -30 }}
+          transition={{ duration: 0.6 }}
         >
           <div className="flex items-center justify-center gap-3 mb-4">
             <motion.div
-              initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
-              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
               className="relative"
+              initial={{ scale: 0, rotate: -180 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
             >
               <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-2xl blur-xl opacity-60" />
               <div className="relative bg-gradient-to-br from-pink-500 via-purple-500 to-blue-500 p-3 rounded-2xl shadow-2xl">
@@ -168,7 +165,7 @@ export default function RegisterPage() {
               <div className="flex items-center gap-2 mt-1">
                 <Sparkles className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
                 <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">
-                  Join Cambodia's #1 School Platform
+                  Join Cambodia&apos;s #1 School Platform
                 </span>
               </div>
             </div>
@@ -180,12 +177,12 @@ export default function RegisterPage() {
 
         {/* Registration Form */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 30 }}
           transition={{ delay: 0.2, duration: 0.6 }}
         >
           <Card className="relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border-2 border-purple-200/50 dark:border-purple-700/50 shadow-2xl p-6 sm:p-8">
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <form className="space-y-8" onSubmit={handleSubmit}>
               {/* School Information Section */}
               <div>
                 <div className="flex items-center gap-2.5 mb-5 pb-3 border-b-2 border-gradient-to-r from-pink-200 via-purple-200 to-blue-200 dark:from-pink-800 dark:via-purple-800 dark:to-blue-800">
@@ -199,30 +196,43 @@ export default function RegisterPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   {/* School Name */}
                   <div className="md:col-span-2 space-y-2">
-                    <Label htmlFor="name" className="text-gray-700 dark:text-gray-200 font-semibold text-sm">
+                    <Label
+                      className="text-gray-700 dark:text-gray-200 font-semibold text-sm"
+                      htmlFor="name"
+                    >
                       School Name <span className="text-pink-500">*</span>
                     </Label>
                     <Input
-                      id="name"
                       required
+                      className="h-11 border-purple-200 dark:border-purple-700 focus-visible:ring-purple-500"
+                      id="name"
+                      placeholder="e.g., International School of Phnom Penh"
                       value={formData.name}
                       onChange={(e) => handleChange("name", e.target.value)}
-                      placeholder="e.g., International School of Phnom Penh"
-                      className="h-11 border-purple-200 dark:border-purple-700 focus-visible:ring-purple-500"
                     />
                   </div>
 
                   {/* School Type */}
                   <div className="space-y-2">
-                    <Label htmlFor="schoolType" className="text-gray-700 dark:text-gray-200 font-semibold text-sm">
+                    <Label
+                      className="text-gray-700 dark:text-gray-200 font-semibold text-sm"
+                      htmlFor="schoolType"
+                    >
                       School Type <span className="text-pink-500">*</span>
                     </Label>
-                    <Select value={formData.schoolType} onValueChange={(value) => handleChange("schoolType", value)}>
+                    <Select
+                      value={formData.schoolType}
+                      onValueChange={(value) =>
+                        handleChange("schoolType", value)
+                      }
+                    >
                       <SelectTrigger className="h-11 border-purple-200 dark:border-purple-700 focus:ring-purple-500">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Private">🏫 Private School</SelectItem>
+                        <SelectItem value="Private">
+                          🏫 Private School
+                        </SelectItem>
                         <SelectItem value="Public">🏛️ Public School</SelectItem>
                       </SelectContent>
                     </Select>
@@ -230,45 +240,62 @@ export default function RegisterPage() {
 
                   {/* Estimated Students */}
                   <div className="space-y-2">
-                    <Label htmlFor="estimatedStudents" className="text-gray-700 dark:text-gray-200 font-semibold text-sm">
+                    <Label
+                      className="text-gray-700 dark:text-gray-200 font-semibold text-sm"
+                      htmlFor="estimatedStudents"
+                    >
                       Estimated Students
                     </Label>
                     <div className="relative">
-                     <Input
+                      <Input
+                        className="h-11 border-purple-200 dark:border-purple-700 focus-visible:ring-purple-500"
                         id="estimatedStudents"
+                        placeholder="500"
                         type="number"
                         value={formData.estimatedStudents}
-                        onChange={(e) => handleChange("estimatedStudents", e.target.value)}
-                        placeholder="500"
-                        className="h-11 border-purple-200 dark:border-purple-700 focus-visible:ring-purple-500"
+                        onChange={(e) =>
+                          handleChange("estimatedStudents", e.target.value)
+                        }
                       />
                     </div>
                   </div>
 
                   {/* Address */}
                   <div className="md:col-span-2 space-y-2">
-                    <Label htmlFor="address" className="text-gray-700 dark:text-gray-200 font-semibold text-sm">
+                    <Label
+                      className="text-gray-700 dark:text-gray-200 font-semibold text-sm"
+                      htmlFor="address"
+                    >
                       Complete Address <span className="text-pink-500">*</span>
                     </Label>
                     <div className="relative">
                       <Textarea
-                        id="address"
                         required
-                        value={formData.address}
-                        onChange={(e) => handleChange("address", e.target.value)}
+                        className="border-purple-200 dark:border-purple-700 focus-visible:ring-purple-500"
+                        id="address"
                         placeholder="Street address, building number, etc."
                         rows={3}
-                        className="border-purple-200 dark:border-purple-700 focus-visible:ring-purple-500"
+                        value={formData.address}
+                        onChange={(e) =>
+                          handleChange("address", e.target.value)
+                        }
                       />
                     </div>
                   </div>
 
                   {/* Province */}
                   <div className="space-y-2">
-                    <Label htmlFor="province" className="text-gray-700 dark:text-gray-200 font-semibold text-sm">
+                    <Label
+                      className="text-gray-700 dark:text-gray-200 font-semibold text-sm"
+                      htmlFor="province"
+                    >
                       Province <span className="text-pink-500">*</span>
                     </Label>
-                    <Select value={formData.province} onValueChange={(value) => handleChange("province", value)} required>
+                    <Select
+                      required
+                      value={formData.province}
+                      onValueChange={(value) => handleChange("province", value)}
+                    >
                       <SelectTrigger className="h-11 border-purple-200 dark:border-purple-700 focus:ring-purple-500">
                         <SelectValue placeholder="Select Province" />
                       </SelectTrigger>
@@ -284,68 +311,83 @@ export default function RegisterPage() {
 
                   {/* District */}
                   <div className="space-y-2">
-                    <Label htmlFor="district" className="text-gray-700 dark:text-gray-200 font-semibold text-sm">
+                    <Label
+                      className="text-gray-700 dark:text-gray-200 font-semibold text-sm"
+                      htmlFor="district"
+                    >
                       District <span className="text-pink-500">*</span>
                     </Label>
                     <Input
-                      id="district"
                       required
+                      className="h-11 border-purple-200 dark:border-purple-700 focus-visible:ring-purple-500"
+                      id="district"
+                      placeholder="Enter district"
                       value={formData.district}
                       onChange={(e) => handleChange("district", e.target.value)}
-                      placeholder="Enter district"
-                      className="h-11 border-purple-200 dark:border-purple-700 focus-visible:ring-purple-500"
                     />
                   </div>
 
                   {/* Phone */}
                   <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-gray-700 dark:text-gray-200 font-semibold text-sm">
+                    <Label
+                      className="text-gray-700 dark:text-gray-200 font-semibold text-sm"
+                      htmlFor="phone"
+                    >
                       Phone Number <span className="text-pink-500">*</span>
                     </Label>
                     <div className="relative">
                       <Input
-                        id="phone"
-                        type="tel"
                         required
+                        className="h-11 border-purple-200 dark:border-purple-700 focus-visible:ring-purple-500"
+                        id="phone"
+                        placeholder="+855 12 345 678"
+                        type="tel"
                         value={formData.phone}
                         onChange={(e) => handleChange("phone", e.target.value)}
-                        placeholder="+855 12 345 678"
-                        className="h-11 border-purple-200 dark:border-purple-700 focus-visible:ring-purple-500"
                       />
                     </div>
                   </div>
 
                   {/* Email */}
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-gray-700 dark:text-gray-200 font-semibold text-sm">
+                    <Label
+                      className="text-gray-700 dark:text-gray-200 font-semibold text-sm"
+                      htmlFor="email"
+                    >
                       Email Address <span className="text-pink-500">*</span>
                     </Label>
                     <div className="relative">
                       <Input
-                        id="email"
-                        type="email"
                         required
+                        className="h-11 border-purple-200 dark:border-purple-700 focus-visible:ring-purple-500"
+                        id="email"
+                        placeholder="school@example.com"
+                        type="email"
                         value={formData.email}
                         onChange={(e) => handleChange("email", e.target.value)}
-                        placeholder="school@example.com"
-                        className="h-11 border-purple-200 dark:border-purple-700 focus-visible:ring-purple-500"
                       />
                     </div>
                   </div>
 
                   {/* Website */}
                   <div className="md:col-span-2 space-y-2">
-                    <Label htmlFor="website" className="text-gray-700 dark:text-gray-200 font-semibold text-sm">
-                      Website <span className="text-gray-400 text-xs">(Optional)</span>
+                    <Label
+                      className="text-gray-700 dark:text-gray-200 font-semibold text-sm"
+                      htmlFor="website"
+                    >
+                      Website{" "}
+                      <span className="text-gray-400 text-xs">(Optional)</span>
                     </Label>
                     <div className="relative">
                       <Input
+                        className="h-11 border-purple-200 dark:border-purple-700 focus-visible:ring-purple-500"
                         id="website"
+                        placeholder="https://www.yourschool.com"
                         type="url"
                         value={formData.website}
-                        onChange={(e) => handleChange("website", e.target.value)}
-                        placeholder="https://www.yourschool.com"
-                        className="h-11 border-purple-200 dark:border-purple-700 focus-visible:ring-purple-500"
+                        onChange={(e) =>
+                          handleChange("website", e.target.value)
+                        }
                       />
                     </div>
                   </div>
@@ -365,51 +407,66 @@ export default function RegisterPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   {/* Owner Name */}
                   <div className="md:col-span-2 space-y-2">
-                    <Label htmlFor="ownerName" className="text-gray-700 dark:text-gray-200 font-semibold text-sm">
+                    <Label
+                      className="text-gray-700 dark:text-gray-200 font-semibold text-sm"
+                      htmlFor="ownerName"
+                    >
                       Full Name <span className="text-pink-500">*</span>
                     </Label>
                     <Input
-                      id="ownerName"
                       required
-                      value={formData.ownerName}
-                      onChange={(e) => handleChange("ownerName", e.target.value)}
-                      placeholder="Enter owner's full name"
                       className="h-11 border-blue-200 dark:border-blue-700 focus-visible:ring-blue-500"
+                      id="ownerName"
+                      placeholder="Enter owner's full name"
+                      value={formData.ownerName}
+                      onChange={(e) =>
+                        handleChange("ownerName", e.target.value)
+                      }
                     />
                   </div>
 
                   {/* Owner Email */}
                   <div className="space-y-2">
-                    <Label htmlFor="ownerEmail" className="text-gray-700 dark:text-gray-200 font-semibold text-sm">
+                    <Label
+                      className="text-gray-700 dark:text-gray-200 font-semibold text-sm"
+                      htmlFor="ownerEmail"
+                    >
                       Email Address <span className="text-pink-500">*</span>
                     </Label>
                     <div className="relative">
                       <Input
-                        id="ownerEmail"
-                        type="email"
                         required
-                        value={formData.ownerEmail}
-                        onChange={(e) => handleChange("ownerEmail", e.target.value)}
-                        placeholder="owner@example.com"
                         className="h-11 border-blue-200 dark:border-blue-700 focus-visible:ring-blue-500"
+                        id="ownerEmail"
+                        placeholder="owner@example.com"
+                        type="email"
+                        value={formData.ownerEmail}
+                        onChange={(e) =>
+                          handleChange("ownerEmail", e.target.value)
+                        }
                       />
                     </div>
                   </div>
 
                   {/* Owner Phone */}
                   <div className="space-y-2">
-                    <Label htmlFor="ownerPhone" className="text-gray-700 dark:text-gray-200 font-semibold text-sm">
+                    <Label
+                      className="text-gray-700 dark:text-gray-200 font-semibold text-sm"
+                      htmlFor="ownerPhone"
+                    >
                       Phone Number <span className="text-pink-500">*</span>
                     </Label>
                     <div className="relative">
                       <Input
-                        id="ownerPhone"
-                        type="tel"
                         required
-                        value={formData.ownerPhone}
-                        onChange={(e) => handleChange("ownerPhone", e.target.value)}
-                        placeholder="+855 12 345 678"
                         className="h-11 border-blue-200 dark:border-blue-700 focus-visible:ring-blue-500"
+                        id="ownerPhone"
+                        placeholder="+855 12 345 678"
+                        type="tel"
+                        value={formData.ownerPhone}
+                        onChange={(e) =>
+                          handleChange("ownerPhone", e.target.value)
+                        }
                       />
                     </div>
                   </div>
@@ -422,10 +479,10 @@ export default function RegisterPage() {
                   <span className="text-pink-500">*</span> Required fields
                 </p>
                 <Button
-                  type="submit"
+                  className="w-full sm:w-auto bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 hover:from-pink-600 hover:via-purple-600 hover:to-blue-600 text-white shadow-xl hover:shadow-2xl transition-all duration-300"
                   disabled={loading}
                   size="lg"
-                  className="w-full sm:w-auto bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 hover:from-pink-600 hover:via-purple-600 hover:to-blue-600 text-white shadow-xl hover:shadow-2xl transition-all duration-300"
+                  type="submit"
                 >
                   {loading ? (
                     <>
@@ -446,8 +503,8 @@ export default function RegisterPage() {
 
         {/* Info Box */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 20 }}
           transition={{ delay: 0.4, duration: 0.6 }}
         >
           <Card className="mt-6 bg-gradient-to-r from-pink-50 via-purple-50 to-blue-50 dark:from-pink-900/20 dark:via-purple-900/20 dark:to-blue-900/20 border-2 border-purple-200 dark:border-purple-700 p-8">

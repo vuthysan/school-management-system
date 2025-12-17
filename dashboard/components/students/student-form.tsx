@@ -103,7 +103,7 @@ export const StudentForm: React.FC<StudentFormProps> = ({
 
   const onSubmit = async (data: StudentFormData) => {
     // Simulate API call
-    console.log("Form Data:", data);
+    // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const updatedStudent: Student = {
@@ -159,7 +159,10 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                 name="firstName"
                 render={({ field }) => (
                   <div className="space-y-2">
-                    <Label htmlFor="firstName">{t("first_name")}</Label>
+                    <Label htmlFor="firstName">
+                      {t("first_name")}{" "}
+                      <span className="text-destructive">*</span>
+                    </Label>
                     <Input
                       {...field}
                       className={errors.firstName ? "border-destructive" : ""}
@@ -179,7 +182,10 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                 name="lastName"
                 render={({ field }) => (
                   <div className="space-y-2">
-                    <Label htmlFor="lastName">{t("last_name")}</Label>
+                    <Label htmlFor="lastName">
+                      {t("last_name")}{" "}
+                      <span className="text-destructive">*</span>
+                    </Label>
                     <Input
                       {...field}
                       className={errors.lastName ? "border-destructive" : ""}
@@ -199,7 +205,9 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                 name="email"
                 render={({ field }) => (
                   <div className="space-y-2">
-                    <Label htmlFor="email">{t("email")}</Label>
+                    <Label htmlFor="email">
+                      {t("email")} <span className="text-destructive">*</span>
+                    </Label>
                     <Input
                       {...field}
                       className={errors.email ? "border-destructive" : ""}
@@ -220,7 +228,9 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                 name="dob"
                 render={({ field }) => (
                   <div className="space-y-2">
-                    <Label htmlFor="dob">{t("dob")}</Label>
+                    <Label htmlFor="dob">
+                      {t("dob")} <span className="text-destructive">*</span>
+                    </Label>
                     <Input
                       {...field}
                       className={errors.dob ? "border-destructive" : ""}
@@ -240,7 +250,9 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                 name="gender"
                 render={({ field }) => (
                   <div className="space-y-2">
-                    <Label>{t("gender")}</Label>
+                    <Label>
+                      {t("gender")} <span className="text-destructive">*</span>
+                    </Label>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger
                         className={errors.gender ? "border-destructive" : ""}
@@ -266,7 +278,9 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                 name="phone"
                 render={({ field }) => (
                   <div className="space-y-2">
-                    <Label htmlFor="phone">{t("phone")}</Label>
+                    <Label htmlFor="phone">
+                      {t("phone")} <span className="text-destructive">*</span>
+                    </Label>
                     <Input
                       {...field}
                       className={errors.phone ? "border-destructive" : ""}
@@ -298,7 +312,10 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                 name="gradeLevel"
                 render={({ field }) => (
                   <div className="space-y-2">
-                    <Label>{t("grade_level")}</Label>
+                    <Label>
+                      {t("grade_level")}{" "}
+                      <span className="text-destructive">*</span>
+                    </Label>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger
                         className={
@@ -328,7 +345,9 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                 name="address"
                 render={({ field }) => (
                   <div className="space-y-2">
-                    <Label htmlFor="address">{t("address")}</Label>
+                    <Label htmlFor="address">
+                      {t("address")} <span className="text-destructive">*</span>
+                    </Label>
                     <Input
                       {...field}
                       className={errors.address ? "border-destructive" : ""}
@@ -360,7 +379,10 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                 name="guardianName"
                 render={({ field }) => (
                   <div className="space-y-2">
-                    <Label htmlFor="guardianName">{t("guardian_name")}</Label>
+                    <Label htmlFor="guardianName">
+                      {t("guardian_name")}{" "}
+                      <span className="text-destructive">*</span>
+                    </Label>
                     <Input
                       {...field}
                       className={
@@ -382,7 +404,10 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                 name="guardianPhone"
                 render={({ field }) => (
                   <div className="space-y-2">
-                    <Label htmlFor="guardianPhone">{t("guardian_phone")}</Label>
+                    <Label htmlFor="guardianPhone">
+                      {t("guardian_phone")}{" "}
+                      <span className="text-destructive">*</span>
+                    </Label>
                     <Input
                       {...field}
                       className={

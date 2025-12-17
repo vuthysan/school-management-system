@@ -1,7 +1,7 @@
 // Subject GraphQL Queries and Mutations
 
 export const SUBJECT_QUERIES = {
-	GET_ALL: `
+  GET_ALL: `
     query GetSubjects {
       subjects {
         id
@@ -20,7 +20,7 @@ export const SUBJECT_QUERIES = {
     }
   `,
 
-	GET_BY_ID: `
+  GET_BY_ID: `
     query GetSubject($id: String!) {
       subject(id: $id) {
         id
@@ -39,7 +39,7 @@ export const SUBJECT_QUERIES = {
     }
   `,
 
-	BY_SCHOOL: `
+  BY_SCHOOL: `
     query SubjectsBySchool(
       $schoolId: String!
       $page: Int
@@ -78,7 +78,7 @@ export const SUBJECT_QUERIES = {
 };
 
 export const SUBJECT_MUTATIONS = {
-	CREATE: `
+  CREATE: `
     mutation CreateSubject($input: SubjectInput!) {
       createSubject(input: $input) {
         id
@@ -88,7 +88,7 @@ export const SUBJECT_MUTATIONS = {
     }
   `,
 
-	UPDATE: `
+  UPDATE: `
     mutation UpdateSubject($id: String!, $input: UpdateSubjectInput!) {
       updateSubject(id: $id, input: $input) {
         id
@@ -99,7 +99,7 @@ export const SUBJECT_MUTATIONS = {
     }
   `,
 
-	DELETE: `
+  DELETE: `
     mutation DeleteSubject($id: String!) {
       deleteSubject(id: $id)
     }

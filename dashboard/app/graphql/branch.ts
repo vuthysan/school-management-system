@@ -1,7 +1,7 @@
 // Branch GraphQL Queries and Mutations
 
 export const BRANCH_QUERIES = {
-	GET_ALL: `
+  GET_ALL: `
     query GetBranches {
       branches {
         id
@@ -24,7 +24,7 @@ export const BRANCH_QUERIES = {
     }
   `,
 
-	GET_BY_ID: `
+  GET_BY_ID: `
     query GetBranch($id: String!) {
       branch(id: $id) {
         id
@@ -47,7 +47,7 @@ export const BRANCH_QUERIES = {
     }
   `,
 
-	BY_SCHOOL: `
+  BY_SCHOOL: `
     query BranchesBySchool($schoolId: String!) {
       branchesBySchool(schoolId: $schoolId) {
         id
@@ -70,7 +70,7 @@ export const BRANCH_QUERIES = {
 };
 
 export const BRANCH_MUTATIONS = {
-	CREATE: `
+  CREATE: `
     mutation CreateBranch($input: BranchInput!) {
       createBranch(input: $input) {
         id
@@ -82,7 +82,7 @@ export const BRANCH_MUTATIONS = {
     }
   `,
 
-	UPDATE: `
+  UPDATE: `
     mutation UpdateBranch($id: String!, $input: UpdateBranchInput!) {
       updateBranch(id: $id, input: $input) {
         id
@@ -94,7 +94,7 @@ export const BRANCH_MUTATIONS = {
     }
   `,
 
-	DELETE: `
+  DELETE: `
     mutation DeleteBranch($id: String!) {
       deleteBranch(id: $id)
     }

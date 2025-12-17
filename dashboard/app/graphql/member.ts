@@ -1,7 +1,7 @@
 // Member GraphQL Queries and Mutations
 
 export const MEMBER_QUERIES = {
-	MY_MEMBERSHIPS: `
+  MY_MEMBERSHIPS: `
     query MyMemberships {
       myMemberships {
         idStr
@@ -25,7 +25,7 @@ export const MEMBER_QUERIES = {
     }
   `,
 
-	SCHOOL_MEMBERS: `
+  SCHOOL_MEMBERS: `
     query SchoolMembers($schoolId: String!) {
       schoolMembers(schoolId: $schoolId) {
         idStr
@@ -49,7 +49,7 @@ export const MEMBER_QUERIES = {
     }
   `,
 
-	MEMBERS_BY_BRANCH: `
+  MEMBERS_BY_BRANCH: `
     query MembersByBranch($schoolId: String!, $branchId: String) {
       membersByBranch(schoolId: $schoolId, branchId: $branchId) {
         idStr
@@ -73,7 +73,7 @@ export const MEMBER_QUERIES = {
     }
   `,
 
-	MEMBERS_BY_ROLE: `
+  MEMBERS_BY_ROLE: `
     query MembersByRole($schoolId: String!, $role: String!) {
       membersByRole(schoolId: $schoolId, role: $role) {
         idStr
@@ -93,7 +93,7 @@ export const MEMBER_QUERIES = {
     }
   `,
 
-	SEARCH_USER: `
+  SEARCH_USER: `
     query SearchUser($query: String!) {
       searchUser(query: $query) {
         idStr
@@ -108,7 +108,7 @@ export const MEMBER_QUERIES = {
 };
 
 export const MEMBER_MUTATIONS = {
-	ADD_MEMBER: `
+  ADD_MEMBER: `
     mutation AddMember($input: AddMemberInput!) {
       addMember(input: $input) {
         idStr
@@ -121,7 +121,7 @@ export const MEMBER_MUTATIONS = {
     }
   `,
 
-	UPDATE_MEMBER_ROLE: `
+  UPDATE_MEMBER_ROLE: `
     mutation UpdateMemberRole($input: UpdateMemberRoleInput!) {
       updateMemberRole(input: $input) {
         idStr
@@ -130,7 +130,7 @@ export const MEMBER_MUTATIONS = {
     }
   `,
 
-	REMOVE_MEMBER: `
+  REMOVE_MEMBER: `
     mutation RemoveMember($input: RemoveMemberInput!) {
       removeMember(input: $input)
     }

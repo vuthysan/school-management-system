@@ -1,7 +1,7 @@
 // GradeLevel GraphQL Queries and Mutations
 
 export const GRADE_LEVEL_QUERIES = {
-	GET_ALL: `
+  GET_ALL: `
     query GetGradeLevels {
       gradeLevels {
         id
@@ -16,7 +16,7 @@ export const GRADE_LEVEL_QUERIES = {
     }
   `,
 
-	GET_BY_ID: `
+  GET_BY_ID: `
     query GetGradeLevel($id: String!) {
       gradeLevel(id: $id) {
         id
@@ -31,7 +31,7 @@ export const GRADE_LEVEL_QUERIES = {
     }
   `,
 
-	BY_SCHOOL: `
+  BY_SCHOOL: `
     query GradeLevelsBySchool(
       $schoolId: String!
       $page: Int
@@ -66,7 +66,7 @@ export const GRADE_LEVEL_QUERIES = {
 };
 
 export const GRADE_LEVEL_MUTATIONS = {
-	CREATE: `
+  CREATE: `
     mutation CreateGradeLevel($input: GradeLevelInput!) {
       createGradeLevel(input: $input) {
         id
@@ -77,7 +77,7 @@ export const GRADE_LEVEL_MUTATIONS = {
     }
   `,
 
-	UPDATE: `
+  UPDATE: `
     mutation UpdateGradeLevel($id: String!, $input: UpdateGradeLevelInput!) {
       updateGradeLevel(id: $id, input: $input) {
         id
@@ -89,7 +89,7 @@ export const GRADE_LEVEL_MUTATIONS = {
     }
   `,
 
-	DELETE: `
+  DELETE: `
     mutation DeleteGradeLevel($id: String!) {
       deleteGradeLevel(id: $id)
     }

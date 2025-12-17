@@ -1,7 +1,7 @@
 // Student GraphQL Queries and Mutations
 
 export const STUDENT_QUERIES = {
-	GET_ALL: `
+  GET_ALL: `
     query GetStudents {
       students {
         id
@@ -19,7 +19,7 @@ export const STUDENT_QUERIES = {
     }
   `,
 
-	GET_BY_ID: `
+  GET_BY_ID: `
     query GetStudent($id: String!) {
       student(id: $id) {
         id
@@ -62,7 +62,7 @@ export const STUDENT_QUERIES = {
     }
   `,
 
-	BY_SCHOOL: `
+  BY_SCHOOL: `
     query StudentsBySchool($schoolId: String!) {
       studentsBySchool(schoolId: $schoolId) {
         id
@@ -76,7 +76,7 @@ export const STUDENT_QUERIES = {
     }
   `,
 
-	BY_CLASS: `
+  BY_CLASS: `
     query StudentsByClass($classId: String!) {
       studentsByClass(classId: $classId) {
         id
@@ -91,7 +91,7 @@ export const STUDENT_QUERIES = {
 };
 
 export const STUDENT_MUTATIONS = {
-	CREATE: `
+  CREATE: `
     mutation CreateStudent($input: CreateStudentInput!) {
       createStudent(input: $input) {
         id
@@ -105,7 +105,7 @@ export const STUDENT_MUTATIONS = {
     }
   `,
 
-	UPDATE: `
+  UPDATE: `
     mutation UpdateStudent($id: String!, $input: UpdateStudentInput!) {
       updateStudent(id: $id, input: $input) {
         id
@@ -117,7 +117,7 @@ export const STUDENT_MUTATIONS = {
     }
   `,
 
-	DELETE: `
+  DELETE: `
     mutation DeleteStudent($id: String!) {
       deleteStudent(id: $id)
     }

@@ -3,8 +3,8 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081";
 
 interface GraphQLResponse<T> {
-	data?: T;
-	errors?: Array<{ message: string }>;
+  data?: T;
+  errors?: Array<{ message: string }>;
 }
 
 /**
@@ -14,35 +14,35 @@ interface GraphQLResponse<T> {
  * @param token - Optional auth token
  */
 export async function graphqlRequest<T>(
-	query: string,
-	variables?: Record<string, unknown>,
-	token?: string | null
+  query: string,
+  variables?: Record<string, unknown>,
+  token?: string | null,
 ): Promise<T> {
-	const headers: Record<string, string> = {
-		"Content-Type": "application/json",
-	};
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
 
-	if (token) {
-		headers["Authorization"] = `Bearer ${token}`;
-	}
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
 
-	const response = await fetch(`${API_URL}/graphql`, {
-		method: "POST",
-		headers,
-		body: JSON.stringify({ query, variables }),
-	});
+  const response = await fetch(`${API_URL}/graphql`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ query, variables }),
+  });
 
-	const json: GraphQLResponse<T> = await response.json();
+  const json: GraphQLResponse<T> = await response.json();
 
-	if (json.errors) {
-		throw new Error(json.errors.map((e) => e.message).join(", "));
-	}
+  if (json.errors) {
+    throw new Error(json.errors.map((e) => e.message).join(", "));
+  }
 
-	if (!json.data) {
-		throw new Error("No data returned from GraphQL");
-	}
+  if (!json.data) {
+    throw new Error("No data returned from GraphQL");
+  }
 
-	return json.data;
+  return json.data;
 }
 
 // Re-export all queries and mutations from the graphql directory

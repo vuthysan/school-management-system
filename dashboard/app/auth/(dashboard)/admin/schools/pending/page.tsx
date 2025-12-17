@@ -11,9 +11,10 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  Search,
   Globe,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,7 +22,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/auth-context";
-import { useRouter } from "next/navigation";
 
 interface School {
   id: string;
@@ -65,7 +65,8 @@ const translations = {
     private: "Private",
     public: "Public",
     unauthorized: "Unauthorized Access",
-    unauthorizedMessage: "You don't have permission to access this page. Only Super Admins can approve school registrations.",
+    unauthorizedMessage:
+      "You don't have permission to access this page. Only Super Admins can approve school registrations.",
   },
   km: {
     title: "ការចុះឈ្មោះសាលារៀនដែលរង់ចាំ",
@@ -89,7 +90,8 @@ const translations = {
     private: "ឯកជន",
     public: "រដ្ឋ",
     unauthorized: "មិនមានសិទ្ធិចូលប្រើ",
-    unauthorizedMessage: "អ្នកមិនមានសិទ្ធិចូលប្រើទំព័រនេះទេ។ មានតែ Super Admin ទេដែលអាចអនុម័តការចុះឈ្មោះសាលារៀន។",
+    unauthorizedMessage:
+      "អ្នកមិនមានសិទ្ធិចូលប្រើទំព័រនេះទេ។ មានតែ Super Admin ទេដែលអាចអនុម័តការចុះឈ្មោះសាលារៀន។",
   },
 };
 
@@ -110,6 +112,7 @@ export default function PendingSchoolsPage() {
     // Check if user is SuperAdmin
     if (!isSuperAdmin()) {
       router.push("/unauthorized");
+
       return;
     }
     fetchPendingSchools();
@@ -122,7 +125,7 @@ export default function PendingSchoolsPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(token && { "Authorization": `Bearer ${token}` }),
+          ...(token && { Authorization: `Bearer ${token}` }),
         },
         body: JSON.stringify({
           query: `
@@ -149,6 +152,7 @@ export default function PendingSchoolsPage() {
       });
 
       const result = await response.json();
+
       if (result.data?.pendingSchools) {
         setSchools(result.data.pendingSchools);
       }
@@ -167,7 +171,7 @@ export default function PendingSchoolsPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(token && { "Authorization": `Bearer ${token}` }),
+          ...(token && { Authorization: `Bearer ${token}` }),
         },
         body: JSON.stringify({
           query: `
@@ -187,6 +191,7 @@ export default function PendingSchoolsPage() {
       });
 
       const result = await response.json();
+
       if (!result.errors) {
         alert(`${school.name} has been approved!`);
         fetchPendingSchools();
@@ -203,6 +208,7 @@ export default function PendingSchoolsPage() {
   const handleReject = async (school: School) => {
     if (!rejectionReason.trim()) {
       alert("Please provide a rejection reason");
+
       return;
     }
 
@@ -213,7 +219,7 @@ export default function PendingSchoolsPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(token && { "Authorization": `Bearer ${token}` }),
+          ...(token && { Authorization: `Bearer ${token}` }),
         },
         body: JSON.stringify({
           query: `
@@ -234,6 +240,7 @@ export default function PendingSchoolsPage() {
       });
 
       const result = await response.json();
+
       if (!result.errors) {
         alert(`${school.name} has been rejected`);
         fetchPendingSchools();
@@ -248,9 +255,10 @@ export default function PendingSchoolsPage() {
     }
   };
 
-  const filteredSchools = schools.filter((school) =>
-    school.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    school.province.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredSchools = schools.filter(
+    (school) =>
+      school.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      school.province.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   if (loading) {
@@ -265,34 +273,37 @@ export default function PendingSchoolsPage() {
     <div className="space-y-6">
       {/* Header */}
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center justify-between"
+        initial={{ opacity: 0, y: -20 }}
       >
         <div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-400 bg-clip-text text-transparent">
             {t.title}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            {t.subtitle}
-          </p>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">{t.subtitle}</p>
         </div>
         <div className="flex items-center gap-3">
           {/* Language Switcher */}
           <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setLang(lang === "en" ? "km" : "en")}
             className="gap-2"
+            size="sm"
+            variant="outline"
+            onClick={() => setLang(lang === "en" ? "km" : "en")}
           >
             <Globe className="h-4 w-4" />
             {lang === "en" ? "ភាសាខ្មែរ" : "English"}
           </Button>
-          
+
           {/* Pending Count Badge */}
-          <Badge variant="secondary" className="gap-2 px-4 py-2 bg-orange-100 dark:bg-orange-900/30 text-orange-900 dark:text-orange-100">
+          <Badge
+            className="gap-2 px-4 py-2 bg-orange-100 dark:bg-orange-900/30 text-orange-900 dark:text-orange-100"
+            variant="secondary"
+          >
             <Clock className="h-4 w-4" />
-            <span className="font-semibold">{schools.length} {t.pending}</span>
+            <span className="font-semibold">
+              {schools.length} {t.pending}
+            </span>
           </Badge>
         </div>
       </motion.div>
@@ -302,11 +313,11 @@ export default function PendingSchoolsPage() {
         <CardContent className="p-4">
           <div className="relative">
             <Input
-              type="text"
+              className="pl-10"
               placeholder={t.search}
+              type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
             />
           </div>
         </CardContent>
@@ -320,9 +331,7 @@ export default function PendingSchoolsPage() {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
               {t.noSchools}
             </h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              {t.allProcessed}
-            </p>
+            <p className="text-gray-600 dark:text-gray-400">{t.allProcessed}</p>
           </CardContent>
         </Card>
       ) : (
@@ -330,8 +339,8 @@ export default function PendingSchoolsPage() {
           {filteredSchools.map((school, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 20 }}
               transition={{ delay: index * 0.05 }}
             >
               <Card className="border-2 hover:border-purple-300 dark:hover:border-purple-700 transition-colors">
@@ -343,16 +352,26 @@ export default function PendingSchoolsPage() {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <CardTitle className="text-xl">{school.name}</CardTitle>
-                          <Badge variant={school.schoolType === "Private" ? "default" : "secondary"}>
-                            {school.schoolType === "Private" ? `🏫 ${t.private}` : `🏛️ ${t.public}`}
+                          <CardTitle className="text-xl">
+                            {school.name}
+                          </CardTitle>
+                          <Badge
+                            variant={
+                              school.schoolType === "Private"
+                                ? "default"
+                                : "secondary"
+                            }
+                          >
+                            {school.schoolType === "Private"
+                              ? `🏫 ${t.private}`
+                              : `🏛️ ${t.public}`}
                           </Badge>
                         </div>
                       </div>
                     </div>
                   </div>
                 </CardHeader>
-                
+
                 <CardContent className="space-y-4">
                   {/* School Information */}
                   <div>
@@ -363,7 +382,9 @@ export default function PendingSchoolsPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                       <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                         <MapPin className="h-4 w-4 text-blue-500" />
-                        <span>{school.province}, {school.district}</span>
+                        <span>
+                          {school.province}, {school.district}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                         <Phone className="h-4 w-4 text-green-500" />
@@ -376,7 +397,9 @@ export default function PendingSchoolsPage() {
                       {school.estimatedStudents && (
                         <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                           <Users className="h-4 w-4 text-purple-500" />
-                          <span>~{school.estimatedStudents} {t.students}</span>
+                          <span>
+                            ~{school.estimatedStudents} {t.students}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -388,25 +411,26 @@ export default function PendingSchoolsPage() {
                       {t.ownerInfo}
                     </h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      <strong>{school.ownerName}</strong> • {school.ownerEmail} • {school.ownerPhone}
+                      <strong>{school.ownerName}</strong> • {school.ownerEmail}{" "}
+                      • {school.ownerPhone}
                     </p>
                   </div>
 
                   {/* Action Buttons */}
                   <div className="flex gap-3 pt-2">
                     <Button
-                      onClick={() => handleApprove(school)}
-                      disabled={actionLoading}
                       className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                      disabled={actionLoading}
+                      onClick={() => handleApprove(school)}
                     >
                       <CheckCircle className="h-4 w-4 mr-2" />
                       {t.approve}
                     </Button>
                     <Button
-                      onClick={() => setSelectedSchool(school)}
+                      className="flex-1"
                       disabled={actionLoading}
                       variant="destructive"
-                      className="flex-1"
+                      onClick={() => setSelectedSchool(school)}
                     >
                       <XCircle className="h-4 w-4 mr-2" />
                       {t.reject}
@@ -423,9 +447,9 @@ export default function PendingSchoolsPage() {
       {selectedSchool && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="w-full max-w-md"
+            initial={{ opacity: 0, scale: 0.9 }}
           >
             <Card>
               <CardHeader>
@@ -435,34 +459,37 @@ export default function PendingSchoolsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="rejectionReason" className="text-sm font-semibold mb-2">
+                  <Label
+                    className="text-sm font-semibold mb-2"
+                    htmlFor="rejectionReason"
+                  >
                     {t.rejectReason}
                   </Label>
                   <Textarea
+                    className="mt-2"
                     id="rejectionReason"
+                    placeholder={t.rejectPlaceholder}
+                    rows={4}
                     value={rejectionReason}
                     onChange={(e) => setRejectionReason(e.target.value)}
-                    rows={4}
-                    placeholder={t.rejectPlaceholder}
-                    className="mt-2"
                   />
                 </div>
                 <div className="flex gap-3">
                   <Button
+                    className="flex-1"
+                    variant="outline"
                     onClick={() => {
                       setSelectedSchool(null);
                       setRejectionReason("");
                     }}
-                    variant="outline"
-                    className="flex-1"
                   >
                     {t.cancel}
                   </Button>
                   <Button
-                    onClick={() => handleReject(selectedSchool)}
+                    className="flex-1"
                     disabled={actionLoading || !rejectionReason.trim()}
                     variant="destructive"
-                    className="flex-1"
+                    onClick={() => handleReject(selectedSchool)}
                   >
                     {actionLoading ? t.rejecting : t.confirmReject}
                   </Button>

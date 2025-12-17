@@ -66,7 +66,9 @@ export function SchoolForm({
         name="name"
         render={({ field }) => (
           <div className="space-y-2">
-            <Label htmlFor="name">School Name *</Label>
+            <Label htmlFor="name">
+              School Name <span className="text-destructive">*</span>
+            </Label>
             <Input
               {...field}
               className={errors.name ? "border-destructive" : ""}
@@ -88,7 +90,9 @@ export function SchoolForm({
           name="contactEmail"
           render={({ field }) => (
             <div className="space-y-2">
-              <Label htmlFor="contactEmail">Contact Email *</Label>
+              <Label htmlFor="contactEmail">
+                Contact Email <span className="text-destructive">*</span>
+              </Label>
               <Input
                 {...field}
                 className={errors.contactEmail ? "border-destructive" : ""}
@@ -110,7 +114,9 @@ export function SchoolForm({
           name="contactPhone"
           render={({ field }) => (
             <div className="space-y-2">
-              <Label htmlFor="contactPhone">Contact Phone *</Label>
+              <Label htmlFor="contactPhone">
+                Contact Phone <span className="text-destructive">*</span>
+              </Label>
               <Input
                 {...field}
                 className={errors.contactPhone ? "border-destructive" : ""}

@@ -3,7 +3,7 @@
 import Link, { LinkProps } from "next/link";
 import React, { useState, createContext, useContext } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -74,7 +74,11 @@ export const Sidebar = ({
   );
 };
 
-export const SidebarBody = (props: React.ComponentProps<typeof motion.div>) => {
+export const SidebarBody = (
+  props: React.ComponentProps<typeof motion.div> & {
+    children?: React.ReactNode;
+  },
+) => {
   return (
     <>
       <DesktopSidebar {...props} />
@@ -87,23 +91,29 @@ export const DesktopSidebar = ({
   className,
   children,
   ...props
-}: React.ComponentProps<typeof motion.div>) => {
+}: React.ComponentProps<typeof motion.div> & {
+  children?: React.ReactNode;
+}) => {
   const { open, setOpen, animate } = useSidebar();
 
   return (
     <motion.div
       animate={{
-        width: animate ? (open ? "300px" : "60px") : "300px",
+        width: animate ? (open ? "220px" : "60px") : "220px",
       }}
       className={cn(
-        "h-full px-4 py-4 hidden md:flex md:flex-col bg-neutral-100 dark:bg-neutral-800 w-[300px] flex-shrink-0",
+        "h-full px-4 py-4 hidden md:flex md:flex-col bg-neutral-100 dark:bg-neutral-800 w-[220px] flex-shrink-0 relative",
         className,
       )}
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
       {...props}
     >
       {children}
+      <button
+        className="absolute -right-3 top-20 z-50 rounded-full border bg-white dark:bg-neutral-800 p-1 shadow-md hover:bg-neutral-100 dark:hover:bg-neutral-700"
+        onClick={() => setOpen(!open)}
+      >
+        {open ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+      </button>
     </motion.div>
   );
 };

@@ -7,51 +7,51 @@ export type Status = "Active" | "Inactive" | "Archived";
 // ============================================================================
 
 export interface Class {
-	id: string;
-	schoolId: string;
-	academicYearId: string;
-	name: string;
-	code: string;
-	gradeLevel: string;
-	section?: string;
-	homeroomTeacherId?: string;
-	roomNumber?: string;
-	capacity: number;
-	currentEnrollment: number;
-	status: Status;
+  id: string;
+  schoolId: string;
+  academicYearId: string;
+  name: string;
+  code: string;
+  gradeLevel: string;
+  section?: string;
+  homeroomTeacherId?: string;
+  roomNumber?: string;
+  capacity: number;
+  currentEnrollment: number;
+  status: Status;
 }
 
 export interface ClassFilterInput {
-	search?: string;
-	status?: Status;
-	gradeLevel?: string;
-	branchId?: string;
+  search?: string;
+  status?: Status;
+  gradeLevel?: string;
+  branchId?: string;
 }
 
 export interface ClassSortInput {
-	sortBy?: "name" | "code" | "gradeLevel" | "createdAt" | "currentEnrollment";
-	sortOrder?: "asc" | "desc";
+  sortBy?: "name" | "code" | "gradeLevel" | "createdAt" | "currentEnrollment";
+  sortOrder?: "asc" | "desc";
 }
 
 export interface PaginatedClassesResult {
-	items: Class[];
-	total: number;
-	page: number;
-	pageSize: number;
-	totalPages: number;
+  items: Class[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 }
 
 export interface ClassFormData {
-	schoolId: string;
-	academicYearId: string;
-	name: string;
-	code: string;
-	gradeLevel: string;
-	section?: string;
-	homeroomTeacherId?: string;
-	roomNumber?: string;
-	capacity: number;
-	status?: Status;
+  schoolId: string;
+  academicYearId: string;
+  name: string;
+  code: string;
+  gradeLevel: string;
+  section?: string;
+  homeroomTeacherId?: string;
+  roomNumber?: string;
+  capacity: number;
+  status?: Status;
 }
 
 // ============================================================================
@@ -59,51 +59,51 @@ export interface ClassFormData {
 // ============================================================================
 
 export interface Subject {
-	id: string;
-	schoolId: string;
-	branchId?: string;
-	subjectName: string;
-	subjectCode: string;
-	description: string;
-	gradeLevels: string[];
-	credits: number;
-	department?: string;
-	status: Status;
-	createdAt: string;
-	updatedAt: string;
+  id: string;
+  schoolId: string;
+  branchId?: string;
+  subjectName: string;
+  subjectCode: string;
+  description: string;
+  gradeLevels: string[];
+  credits: number;
+  department?: string;
+  status: Status;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface SubjectFilterInput {
-	search?: string;
-	status?: Status;
-	department?: string;
-	gradeLevel?: string;
-	branchId?: string;
+  search?: string;
+  status?: Status;
+  department?: string;
+  gradeLevel?: string;
+  branchId?: string;
 }
 
 export interface SubjectSortInput {
-	sortBy?: "subjectName" | "subjectCode" | "credits" | "createdAt";
-	sortOrder?: "asc" | "desc";
+  sortBy?: "subjectName" | "subjectCode" | "credits" | "createdAt";
+  sortOrder?: "asc" | "desc";
 }
 
 export interface PaginatedSubjectsResult {
-	items: Subject[];
-	total: number;
-	page: number;
-	pageSize: number;
-	totalPages: number;
+  items: Subject[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 }
 
 export interface SubjectFormData {
-	schoolId: string;
-	branchId?: string;
-	subjectName: string;
-	subjectCode: string;
-	description?: string;
-	gradeLevels?: string[];
-	credits?: number;
-	department?: string;
-	status?: Status;
+  schoolId: string;
+  branchId?: string;
+  subjectName: string;
+  subjectCode: string;
+  description?: string;
+  gradeLevels?: string[];
+  credits?: number;
+  department?: string;
+  status?: Status;
 }
 
 // ============================================================================
@@ -111,43 +111,43 @@ export interface SubjectFormData {
 // ============================================================================
 
 export interface GradeLevel {
-	id: string;
-	schoolId: string;
-	branchId?: string;
-	name: string;
-	code: string;
-	order: number;
-	description?: string;
-	status: Status;
+  id: string;
+  schoolId: string;
+  branchId?: string;
+  name: string;
+  code: string;
+  order: number;
+  description?: string;
+  status: Status;
 }
 
 export interface GradeLevelFilterInput {
-	search?: string;
-	status?: Status;
-	branchId?: string;
+  search?: string;
+  status?: Status;
+  branchId?: string;
 }
 
 export interface GradeLevelSortInput {
-	sortBy?: "name" | "code" | "order" | "createdAt";
-	sortOrder?: "asc" | "desc";
+  sortBy?: "name" | "code" | "order" | "createdAt";
+  sortOrder?: "asc" | "desc";
 }
 
 export interface PaginatedGradeLevelsResult {
-	items: GradeLevel[];
-	total: number;
-	page: number;
-	pageSize: number;
-	totalPages: number;
+  items: GradeLevel[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 }
 
 export interface GradeLevelFormData {
-	schoolId: string;
-	branchId?: string;
-	name: string;
-	code: string;
-	order: number;
-	description?: string;
-	status?: Status;
+  schoolId: string;
+  branchId?: string;
+  name: string;
+  code: string;
+  order: number;
+  description?: string;
+  status?: Status;
 }
 
 // ============================================================================
@@ -155,11 +155,11 @@ export interface GradeLevelFormData {
 // ============================================================================
 
 export interface PaginationState {
-	page: number;
-	pageSize: number;
+  page: number;
+  pageSize: number;
 }
 
 export interface SortState {
-	sortBy: string;
-	sortOrder: "asc" | "desc";
+  sortBy: string;
+  sortOrder: "asc" | "desc";
 }

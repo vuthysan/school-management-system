@@ -9,6 +9,7 @@
     "lint": "eslint --fix"
   },
   "dependencies": {
+    "@carbon/icons-react": "^11.71.0",
     "@hookform/resolvers": "^5.2.2",
     "@koompi/oauth": "^1.0.4",
     "@radix-ui/react-accordion": "^1.2.12",

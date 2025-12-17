@@ -75,7 +75,9 @@ export function BranchForm({
         name="name"
         render={({ field }) => (
           <div className="space-y-2">
-            <Label htmlFor="name">Branch Name *</Label>
+            <Label htmlFor="name">
+              Branch Name <span className="text-destructive">*</span>
+            </Label>
             <Input
               {...field}
               className={errors.name ? "border-destructive" : ""}
@@ -99,7 +101,9 @@ export function BranchForm({
             name="province"
             render={({ field }) => (
               <div className="space-y-2">
-                <Label htmlFor="province">Province *</Label>
+                <Label htmlFor="province">
+                  Province <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   {...field}
                   className={errors.province ? "border-destructive" : ""}
@@ -156,7 +160,9 @@ export function BranchForm({
           name="contactEmail"
           render={({ field }) => (
             <div className="space-y-2">
-              <Label htmlFor="contactEmail">Contact Email *</Label>
+              <Label htmlFor="contactEmail">
+                Contact Email <span className="text-destructive">*</span>
+              </Label>
               <Input
                 {...field}
                 className={errors.contactEmail ? "border-destructive" : ""}
@@ -178,7 +184,9 @@ export function BranchForm({
           name="contactPhone"
           render={({ field }) => (
             <div className="space-y-2">
-              <Label htmlFor="contactPhone">Contact Phone *</Label>
+              <Label htmlFor="contactPhone">
+                Contact Phone <span className="text-destructive">*</span>
+              </Label>
               <Input
                 {...field}
                 className={errors.contactPhone ? "border-destructive" : ""}

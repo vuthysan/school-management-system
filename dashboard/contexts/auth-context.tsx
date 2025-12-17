@@ -137,9 +137,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return accessToken;
   }, [accessToken]);
 
-  const hasRole = useCallback((role: string) => {
-    return user?.role === role;
-  }, [user]);
+  const hasRole = useCallback(
+    (role: string) => {
+      return user?.role === role;
+    },
+    [user],
+  );
 
   const isSuperAdmin = useCallback(() => {
     return user?.role === "SuperAdmin";
@@ -167,7 +170,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isSuperAdmin,
       isAdmin,
     }),
-    [user, isLoading, login, logout, getAccessToken, hasRole, isSuperAdmin, isAdmin],
+    [
+      user,
+      isLoading,
+      login,
+      logout,
+      getAccessToken,
+      hasRole,
+      isSuperAdmin,
+      isAdmin,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

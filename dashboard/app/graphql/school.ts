@@ -1,7 +1,7 @@
 // School GraphQL Queries and Mutations
 
 export const SCHOOL_QUERIES = {
-	GET_ALL: `
+  GET_ALL: `
     query GetSchools {
       schools {
         idStr
@@ -28,7 +28,7 @@ export const SCHOOL_QUERIES = {
     }
   `,
 
-	GET_BY_ID: `
+  GET_BY_ID: `
     query GetSchool($id: String!) {
       school(id: $id) {
         idStr
@@ -75,7 +75,7 @@ export const SCHOOL_QUERIES = {
     }
   `,
 
-	MY_SCHOOLS: `
+  MY_SCHOOLS: `
     query MySchools($ownerEmail: String!) {
       mySchools(ownerEmail: $ownerEmail) {
         idStr
@@ -95,7 +95,7 @@ export const SCHOOL_QUERIES = {
     }
   `,
 
-	PENDING_SCHOOLS: `
+  PENDING_SCHOOLS: `
     query PendingSchools {
       pendingSchools {
         idStr
@@ -111,7 +111,7 @@ export const SCHOOL_QUERIES = {
     }
   `,
 
-	BY_STATUS: `
+  BY_STATUS: `
     query SchoolsByStatus($status: String!) {
       schoolsByStatus(status: $status) {
         idStr
@@ -127,7 +127,7 @@ export const SCHOOL_QUERIES = {
 };
 
 export const SCHOOL_MUTATIONS = {
-	REGISTER: `
+  REGISTER: `
     mutation RegisterSchool($input: RegisterSchoolInput!) {
       registerSchool(input: $input) {
         idStr
@@ -141,7 +141,7 @@ export const SCHOOL_MUTATIONS = {
     }
   `,
 
-	APPROVE: `
+  APPROVE: `
     mutation ApproveSchool($input: ApproveSchoolInput!) {
       approveSchool(input: $input) {
         idStr
@@ -150,7 +150,7 @@ export const SCHOOL_MUTATIONS = {
     }
   `,
 
-	REJECT: `
+  REJECT: `
     mutation RejectSchool($input: RejectSchoolInput!) {
       rejectSchool(input: $input) {
         idStr

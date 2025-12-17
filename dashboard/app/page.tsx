@@ -176,8 +176,8 @@ export default function LoginPage() {
               <div className="text-center text-sm text-muted-foreground">
                 Having trouble?{" "}
                 <button
-                  type="button"
                   className="underline decoration-primary/50 hover:decoration-primary hover:text-primary transition-colors cursor-pointer bg-transparent border-none p-0"
+                  type="button"
                 >
                   Contact Support
                 </button>

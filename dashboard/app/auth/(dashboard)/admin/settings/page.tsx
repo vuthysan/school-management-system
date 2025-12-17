@@ -59,11 +59,11 @@ export default function SettingsPage() {
 
   const handleCreateBranch = async (data: BranchFormData) => {
     const input: CreateBranchInput = {
-      school_id: data.schoolId,
+      schoolId: data.schoolId,
       name: data.name,
       address: data.address,
-      contact_email: data.contactEmail,
-      contact_phone: data.contactPhone,
+      contactEmail: data.contactEmail,
+      contactPhone: data.contactPhone,
     };
 
     await createBranch(input);

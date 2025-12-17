@@ -1,7 +1,7 @@
 // Class GraphQL Queries and Mutations
 
 export const CLASS_QUERIES = {
-	GET_ALL: `
+  GET_ALL: `
     query GetClasses {
       classes {
         id
@@ -20,7 +20,7 @@ export const CLASS_QUERIES = {
     }
   `,
 
-	GET_BY_ID: `
+  GET_BY_ID: `
     query GetClass($id: String!) {
       class(id: $id) {
         id
@@ -51,7 +51,7 @@ export const CLASS_QUERIES = {
     }
   `,
 
-	BY_SCHOOL: `
+  BY_SCHOOL: `
     query ClassesBySchool(
       $schoolId: String!
       $page: Int
@@ -90,7 +90,7 @@ export const CLASS_QUERIES = {
 };
 
 export const CLASS_MUTATIONS = {
-	CREATE: `
+  CREATE: `
     mutation CreateClass($input: ClassInput!) {
       createClass(input: $input) {
         id
@@ -101,7 +101,7 @@ export const CLASS_MUTATIONS = {
     }
   `,
 
-	UPDATE: `
+  UPDATE: `
     mutation UpdateClass($id: String!, $input: ClassInput!) {
       updateClass(id: $id, input: $input) {
         id
@@ -113,7 +113,7 @@ export const CLASS_MUTATIONS = {
     }
   `,
 
-	DELETE: `
+  DELETE: `
     mutation DeleteClass($id: String!) {
       deleteClass(id: $id)
     }
