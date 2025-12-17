@@ -1,6 +1,6 @@
-// Subject GraphQL queries
-use super::inputs::{SubjectFilterInput, SubjectSortInput};
-use super::types::{PaginatedSubjectsResult, SubjectType};
+// GradeLevel GraphQL queries
+use super::inputs::{GradeLevelFilterInput, GradeLevelSortInput};
+use super::types::{GradeLevelType, PaginatedGradeLevelsResult};
 use crate::models;
 use async_graphql::*;
 use futures::stream::TryStreamExt;
@@ -11,43 +11,44 @@ use mongodb::{
 };
 
 #[derive(Default)]
-pub struct SubjectQuery;
+pub struct GradeLevelQuery;
 
 #[Object]
-impl SubjectQuery {
-    /// Get all subjects (no pagination - for backward compatibility)
-    async fn subjects(&self, ctx: &Context<'_>) -> Result<Vec<SubjectType>> {
+impl GradeLevelQuery {
+    /// Get all grade levels (no pagination - for dropdowns)
+    async fn grade_levels(&self, ctx: &Context<'_>) -> Result<Vec<GradeLevelType>> {
         let db = ctx.data::<Database>()?;
-        let collection = db.collection::<models::subject::Subject>("subjects");
+        let collection = db.collection::<models::grade_level::GradeLevel>("grade_levels");
 
-        // Exclude soft-deleted
+        // Exclude soft-deleted, sort by order
         let filter = doc! { "soft_delete.is_deleted": { "$ne": true } };
+        let options = FindOptions::builder().sort(doc! { "order": 1 }).build();
 
         let mut cursor = collection
-            .find(filter, None)
+            .find(filter, options)
             .await
             .map_err(|e| Error::new(e.to_string()))?;
 
-        let mut subjects = Vec::new();
-        while let Some(subject) = cursor
+        let mut grade_levels = Vec::new();
+        while let Some(level) = cursor
             .try_next()
             .await
             .map_err(|e| Error::new(e.to_string()))?
         {
-            subjects.push(subject);
+            grade_levels.push(level);
         }
 
-        Ok(subjects.into_iter().map(|s| s.into()).collect())
+        Ok(grade_levels)
     }
 
-    /// Get a single subject by ID
-    async fn subject(&self, ctx: &Context<'_>, id: String) -> Result<Option<SubjectType>> {
+    /// Get a single grade level by ID
+    async fn grade_level(&self, ctx: &Context<'_>, id: String) -> Result<Option<GradeLevelType>> {
         let db = ctx.data::<Database>()?;
-        let collection = db.collection::<models::subject::Subject>("subjects");
+        let collection = db.collection::<models::grade_level::GradeLevel>("grade_levels");
 
         let obj_id = ObjectId::parse_str(&id).map_err(|_| Error::new("Invalid ID format"))?;
 
-        let subject = collection
+        let grade_level = collection
             .find_one(
                 doc! { "_id": obj_id, "soft_delete.is_deleted": { "$ne": true } },
                 None,
@@ -55,21 +56,21 @@ impl SubjectQuery {
             .await
             .map_err(|e| Error::new(e.to_string()))?;
 
-        Ok(subject.map(|s| s.into()))
+        Ok(grade_level)
     }
 
-    /// Get subjects by school with pagination, filtering, and sorting
-    async fn subjects_by_school(
+    /// Get grade levels by school with pagination, filtering, and sorting
+    async fn grade_levels_by_school(
         &self,
         ctx: &Context<'_>,
         school_id: String,
         page: Option<i32>,
         page_size: Option<i32>,
-        filter: Option<SubjectFilterInput>,
-        sort: Option<SubjectSortInput>,
-    ) -> Result<PaginatedSubjectsResult> {
+        filter: Option<GradeLevelFilterInput>,
+        sort: Option<GradeLevelSortInput>,
+    ) -> Result<PaginatedGradeLevelsResult> {
         let db = ctx.data::<Database>()?;
-        let collection = db.collection::<models::subject::Subject>("subjects");
+        let collection = db.collection::<models::grade_level::GradeLevel>("grade_levels");
 
         // Default pagination values
         let page = page.unwrap_or(1).max(1);
@@ -90,8 +91,8 @@ impl SubjectQuery {
                     filter_doc.insert(
                         "$or",
                         vec![
-                            doc! { "subject_name": { "$regex": search, "$options": "i" } },
-                            doc! { "subject_code": { "$regex": search, "$options": "i" } },
+                            doc! { "name": { "$regex": search, "$options": "i" } },
+                            doc! { "code": { "$regex": search, "$options": "i" } },
                         ],
                     );
                 }
@@ -100,16 +101,6 @@ impl SubjectQuery {
             // Filter by status
             if let Some(ref status) = f.status {
                 filter_doc.insert("status", mongodb::bson::to_bson(status).unwrap());
-            }
-
-            // Filter by department
-            if let Some(ref department) = f.department {
-                filter_doc.insert("department", department);
-            }
-
-            // Filter by grade level (any matching)
-            if let Some(ref grade_level) = f.grade_level {
-                filter_doc.insert("grade_levels", grade_level);
             }
 
             // Filter by branch ID
@@ -140,20 +131,20 @@ impl SubjectQuery {
             .await
             .map_err(|e| Error::new(e.to_string()))?;
 
-        let mut subjects = Vec::new();
-        while let Some(subject) = cursor
+        let mut grade_levels = Vec::new();
+        while let Some(level) = cursor
             .try_next()
             .await
             .map_err(|e| Error::new(e.to_string()))?
         {
-            subjects.push(subject);
+            grade_levels.push(level);
         }
 
         // Calculate total pages
         let total_pages = ((total as f64) / (page_size as f64)).ceil() as i32;
 
-        Ok(PaginatedSubjectsResult {
-            items: subjects.into_iter().map(|s| s.into()).collect(),
+        Ok(PaginatedGradeLevelsResult {
+            items: grade_levels,
             total,
             page,
             page_size,
@@ -163,17 +154,16 @@ impl SubjectQuery {
 }
 
 /// Helper function to build sort document
-fn build_sort_document(sort: &Option<SubjectSortInput>) -> Document {
+fn build_sort_document(sort: &Option<GradeLevelSortInput>) -> Document {
     let mut sort_doc = Document::new();
 
     if let Some(ref s) = sort {
         let sort_field = match s.sort_by.as_deref() {
-            Some("subjectName") => "subject_name",
-            Some("subjectCode") => "subject_code",
-            Some("credits") => "credits",
+            Some("name") => "name",
+            Some("code") => "code",
+            Some("order") => "order",
             Some("createdAt") => "audit.created_at",
-            Some("department") => "department",
-            _ => "subject_name", // Default sort by name
+            _ => "order", // Default sort by order
         };
 
         let sort_order = match s.sort_order.as_deref() {
@@ -183,8 +173,8 @@ fn build_sort_document(sort: &Option<SubjectSortInput>) -> Document {
 
         sort_doc.insert(sort_field, sort_order);
     } else {
-        // Default: sort by name ascending
-        sort_doc.insert("subject_name", 1);
+        // Default: sort by order ascending
+        sort_doc.insert("order", 1);
     }
 
     sort_doc

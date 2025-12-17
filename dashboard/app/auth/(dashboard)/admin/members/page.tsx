@@ -15,6 +15,7 @@ import {
 	Briefcase,
 	Shield,
 	Search,
+	Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,66 +54,84 @@ import {
 	Member,
 	User,
 } from "@/hooks/useMembers";
+import { useBranches } from "@/hooks/useBranches";
+import { useLanguage } from "@/contexts/language-context";
 
-// Role options for selection
-const ROLES = [
-	{ value: "Owner", label: "Owner", icon: Crown, color: "bg-blue-500" },
+// Role configuration - labels will be translated dynamically
+const ROLE_CONFIG = [
+	{ value: "Owner", labelKey: "role_owner", icon: Crown, color: "bg-blue-500" },
 	{
 		value: "Director",
-		label: "Director",
+		labelKey: "role_director",
 		icon: GraduationCap,
 		color: "bg-cyan-500",
 	},
 	{
 		value: "DeputyDirector",
-		label: "Deputy Director",
+		labelKey: "role_deputy_director",
 		icon: GraduationCap,
 		color: "bg-teal-500",
 	},
 	{
 		value: "Admin",
-		label: "Administrator",
+		labelKey: "role_admin",
 		icon: UserCog,
 		color: "bg-green-500",
 	},
 	{
 		value: "HeadTeacher",
-		label: "Head Teacher",
+		labelKey: "role_head_teacher",
 		icon: GraduationCap,
 		color: "bg-amber-500",
 	},
 	{
 		value: "Teacher",
-		label: "Teacher",
+		labelKey: "role_teacher",
 		icon: GraduationCap,
 		color: "bg-orange-500",
 	},
-	{ value: "Staff", label: "Staff", icon: Briefcase, color: "bg-gray-500" },
+	{
+		value: "Staff",
+		labelKey: "role_staff",
+		icon: Briefcase,
+		color: "bg-gray-500",
+	},
 	{
 		value: "Accountant",
-		label: "Accountant",
+		labelKey: "role_accountant",
 		icon: Shield,
 		color: "bg-purple-500",
 	},
 	{
 		value: "Librarian",
-		label: "Librarian",
+		labelKey: "role_librarian",
 		icon: Shield,
 		color: "bg-pink-500",
 	},
-	{ value: "Student", label: "Student", icon: Users, color: "bg-indigo-500" },
-	{ value: "Parent", label: "Parent", icon: Users, color: "bg-rose-500" },
-];
+	{
+		value: "Student",
+		labelKey: "role_student",
+		icon: Users,
+		color: "bg-indigo-500",
+	},
+	{
+		value: "Parent",
+		labelKey: "role_parent",
+		icon: Users,
+		color: "bg-rose-500",
+	},
+] as const;
 
 function getRoleInfo(role: string) {
 	const normalizedRole = role.toLowerCase();
 	return (
-		ROLES.find((r) => r.value.toLowerCase() === normalizedRole) ||
-		ROLES[ROLES.length - 1]
+		ROLE_CONFIG.find((r) => r.value.toLowerCase() === normalizedRole) ||
+		ROLE_CONFIG[ROLE_CONFIG.length - 1]
 	);
 }
 
 export default function MembersPage() {
+	const { t } = useLanguage();
 	const { currentSchool, isOwner, currentRole } = useDashboard();
 	const schoolId = currentSchool?.idStr || currentSchool?.id;
 	const { members, loading, error, refetch } = useSchoolMembers(schoolId);
@@ -120,6 +139,7 @@ export default function MembersPage() {
 	const { updateMemberRole, loading: updating } = useUpdateMemberRole();
 	const { removeMember, loading: removing } = useRemoveMember();
 	const { searchUser, loading: searching } = useSearchUser();
+	const { branches, loading: loadingBranches } = useBranches(schoolId);
 
 	const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -131,6 +151,7 @@ export default function MembersPage() {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [foundUser, setFoundUser] = useState<User | null>(null);
 	const [selectedRole, setSelectedRole] = useState("Teacher");
+	const [selectedBranchId, setSelectedBranchId] = useState<string>("");
 	const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
 	// Minimum characters required for search
@@ -186,6 +207,7 @@ export default function MembersPage() {
 		setSearchQuery("");
 		setFoundUser(null);
 		setSelectedRole("Teacher");
+		setSelectedBranchId("");
 		setFormError(null);
 		setIsAddDialogOpen(true);
 	};
@@ -244,6 +266,10 @@ export default function MembersPage() {
 				schoolId,
 				userId: foundUser.idStr,
 				role: selectedRole,
+				branchId:
+					selectedBranchId && selectedBranchId !== "__none__"
+						? selectedBranchId
+						: undefined,
 			});
 			setIsAddDialogOpen(false);
 			setFoundUser(null);
@@ -295,7 +321,7 @@ export default function MembersPage() {
 				<div className="text-center">
 					<AlertCircle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
 					<p className="text-gray-600 dark:text-gray-400">
-						Please select a school to manage members
+						{t("select_school_first")}
 					</p>
 				</div>
 			</div>
@@ -312,19 +338,16 @@ export default function MembersPage() {
 			>
 				<div>
 					<h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-						Member Management
+						{t("member_management")}
 					</h1>
 					<p className="text-gray-600 dark:text-gray-400 mt-1">
-						Manage staff and members for{" "}
-						{currentSchool.name?.en ||
-							currentSchool.displayName ||
-							"your school"}
+						{t("manage_members")}
 					</p>
 				</div>
 				{/* Always show Add Member button */}
 				<Button onClick={handleOpenAdd} className="gap-2">
 					<Plus className="h-4 w-4" />
-					Add Member
+					{t("add_member")}
 				</Button>
 			</motion.div>
 
@@ -353,17 +376,18 @@ export default function MembersPage() {
 						<CardHeader>
 							<CardTitle className="flex items-center gap-2">
 								<Users className="h-5 w-5" />
-								All Members ({members.length})
+								{t("all_members")} ({members.length})
 							</CardTitle>
 						</CardHeader>
 						<CardContent>
 							<Table>
 								<TableHeader>
 									<TableRow>
-										<TableHead>User</TableHead>
-										<TableHead>Role</TableHead>
-										<TableHead>Status</TableHead>
-										<TableHead className="text-right">Actions</TableHead>
+										<TableHead>{t("user")}</TableHead>
+										<TableHead>{t("role")}</TableHead>
+										<TableHead>{t("branch")}</TableHead>
+										<TableHead>{t("status")}</TableHead>
+										<TableHead className="text-right">{t("actions")}</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
@@ -410,8 +434,23 @@ export default function MembersPage() {
 														<div className={`p-1 rounded ${roleInfo.color}`}>
 															<RoleIcon className="h-3 w-3 text-white" />
 														</div>
-														<span>{roleInfo.label}</span>
+														<span>{t(roleInfo.labelKey as any)}</span>
 													</div>
+												</TableCell>
+												<TableCell>
+													{member.branchId ? (
+														<div className="flex items-center gap-1 text-sm">
+															<Building2 className="h-3 w-3 text-muted-foreground" />
+															<span>
+																{branches.find((b) => b.id === member.branchId)
+																	?.name || member.branchId}
+															</span>
+														</div>
+													) : (
+														<Badge variant="outline" className="text-xs">
+															School-wide
+														</Badge>
+													)}
 												</TableCell>
 												<TableCell>
 													<Badge
@@ -463,14 +502,14 @@ export default function MembersPage() {
 				>
 					<Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
 					<h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-						No Members Yet
+						{t("no_members")}
 					</h3>
 					<p className="text-gray-600 dark:text-gray-400 mb-6">
-						Start by adding staff and members to your school
+						{t("no_members_desc")}
 					</p>
 					<Button onClick={handleOpenAdd} className="gap-2">
 						<Plus className="h-4 w-4" />
-						Add First Member
+						{t("add_first_member")}
 					</Button>
 				</motion.div>
 			)}
@@ -479,7 +518,7 @@ export default function MembersPage() {
 			<Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
 				<DialogContent className="max-w-md">
 					<DialogHeader>
-						<DialogTitle>Add New Member</DialogTitle>
+						<DialogTitle>{t("add_new_member")}</DialogTitle>
 					</DialogHeader>
 					<form onSubmit={handleAdd} className="space-y-4">
 						{formError && (
@@ -492,15 +531,13 @@ export default function MembersPage() {
 
 						{/* Search User */}
 						<div className="space-y-2">
-							<Label htmlFor="searchQuery">
-								Search User by Email or Username *
-							</Label>
+							<Label htmlFor="searchQuery">{t("search_user_label")} *</Label>
 							<div className="flex gap-2">
 								<Input
 									id="searchQuery"
 									value={searchQuery}
 									onChange={(e) => setSearchQuery(e.target.value)}
-									placeholder="Enter email or username"
+									placeholder={t("search_user_placeholder")}
 									className="flex-1"
 								/>
 								<Button
@@ -548,7 +585,7 @@ export default function MembersPage() {
 										variant="outline"
 										className="bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-200"
 									>
-										Found
+										{t("user_found")}
 									</Badge>
 								</div>
 							</div>
@@ -557,29 +594,69 @@ export default function MembersPage() {
 						{/* Role Selection (only show if user found) */}
 						{foundUser && (
 							<div className="space-y-2">
-								<Label htmlFor="role">Role *</Label>
+								<Label htmlFor="role">{t("role")} *</Label>
 								<Select value={selectedRole} onValueChange={setSelectedRole}>
 									<SelectTrigger>
 										<SelectValue />
 									</SelectTrigger>
 									<SelectContent>
-										{ROLES.filter((r) => r.value !== "Owner" || isOwner).map(
-											(role) => {
-												const RoleIcon = role.icon;
-												return (
-													<SelectItem key={role.value} value={role.value}>
-														<div className="flex items-center gap-2">
-															<div className={`p-1 rounded ${role.color}`}>
-																<RoleIcon className="h-3 w-3 text-white" />
-															</div>
-															<span>{role.label}</span>
+										{ROLE_CONFIG.filter(
+											(r) => r.value !== "Owner" || isOwner
+										).map((role) => {
+											const RoleIcon = role.icon;
+											return (
+												<SelectItem key={role.value} value={role.value}>
+													<div className="flex items-center gap-2">
+														<div className={`p-1 rounded ${role.color}`}>
+															<RoleIcon className="h-3 w-3 text-white" />
 														</div>
-													</SelectItem>
-												);
-											}
-										)}
+														<span>{t(role.labelKey as any)}</span>
+													</div>
+												</SelectItem>
+											);
+										})}
 									</SelectContent>
 								</Select>
+							</div>
+						)}
+
+						{/* Branch Selection (only show if user found and branches exist) */}
+						{foundUser && branches.length > 0 && (
+							<div className="space-y-2">
+								<Label htmlFor="branch">
+									Branch {isOwner ? "(Optional)" : "*"}
+								</Label>
+								<Select
+									value={selectedBranchId}
+									onValueChange={setSelectedBranchId}
+								>
+									<SelectTrigger>
+										<SelectValue placeholder="Select a branch..." />
+									</SelectTrigger>
+									<SelectContent>
+										{isOwner && (
+											<SelectItem value="__none__">
+												<div className="flex items-center gap-2 text-muted-foreground">
+													<Building2 className="h-4 w-4" />
+													<span>School-wide (No branch)</span>
+												</div>
+											</SelectItem>
+										)}
+										{branches.map((branch) => (
+											<SelectItem key={branch.id} value={branch.id}>
+												<div className="flex items-center gap-2">
+													<Building2 className="h-4 w-4" />
+													<span>{branch.name}</span>
+												</div>
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								<p className="text-xs text-muted-foreground">
+									{isOwner
+										? "Leave empty for school-wide access"
+										: "Members must be assigned to a branch"}
+								</p>
 							</div>
 						)}
 
@@ -597,7 +674,7 @@ export default function MembersPage() {
 							</Button>
 							<Button type="submit" disabled={adding || !foundUser}>
 								{adding && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-								Add Member
+								{t("add_member")}
 							</Button>
 						</DialogFooter>
 					</form>
@@ -608,7 +685,7 @@ export default function MembersPage() {
 			<Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
 				<DialogContent className="max-w-md">
 					<DialogHeader>
-						<DialogTitle>Edit Member Role</DialogTitle>
+						<DialogTitle>{t("edit_member")}</DialogTitle>
 					</DialogHeader>
 					<form onSubmit={handleUpdateRole} className="space-y-4">
 						{formError && (
@@ -620,34 +697,34 @@ export default function MembersPage() {
 						)}
 
 						<div className="space-y-2">
-							<Label>Member</Label>
+							<Label>{t("member")}</Label>
 							<p className="text-sm text-muted-foreground">
 								{selectedMember?.userId}
 							</p>
 						</div>
 
 						<div className="space-y-2">
-							<Label htmlFor="editRole">New Role *</Label>
+							<Label htmlFor="editRole">{t("new_role")} *</Label>
 							<Select value={selectedRole} onValueChange={setSelectedRole}>
 								<SelectTrigger>
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
-									{ROLES.filter((r) => r.value !== "Owner" || isOwner).map(
-										(role) => {
-											const RoleIcon = role.icon;
-											return (
-												<SelectItem key={role.value} value={role.value}>
-													<div className="flex items-center gap-2">
-														<div className={`p-1 rounded ${role.color}`}>
-															<RoleIcon className="h-3 w-3 text-white" />
-														</div>
-														<span>{role.label}</span>
+									{ROLE_CONFIG.filter(
+										(r) => r.value !== "Owner" || isOwner
+									).map((role) => {
+										const RoleIcon = role.icon;
+										return (
+											<SelectItem key={role.value} value={role.value}>
+												<div className="flex items-center gap-2">
+													<div className={`p-1 rounded ${role.color}`}>
+														<RoleIcon className="h-3 w-3 text-white" />
 													</div>
-												</SelectItem>
-											);
-										}
-									)}
+													<span>{t(role.labelKey as any)}</span>
+												</div>
+											</SelectItem>
+										);
+									})}
 								</SelectContent>
 							</Select>
 						</div>
@@ -658,11 +735,11 @@ export default function MembersPage() {
 								variant="outline"
 								onClick={() => setIsEditDialogOpen(false)}
 							>
-								Cancel
+								{t("cancel")}
 							</Button>
 							<Button type="submit" disabled={updating}>
 								{updating && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-								Update Role
+								{t("update_role")}
 							</Button>
 						</DialogFooter>
 					</form>
@@ -673,18 +750,17 @@ export default function MembersPage() {
 			<Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
 				<DialogContent className="max-w-sm">
 					<DialogHeader>
-						<DialogTitle>Remove Member</DialogTitle>
+						<DialogTitle>{t("confirm_remove_member")}</DialogTitle>
 					</DialogHeader>
 					<p className="text-gray-600 dark:text-gray-400">
-						Are you sure you want to remove this member? They will lose access
-						to the school.
+						{t("confirm_remove_desc")}
 					</p>
 					<DialogFooter>
 						<Button
 							variant="outline"
 							onClick={() => setIsDeleteDialogOpen(false)}
 						>
-							Cancel
+							{t("cancel")}
 						</Button>
 						<Button
 							variant="destructive"
@@ -692,7 +768,7 @@ export default function MembersPage() {
 							disabled={removing}
 						>
 							{removing && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-							Remove
+							{t("remove")}
 						</Button>
 					</DialogFooter>
 				</DialogContent>

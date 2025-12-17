@@ -1,61 +1,49 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import {
-	graphqlRequest,
-	SUBJECT_QUERIES,
-	SUBJECT_MUTATIONS,
-} from "@/lib/graphql-client";
+import { graphqlRequest } from "@/lib/graphql-client";
+import { SUBJECT_QUERIES, SUBJECT_MUTATIONS } from "@/app/graphql/subject";
 import { useAuth } from "@/contexts/auth-context";
+import {
+	Subject,
+	SubjectFormData,
+	SubjectFilterInput,
+	SubjectSortInput,
+	PaginatedSubjectsResult,
+} from "@/types/academic";
 
-export interface AssessmentWeight {
-	type: string;
-	weight: number;
-}
-
-export interface Subject {
-	id: string;
-	schoolId: string;
-	name: string;
-	code: string;
-	description?: string;
-	category: string;
-	credits: number;
-	isElective: boolean;
-	status: string;
-	prerequisites?: string[];
-	assessmentWeights?: AssessmentWeight[];
-}
-
-export interface CreateSubjectInput {
-	schoolId: string;
-	name: string;
-	code: string;
-	description?: string;
-	category: string;
-	credits: number;
-	isElective?: boolean;
+export interface UseSubjectsOptions {
+	schoolId: string | null;
+	page?: number;
+	pageSize?: number;
+	filter?: SubjectFilterInput;
+	sort?: SubjectSortInput;
 }
 
 export interface UpdateSubjectInput {
-	name?: string;
-	code?: string;
+	subjectName?: string;
+	subjectCode?: string;
 	description?: string;
-	category?: string;
+	gradeLevels?: string[];
 	credits?: number;
-	isElective?: boolean;
+	department?: string;
 	status?: string;
 }
 
-export function useSubjects(schoolId: string | null) {
+export function useSubjects(options: UseSubjectsOptions) {
+	const { schoolId, page = 1, pageSize = 10, filter, sort } = options;
 	const { getAccessToken, isAuthenticated } = useAuth();
 	const [subjects, setSubjects] = useState<Subject[]>([]);
+	const [total, setTotal] = useState(0);
+	const [totalPages, setTotalPages] = useState(0);
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
 	const fetchSubjects = useCallback(async () => {
 		if (!schoolId || !isAuthenticated) {
 			setSubjects([]);
+			setTotal(0);
+			setTotalPages(0);
 			return;
 		}
 
@@ -64,26 +52,36 @@ export function useSubjects(schoolId: string | null) {
 
 		try {
 			const token = getAccessToken();
-			const data = await graphqlRequest<{ subjectsBySchool: Subject[] }>(
+			const data = await graphqlRequest<{
+				subjectsBySchool: PaginatedSubjectsResult;
+			}>(
 				SUBJECT_QUERIES.BY_SCHOOL,
-				{ schoolId },
+				{
+					schoolId,
+					page,
+					pageSize,
+					filter: filter || undefined,
+					sort: sort || undefined,
+				},
 				token
 			);
-			setSubjects(data.subjectsBySchool || []);
+			setSubjects(data.subjectsBySchool.items || []);
+			setTotal(data.subjectsBySchool.total);
+			setTotalPages(data.subjectsBySchool.totalPages);
 		} catch (err) {
 			console.error("Failed to fetch subjects:", err);
 			setError(err instanceof Error ? err.message : "Failed to load subjects");
 		} finally {
 			setIsLoading(false);
 		}
-	}, [schoolId, isAuthenticated, getAccessToken]);
+	}, [schoolId, page, pageSize, filter, sort, isAuthenticated, getAccessToken]);
 
 	useEffect(() => {
 		fetchSubjects();
 	}, [fetchSubjects]);
 
 	const createSubject = useCallback(
-		async (input: CreateSubjectInput) => {
+		async (input: SubjectFormData) => {
 			const token = getAccessToken();
 			const data = await graphqlRequest<{ createSubject: Subject }>(
 				SUBJECT_MUTATIONS.CREATE,
@@ -125,6 +123,8 @@ export function useSubjects(schoolId: string | null) {
 
 	return {
 		subjects,
+		total,
+		totalPages,
 		isLoading,
 		error,
 		refresh: fetchSubjects,

@@ -45,3 +45,22 @@ impl From<Class> for ClassType {
         }
     }
 }
+
+// ============================================================================
+// PAGINATED RESULT TYPE
+// ============================================================================
+
+/// Paginated result for classes list
+#[derive(SimpleObject)]
+pub struct PaginatedClassesResult {
+    /// List of classes for current page
+    pub items: Vec<ClassType>,
+    /// Total number of classes matching the filter
+    pub total: i64,
+    /// Current page number (1-indexed)
+    pub page: i32,
+    /// Number of items per page
+    pub page_size: i32,
+    /// Total number of pages
+    pub total_pages: i32,
+}

@@ -9,9 +9,13 @@ use serde::{Deserialize, Serialize};
 /// Generic status for most entities
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Enum)]
 pub enum Status {
+    #[graphql(name = "Active")]
     Active,
+    #[graphql(name = "Inactive")]
     Inactive,
+    #[graphql(name = "Pending")]
     Pending,
+    #[graphql(name = "Archived")]
     Archived,
 }
 

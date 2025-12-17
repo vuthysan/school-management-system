@@ -4,6 +4,7 @@ pub mod branch;
 pub mod class;
 pub mod common;
 pub mod grade;
+pub mod grade_level;
 pub mod graphql_context;
 pub mod member;
 pub mod schema;
@@ -27,6 +28,7 @@ pub struct QueryRoot(
     subject::SubjectQuery,
     attendance::AttendanceQuery,
     grade::GradeQuery,
+    grade_level::GradeLevelQuery,
     member::MemberQuery,
     user::UserQuery,
 );
@@ -41,5 +43,6 @@ pub struct MutationRoot(
     subject::SubjectMutation,
     attendance::AttendanceMutation,
     grade::GradeMutation,
+    grade_level::GradeLevelMutation,
     member::MemberMutation,
 );

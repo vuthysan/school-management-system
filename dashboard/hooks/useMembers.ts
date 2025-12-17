@@ -19,6 +19,7 @@ export interface Member {
 	idStr: string;
 	userId: string;
 	schoolId: string;
+	branchId?: string;
 	role: string;
 	status: string;
 	permissions?: string[];
@@ -31,6 +32,7 @@ export interface AddMemberInput {
 	schoolId: string;
 	userId: string;
 	role: string;
+	branchId?: string;
 }
 
 export interface UpdateMemberRoleInput {

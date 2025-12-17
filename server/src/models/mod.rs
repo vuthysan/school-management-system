@@ -3,6 +3,7 @@ pub mod branch;
 pub mod class;
 pub mod finance;
 pub mod grade;
+pub mod grade_level;
 pub mod hr;
 pub mod member;
 pub mod school;

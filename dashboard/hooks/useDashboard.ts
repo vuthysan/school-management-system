@@ -13,6 +13,7 @@ export interface Membership {
 	idStr: string;
 	userId: string;
 	schoolId: string;
+	branchId?: string;
 	role: string;
 	status: string;
 	permissions: string[];

@@ -7,6 +7,7 @@ export const MEMBER_QUERIES = {
         idStr
         userId
         schoolId
+        branchId
         role
         status
         permissions
@@ -30,6 +31,31 @@ export const MEMBER_QUERIES = {
         idStr
         userId
         schoolId
+        branchId
+        role
+        status
+        permissions
+        title
+        isPrimaryContact
+        user {
+          idStr
+          username
+          email
+          displayName
+          avatarUrl
+          fullName
+        }
+      }
+    }
+  `,
+
+	MEMBERS_BY_BRANCH: `
+    query MembersByBranch($schoolId: String!, $branchId: String) {
+      membersByBranch(schoolId: $schoolId, branchId: $branchId) {
+        idStr
+        userId
+        schoolId
+        branchId
         role
         status
         permissions
@@ -88,6 +114,7 @@ export const MEMBER_MUTATIONS = {
         idStr
         userId
         schoolId
+        branchId
         role
         status
       }

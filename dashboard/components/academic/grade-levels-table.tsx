@@ -1,12 +1,10 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React from "react";
 import {
 	Search,
 	Edit,
 	Trash2,
-	ChevronLeft,
-	ChevronRight,
 	ArrowUpDown,
 	ArrowUp,
 	ArrowDown,
@@ -22,8 +20,8 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
 	Tooltip,
 	TooltipContent,
@@ -38,10 +36,10 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
-import { Subject, Status, SubjectSortInput } from "@/types/academic";
+import { GradeLevel, Status, GradeLevelSortInput } from "@/types/academic";
 
-interface SubjectsTableProps {
-	subjects: Subject[];
+interface GradeLevelsTableProps {
+	gradeLevels: GradeLevel[];
 	isLoading?: boolean;
 	total?: number;
 	page?: number;
@@ -49,19 +47,17 @@ interface SubjectsTableProps {
 	totalPages?: number;
 	search?: string;
 	statusFilter?: Status | "";
-	departmentFilter?: string;
-	sort?: SubjectSortInput;
+	sort?: GradeLevelSortInput;
 	onSearchChange?: (search: string) => void;
 	onStatusFilterChange?: (status: Status | "") => void;
-	onDepartmentFilterChange?: (department: string) => void;
-	onSortChange?: (sort: SubjectSortInput) => void;
+	onSortChange?: (sort: GradeLevelSortInput) => void;
 	onPageChange?: (page: number) => void;
-	onEdit: (sub: Subject) => void;
-	onDelete: (sub: Subject) => void;
+	onEdit: (gradeLevel: GradeLevel) => void;
+	onDelete: (gradeLevel: GradeLevel) => void;
 }
 
-export const SubjectsTable: React.FC<SubjectsTableProps> = ({
-	subjects,
+export const GradeLevelsTable: React.FC<GradeLevelsTableProps> = ({
+	gradeLevels,
 	isLoading = false,
 	total = 0,
 	page = 1,
@@ -69,11 +65,9 @@ export const SubjectsTable: React.FC<SubjectsTableProps> = ({
 	totalPages = 1,
 	search = "",
 	statusFilter = "",
-	departmentFilter = "",
 	sort = {},
 	onSearchChange,
 	onStatusFilterChange,
-	onDepartmentFilterChange,
 	onSortChange,
 	onPageChange,
 	onEdit,
@@ -81,22 +75,14 @@ export const SubjectsTable: React.FC<SubjectsTableProps> = ({
 }) => {
 	const { t } = useTranslation();
 
-	// Extract unique departments for filter
-	const departments = useMemo(() => {
-		const depts = new Set(
-			subjects.map((sub) => sub.department).filter(Boolean)
-		);
-		return Array.from(depts).sort() as string[];
-	}, [subjects]);
-
-	const handleSort = (field: SubjectSortInput["sortBy"]) => {
+	const handleSort = (field: GradeLevelSortInput["sortBy"]) => {
 		if (!onSortChange) return;
 		const newOrder =
 			sort.sortBy === field && sort.sortOrder === "asc" ? "desc" : "asc";
 		onSortChange({ sortBy: field, sortOrder: newOrder });
 	};
 
-	const SortIcon = ({ field }: { field: SubjectSortInput["sortBy"] }) => {
+	const SortIcon = ({ field }: { field: GradeLevelSortInput["sortBy"] }) => {
 		if (sort.sortBy !== field) {
 			return <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />;
 		}
@@ -108,10 +94,10 @@ export const SubjectsTable: React.FC<SubjectsTableProps> = ({
 	};
 
 	const columns = [
-		{ key: "subjectName", label: t("subject_name"), sortable: true },
-		{ key: "subjectCode", label: t("subject_code"), sortable: true },
-		{ key: "department", label: t("department"), sortable: false },
-		{ key: "credits", label: t("credits"), sortable: true },
+		{ key: "name", label: t("grade_level_name"), sortable: true },
+		{ key: "code", label: t("grade_level_code"), sortable: true },
+		{ key: "order", label: t("grade_level_order"), sortable: true },
+		{ key: "description", label: t("description"), sortable: false },
 		{ key: "status", label: t("status"), sortable: false },
 		{ key: "actions", label: t("actions"), sortable: false },
 	];
@@ -149,27 +135,6 @@ export const SubjectsTable: React.FC<SubjectsTableProps> = ({
 							<SelectItem value="Archived">{t("archived")}</SelectItem>
 						</SelectContent>
 					</Select>
-					{departments.length > 0 && (
-						<Select
-							value={departmentFilter || "__all__"}
-							onValueChange={(value) =>
-								onDepartmentFilterChange?.(value === "__all__" ? "" : value)
-							}
-						>
-							<SelectTrigger className="w-[160px]">
-								<Filter className="mr-2 h-4 w-4" />
-								<SelectValue placeholder={t("all_departments")} />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="__all__">{t("all_departments")}</SelectItem>
-								{departments.map((dept) => (
-									<SelectItem key={dept} value={dept}>
-										{dept}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					)}
 				</div>
 			</div>
 
@@ -184,14 +149,14 @@ export const SubjectsTable: React.FC<SubjectsTableProps> = ({
 									className={`${column.key === "actions" ? "text-center" : ""} ${column.sortable ? "cursor-pointer select-none hover:bg-muted/50" : ""}`}
 									onClick={() =>
 										column.sortable &&
-										handleSort(column.key as SubjectSortInput["sortBy"])
+										handleSort(column.key as GradeLevelSortInput["sortBy"])
 									}
 								>
 									<div className="flex items-center">
 										{column.label}
 										{column.sortable && (
 											<SortIcon
-												field={column.key as SubjectSortInput["sortBy"]}
+												field={column.key as GradeLevelSortInput["sortBy"]}
 											/>
 										)}
 									</div>
@@ -211,45 +176,42 @@ export const SubjectsTable: React.FC<SubjectsTableProps> = ({
 									))}
 								</TableRow>
 							))
-						) : subjects.length === 0 ? (
+						) : gradeLevels.length === 0 ? (
 							<TableRow>
 								<TableCell
 									className="h-24 text-center"
 									colSpan={columns.length}
 								>
-									{t("no_results")}
+									{t("no_grade_levels")}
 								</TableCell>
 							</TableRow>
 						) : (
-							subjects.map((sub) => (
+							gradeLevels.map((level) => (
 								<TableRow
-									key={sub.id}
+									key={level.id}
 									className="cursor-pointer hover:bg-muted/50 transition-colors"
 								>
 									<TableCell>
-										<div className="flex flex-col">
-											<p className="font-semibold text-sm">{sub.subjectName}</p>
-											<p className="text-xs text-muted-foreground line-clamp-1">
-												{sub.description}
-											</p>
-										</div>
+										<p className="font-semibold text-sm">{level.name}</p>
 									</TableCell>
 									<TableCell>
-										<Badge variant="secondary">{sub.subjectCode}</Badge>
+										<Badge variant="outline">{level.code}</Badge>
 									</TableCell>
 									<TableCell>
-										<p className="text-sm">{sub.department || "-"}</p>
+										<p className="text-sm">{level.order}</p>
 									</TableCell>
 									<TableCell>
-										<p className="text-sm">{sub.credits}</p>
+										<p className="text-sm text-muted-foreground truncate max-w-[200px]">
+											{level.description || "-"}
+										</p>
 									</TableCell>
 									<TableCell>
 										<Badge
 											variant={
-												sub.status === "Active" ? "default" : "secondary"
+												level.status === "Active" ? "default" : "secondary"
 											}
 										>
-											{t(sub.status.toLowerCase())}
+											{t(level.status.toLowerCase())}
 										</Badge>
 									</TableCell>
 									<TableCell className="text-center">
@@ -260,12 +222,12 @@ export const SubjectsTable: React.FC<SubjectsTableProps> = ({
 														className="h-8 w-8"
 														size="icon"
 														variant="ghost"
-														onClick={() => onEdit(sub)}
+														onClick={() => onEdit(level)}
 													>
 														<Edit className="h-4 w-4" />
 													</Button>
 												</TooltipTrigger>
-												<TooltipContent>{t("edit_subject")}</TooltipContent>
+												<TooltipContent>{t("edit_grade_level")}</TooltipContent>
 											</Tooltip>
 											<Tooltip>
 												<TooltipTrigger asChild>
@@ -273,12 +235,14 @@ export const SubjectsTable: React.FC<SubjectsTableProps> = ({
 														className="h-8 w-8 text-destructive"
 														size="icon"
 														variant="ghost"
-														onClick={() => onDelete(sub)}
+														onClick={() => onDelete(level)}
 													>
 														<Trash2 className="h-4 w-4" />
 													</Button>
 												</TooltipTrigger>
-												<TooltipContent>{t("delete_record")}</TooltipContent>
+												<TooltipContent>
+													{t("delete_grade_level")}
+												</TooltipContent>
 											</Tooltip>
 										</div>
 									</TableCell>
@@ -288,40 +252,6 @@ export const SubjectsTable: React.FC<SubjectsTableProps> = ({
 					</TableBody>
 				</Table>
 			</div>
-
-			{/* Pagination */}
-			{totalPages > 1 && (
-				<div className="flex items-center justify-between px-2">
-					<p className="text-sm text-muted-foreground">
-						{t("showing_results", {
-							start: (page - 1) * pageSize + 1,
-							end: Math.min(page * pageSize, total),
-							total,
-						})}
-					</p>
-					<div className="flex items-center gap-2">
-						<Button
-							disabled={page === 1}
-							size="icon"
-							variant="outline"
-							onClick={() => onPageChange?.(page - 1)}
-						>
-							<ChevronLeft className="h-4 w-4" />
-						</Button>
-						<span className="text-sm text-muted-foreground">
-							{t("page_of", { page, totalPages })}
-						</span>
-						<Button
-							disabled={page === totalPages}
-							size="icon"
-							variant="outline"
-							onClick={() => onPageChange?.(page + 1)}
-						>
-							<ChevronRight className="h-4 w-4" />
-						</Button>
-					</div>
-				</div>
-			)}
 		</div>
 	);
 };

@@ -52,16 +52,38 @@ export const CLASS_QUERIES = {
   `,
 
 	BY_SCHOOL: `
-    query ClassesBySchool($schoolId: String!) {
-      classesBySchool(schoolId: $schoolId) {
-        id
-        name
-        code
-        gradeLevel
-        section
-        capacity
-        currentEnrollment
-        status
+    query ClassesBySchool(
+      $schoolId: String!
+      $page: Int
+      $pageSize: Int
+      $filter: ClassFilterInput
+      $sort: ClassSortInput
+    ) {
+      classesBySchool(
+        schoolId: $schoolId
+        page: $page
+        pageSize: $pageSize
+        filter: $filter
+        sort: $sort
+      ) {
+        items {
+          id
+          schoolId
+          academicYearId
+          name
+          code
+          gradeLevel
+          section
+          homeroomTeacherId
+          roomNumber
+          capacity
+          currentEnrollment
+          status
+        }
+        total
+        page
+        pageSize
+        totalPages
       }
     }
   `,
@@ -80,7 +102,7 @@ export const CLASS_MUTATIONS = {
   `,
 
 	UPDATE: `
-    mutation UpdateClass($id: String!, $input: UpdateClassInput!) {
+    mutation UpdateClass($id: String!, $input: ClassInput!) {
       updateClass(id: $id, input: $input) {
         id
         name

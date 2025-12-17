@@ -93,3 +93,39 @@ pub fn is_school_leader(role: &SchoolRole) -> bool {
 pub fn is_staff(role: &SchoolRole) -> bool {
     !matches!(role, SchoolRole::Student | SchoolRole::Parent)
 }
+
+/// Check if user can manage a specific branch
+/// Owners can manage all branches
+/// Directors/DeputyDirectors can only manage their assigned branch
+/// Returns true if user has permission to manage the target branch
+pub fn can_manage_branch(
+    role: &SchoolRole,
+    user_branch_id: Option<&str>,
+    target_branch_id: Option<&str>,
+) -> bool {
+    // Owners can always manage all branches
+    if matches!(role, SchoolRole::Owner) {
+        return true;
+    }
+
+    // For Directors/DeputyDirectors, check branch match
+    match (user_branch_id, target_branch_id) {
+        // User has a branch, target has a branch - must match
+        (Some(user_b), Some(target_b)) => user_b == target_b,
+        // User has no branch assigned - can manage school-wide members only
+        (None, None) => true,
+        // Mismatched scope - deny access
+        _ => false,
+    }
+}
+
+/// Check if user can view members in a branch
+/// Similar to can_manage_branch but for read access
+pub fn can_view_branch_members(
+    role: &SchoolRole,
+    user_branch_id: Option<&str>,
+    target_branch_id: Option<&str>,
+) -> bool {
+    // Same logic as manage - Owners see all, others see their branch
+    can_manage_branch(role, user_branch_id, target_branch_id)
+}

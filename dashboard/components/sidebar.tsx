@@ -25,6 +25,8 @@ import {
 	UserCheck,
 	Briefcase,
 	Shield,
+	ChevronDown,
+	Check,
 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -37,6 +39,16 @@ import {
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/auth-context";
 import { useDashboard } from "@/hooks/useDashboard";
+import { useBranches } from "@/hooks/useBranches";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Branch } from "@/types/branch";
 
 // Define user roles
 export type UserRole =
@@ -51,63 +63,67 @@ export type UserRole =
 	| "student";
 
 // Role configuration with colors and labels
-const roleConfig: Record<
+const getRoleConfig = (
+	t: (key: string) => string
+): Record<
 	UserRole,
 	{
 		label: string;
 		color: string;
 		icon: React.ComponentType<{ className?: string }>;
 	}
-> = {
+> => ({
 	ministry: {
-		label: "Ministry (MoEYS)",
+		label: t("role_ministry"),
 		color: "bg-purple-500",
 		icon: Shield,
 	},
 	owner: {
-		label: "School Owner",
+		label: t("role_school_owner"),
 		color: "bg-blue-500",
 		icon: Briefcase,
 	},
 	director: {
-		label: "Director",
+		label: t("role_director"),
 		color: "bg-cyan-500",
 		icon: GraduationCap,
 	},
 	deputyDirector: {
-		label: "Deputy Director",
+		label: t("role_deputy_director"),
 		color: "bg-teal-500",
 		icon: GraduationCap,
 	},
 	admin: {
-		label: "Administrator",
+		label: t("role_admin"),
 		color: "bg-green-500",
 		icon: UserCog,
 	},
 	headTeacher: {
-		label: "Head Teacher",
+		label: t("role_head_teacher"),
 		color: "bg-amber-500",
 		icon: GraduationCap,
 	},
 	teacher: {
-		label: "Teacher",
+		label: t("role_teacher"),
 		color: "bg-orange-500",
 		icon: GraduationCap,
 	},
 	parent: {
-		label: "Parent",
+		label: t("role_parent"),
 		color: "bg-pink-500",
 		icon: Users,
 	},
 	student: {
-		label: "Student",
+		label: t("role_student"),
 		color: "bg-indigo-500",
 		icon: School,
 	},
-};
+});
 
 // Menu items by role
-const menuByRole: Record<
+const getMenuByRole = (
+	t: (key: string) => string
+): Record<
 	UserRole,
 	Array<{
 		label: string;
@@ -115,77 +131,77 @@ const menuByRole: Record<
 		icon: React.ReactNode;
 		badge?: string;
 	}>
-> = {
+> => ({
 	ministry: [
 		{
-			label: "National Dashboard",
+			label: t("national_dashboard"),
 			href: "/auth/ministry",
 			icon: <LayoutDashboard className="h-5 w-5" />,
 		},
 		{
-			label: "Schools",
+			label: t("schools"),
 			href: "/auth/ministry/schools",
 			icon: <Building className="h-5 w-5" />,
 		},
 		{
-			label: "Analytics",
+			label: t("analytics"),
 			href: "/auth/ministry/analytics",
 			icon: <BarChart3 className="h-5 w-5" />,
 		},
 		{
-			label: "Compliance",
+			label: t("compliance"),
 			href: "/auth/ministry/compliance",
 			icon: <ClipboardList className="h-5 w-5" />,
 		},
 		{
-			label: "Reports",
+			label: t("reports"),
 			href: "/auth/ministry/reports",
 			icon: <FileText className="h-5 w-5" />,
 		},
 		{
-			label: "Settings",
+			label: t("settings"),
 			href: "/auth/ministry/settings",
 			icon: <Settings className="h-5 w-5" />,
 		},
 	],
 	owner: [
 		{
-			label: "Dashboard",
+			label: t("dashboard"),
 			href: "/auth/",
 			icon: <LayoutDashboard className="h-5 w-5" />,
 		},
 		{
-			label: "Schools & Branches",
+			label: t("schools_branches"),
 			href: "/auth/admin/branches",
 			icon: <Building className="h-5 w-5" />,
 		},
 		{
-			label: "Members",
+			label: t("members"),
 			href: "/auth/admin/members",
 			icon: <Users className="h-5 w-5" />,
 		},
 		{
-			label: "Financial Overview",
+			label: t("financial_overview"),
 			href: "/auth/finance",
 			icon: <DollarSign className="h-5 w-5" />,
 		},
 		{
-			label: "HR & Payroll",
+			label: t("hr_payroll"),
 			href: "/auth/hr",
 			icon: <UserCog className="h-5 w-5" />,
 		},
 		{
-			label: "Analytics",
+			label: t("analytics"),
 			href: "/auth/analytics",
 			icon: <BarChart3 className="h-5 w-5" />,
 		},
 		{
-			label: "Reports",
+			label: t("reports"),
 			href: "/auth/reports",
 			icon: <FileText className="h-5 w-5" />,
 		},
 		{
-			label: "Settings",
+			label: t("settings"),
 			href: "/auth/settings",
 			icon: <Settings className="h-5 w-5" />,
 		},
@@ -193,99 +209,99 @@ const menuByRole: Record<
 	// Director and Deputy Director - full school management
 	director: [
 		{
-			label: "Dashboard",
+			label: t("dashboard"),
 			href: "/auth/",
 			icon: <LayoutDashboard className="h-5 w-5" />,
 		},
 		{
-			label: "Students",
+			label: t("students"),
 			href: "/auth/admin/students",
 			icon: <Users className="h-5 w-5" />,
 		},
 		{
-			label: "Members",
+			label: t("members"),
 			href: "/auth/admin/members",
 			icon: <UserCog className="h-5 w-5" />,
 		},
 		{
-			label: "Teachers & Staff",
+			label: t("teachers_staff"),
 			href: "/auth/admin/hr",
 			icon: <UserCog className="h-5 w-5" />,
 		},
 		{
-			label: "Academic",
+			label: t("academic"),
 			href: "/auth/admin/academic",
 			icon: <BookOpen className="h-5 w-5" />,
 		},
 		{
-			label: "Attendance",
+			label: t("attendance"),
 			href: "/auth/admin/attendance",
 			icon: <Calendar className="h-5 w-5" />,
 		},
 		{
-			label: "Grading",
+			label: t("grading"),
 			href: "/auth/admin/grading",
 			icon: <FileText className="h-5 w-5" />,
 		},
 		{
-			label: "Finance",
+			label: t("finance"),
 			href: "/auth/admin/finance",
 			icon: <DollarSign className="h-5 w-5" />,
 		},
 		{
-			label: "Reports",
+			label: t("reports"),
 			href: "/auth/reports",
 			icon: <BarChart3 className="h-5 w-5" />,
 		},
 		{
-			label: "Settings",
+			label: t("settings"),
 			href: "/auth/admin/settings",
 			icon: <Settings className="h-5 w-5" />,
 		},
 	],
 	deputyDirector: [
 		{
-			label: "Dashboard",
+			label: t("dashboard"),
 			href: "/auth/",
 			icon: <LayoutDashboard className="h-5 w-5" />,
 		},
 		{
-			label: "Students",
+			label: t("students"),
 			href: "/auth/admin/students",
 			icon: <Users className="h-5 w-5" />,
 		},
 		{
-			label: "Members",
+			label: t("members"),
 			href: "/auth/admin/members",
 			icon: <UserCog className="h-5 w-5" />,
 		},
 		{
-			label: "Teachers & Staff",
+			label: t("teachers_staff"),
 			href: "/auth/admin/hr",
 			icon: <UserCog className="h-5 w-5" />,
 		},
 		{
-			label: "Academic",
+			label: t("academic"),
 			href: "/auth/admin/academic",
 			icon: <BookOpen className="h-5 w-5" />,
 		},
 		{
-			label: "Attendance",
+			label: t("attendance"),
 			href: "/auth/admin/attendance",
 			icon: <Calendar className="h-5 w-5" />,
 		},
 		{
-			label: "Grading",
+			label: t("grading"),
 			href: "/auth/admin/grading",
 			icon: <FileText className="h-5 w-5" />,
 		},
 		{
-			label: "Reports",
+			label: t("reports"),
 			href: "/auth/reports",
 			icon: <BarChart3 className="h-5 w-5" />,
 		},
 		{
-			label: "Settings",
+			label: t("settings"),
 			href: "/auth/admin/settings",
 			icon: <Settings className="h-5 w-5" />,
 		},
@@ -293,232 +309,232 @@ const menuByRole: Record<
 	// HeadTeacher - academic focus
 	headTeacher: [
 		{
-			label: "Dashboard",
+			label: t("dashboard"),
 			href: "/auth/",
 			icon: <LayoutDashboard className="h-5 w-5" />,
 		},
 		{
-			label: "My Classes",
+			label: t("my_classes"),
 			href: "/auth/teacher/classes",
 			icon: <BookOpen className="h-5 w-5" />,
 		},
 		{
-			label: "Department Teachers",
+			label: t("department_teachers"),
 			href: "/auth/headteacher/teachers",
 			icon: <Users className="h-5 w-5" />,
 		},
 		{
-			label: "Attendance",
+			label: t("attendance"),
 			href: "/auth/admin/attendance",
 			icon: <Calendar className="h-5 w-5" />,
 		},
 		{
-			label: "Grading",
+			label: t("grading"),
 			href: "/auth/admin/grading",
 			icon: <FileText className="h-5 w-5" />,
 		},
 		{
-			label: "Announcements",
+			label: t("announcements"),
 			href: "/auth/headteacher/announcements",
 			icon: <Bell className="h-5 w-5" />,
 		},
 		{
-			label: "Reports",
+			label: t("reports"),
 			href: "/auth/reports",
 			icon: <BarChart3 className="h-5 w-5" />,
 		},
 	],
 	admin: [
 		{
-			label: "Dashboard",
+			label: t("dashboard"),
 			href: "/auth/",
 			icon: <LayoutDashboard className="h-5 w-5" />,
 		},
 		{
-			label: "Students",
+			label: t("students"),
 			href: "/auth/admin/students",
 			icon: <Users className="h-5 w-5" />,
 		},
 		{
-			label: "Schools",
+			label: t("schools"),
 			href: "/auth/admin/schools/pending",
 			icon: <Building className="h-5 w-5" />,
 		},
 		{
-			label: "Academic",
+			label: t("academic"),
 			href: "/auth/admin/academic",
 			icon: <BookOpen className="h-5 w-5" />,
 		},
 		{
-			label: "Attendance",
+			label: t("attendance"),
 			href: "/auth/admin/attendance",
 			icon: <Calendar className="h-5 w-5" />,
 		},
 		{
-			label: "Grading",
+			label: t("grading"),
 			href: "/auth/admin/grading",
 			icon: <FileText className="h-5 w-5" />,
 		},
 		{
-			label: "Finance",
+			label: t("finance"),
 			href: "/auth/admin/finance",
 			icon: <DollarSign className="h-5 w-5" />,
 		},
 		{
-			label: "HR",
+			label: t("hr"),
 			href: "/auth/admin/hr",
 			icon: <UserCog className="h-5 w-5" />,
 		},
 		{
-			label: "Library",
+			label: t("library"),
 			href: "/auth/admin/library",
 			icon: <Library className="h-5 w-5" />,
 		},
 		{
-			label: "Transport",
+			label: t("transport"),
 			href: "/auth/admin/transport",
 			icon: <Bus className="h-5 w-5" />,
 		},
 		{
-			label: "Inventory",
+			label: t("inventory"),
 			href: "/auth/admin/inventory",
 			icon: <Package className="h-5 w-5" />,
 		},
 		{
-			label: "Communication",
+			label: t("communication"),
 			href: "/auth/admin/communication",
 			icon: <MessageSquare className="h-5 w-5" />,
 		},
 		{
-			label: "Settings",
+			label: t("settings"),
 			href: "/auth/admin/settings",
 			icon: <Settings className="h-5 w-5" />,
 		},
 	],
 	teacher: [
 		{
-			label: "Dashboard",
+			label: t("dashboard"),
 			href: "/auth/",
 			icon: <Home className="h-5 w-5" />,
 		},
 		{
-			label: "My Classes",
+			label: t("my_classes"),
 			href: "/auth/teacher/classes",
 			icon: <BookOpen className="h-5 w-5" />,
 		},
 		{
-			label: "Attendance",
+			label: t("attendance"),
 			href: "/auth/teacher/attendance",
 			icon: <UserCheck className="h-5 w-5" />,
 		},
 		{
-			label: "Grading",
+			label: t("grading"),
 			href: "/auth/teacher/grading",
 			icon: <FileText className="h-5 w-5" />,
 		},
 		{
-			label: "Students",
+			label: t("students"),
 			href: "/auth/teacher/students",
 			icon: <Users className="h-5 w-5" />,
 		},
 		{
-			label: "Messages",
+			label: t("messages"),
 			href: "/auth/teacher/messages",
 			icon: <MessageSquare className="h-5 w-5" />,
 			badge: "3",
 		},
 		{
-			label: "Schedule",
+			label: t("schedule"),
 			href: "/auth/teacher/schedule",
 			icon: <Calendar className="h-5 w-5" />,
 		},
 		{
-			label: "Profile",
+			label: t("profile"),
 			href: "/auth/teacher/profile",
 			icon: <Settings className="h-5 w-5" />,
 		},
 	],
 	parent: [
 		{
-			label: "Dashboard",
+			label: t("dashboard"),
 			href: "/auth/",
 			icon: <Home className="h-5 w-5" />,
 		},
 		{
-			label: "My Children",
+			label: t("my_children"),
 			href: "/auth/parent/children",
 			icon: <Users className="h-5 w-5" />,
 		},
 		{
-			label: "Grades & Reports",
+			label: t("grades_reports"),
 			href: "/auth/parent/grades",
 			icon: <FileText className="h-5 w-5" />,
 		},
 		{
-			label: "Attendance",
+			label: t("attendance"),
 			href: "/auth/parent/attendance",
 			icon: <Calendar className="h-5 w-5" />,
 		},
 		{
-			label: "Fees & Payments",
+			label: t("fees_payments"),
 			href: "/auth/parent/payments",
 			icon: <DollarSign className="h-5 w-5" />,
 		},
 		{
-			label: "Messages",
+			label: t("messages"),
 			href: "/auth/parent/messages",
 			icon: <MessageSquare className="h-5 w-5" />,
 			badge: "2",
 		},
 		{
-			label: "Announcements",
+			label: t("announcements"),
 			href: "/auth/parent/announcements",
 			icon: <Bell className="h-5 w-5" />,
 		},
 		{
-			label: "Profile",
+			label: t("profile"),
 			href: "/auth/parent/profile",
 			icon: <Settings className="h-5 w-5" />,
 		},
 	],
 	student: [
 		{
-			label: "Dashboard",
+			label: t("dashboard"),
 			href: "/auth/",
 			icon: <Home className="h-5 w-5" />,
 		},
 		{
-			label: "My Schedule",
+			label: t("my_schedule"),
 			href: "/auth/student/schedule",
 			icon: <Calendar className="h-5 w-5" />,
 		},
 		{
-			label: "My Grades",
+			label: t("my_grades"),
 			href: "/auth/student/grades",
 			icon: <FileText className="h-5 w-5" />,
 		},
 		{
-			label: "Attendance",
+			label: t("attendance"),
 			href: "/auth/student/attendance",
 			icon: <UserCheck className="h-5 w-5" />,
 		},
 		{
-			label: "Library",
+			label: t("library"),
 			href: "/auth/student/library",
 			icon: <Library className="h-5 w-5" />,
 		},
 		{
-			label: "Announcements",
+			label: t("announcements"),
 			href: "/auth/student/announcements",
 			icon: <Bell className="h-5 w-5" />,
 		},
 		{
-			label: "Profile",
+			label: t("profile"),
 			href: "/auth/student/profile",
 			icon: <Settings className="h-5 w-5" />,
 		},
 	],
-};
+});
 
 // Helper function to map backend role to frontend UserRole
 const mapBackendRoleToUserRole = (backendRole: string | null): UserRole => {
@@ -555,12 +571,29 @@ export const Sidebar = () => {
 	const [showRoleSwitcher, setShowRoleSwitcher] = useState(false);
 	const { t } = useLanguage();
 	const { user, logout } = useAuth();
-	const { currentRole: backendRole } = useDashboard();
+	const {
+		currentRole: backendRole,
+		currentSchool,
+		currentMembership,
+	} = useDashboard();
+	const schoolId = currentSchool?.idStr || currentSchool?.id;
+	const { branches, loading: loadingBranches } = useBranches(schoolId);
+
+	// State for selected branch
+	const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
+
+	// Get current branch from membership or first available branch
+	const currentBranch = selectedBranchId
+		? branches.find((b) => b.id === selectedBranchId)
+		: currentMembership?.branchId
+			? branches.find((b) => b.id === currentMembership.branchId)
+			: branches[0];
 
 	// Map backend role to frontend role
 	const currentRole = mapBackendRoleToUserRole(backendRole);
+	const roleConfig = getRoleConfig(t);
 
-	const links = menuByRole[currentRole];
+	const links = getMenuByRole(t)[currentRole];
 	const RoleIcon = roleConfig[currentRole].icon;
 
 	return (
@@ -580,7 +613,8 @@ export const Sidebar = () => {
 						{/* Branch Selector - shown when sidebar is expanded */}
 						{open &&
 							currentRole !== "ministry" &&
-							currentRole !== "student" && (
+							currentRole !== "student" &&
+							branches.length > 0 && (
 								<motion.div
 									initial={{ opacity: 0, scale: 0.95 }}
 									animate={{ opacity: 1, scale: 1 }}
@@ -588,23 +622,60 @@ export const Sidebar = () => {
 									className="mt-4 px-2"
 								>
 									<div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 px-2">
-										Current Branch
+										{t("current_branch")}
 									</div>
-									<div className="bg-primary/5 border border-primary/20 rounded-lg p-3 hover:bg-primary/10 transition-colors cursor-pointer">
-										<div className="flex items-center gap-2">
-											<div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center">
-												<Building className="h-4 w-4 text-primary" />
+									<DropdownMenu>
+										<DropdownMenuTrigger className="w-full">
+											<div className="bg-primary/5 border border-primary/20 rounded-lg p-3 hover:bg-primary/10 transition-colors cursor-pointer">
+												<div className="flex items-center gap-2">
+													<div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center">
+														<Building className="h-4 w-4 text-primary" />
+													</div>
+													<div className="flex flex-col min-w-0 flex-1 text-left">
+														<span className="text-xs text-muted-foreground">
+															{loadingBranches ? t("loading") : t("branch")}
+														</span>
+														<span className="text-sm font-medium truncate">
+															{currentBranch?.name || t("all_branches")}
+														</span>
+													</div>
+													<ChevronDown className="h-4 w-4 text-muted-foreground" />
+												</div>
 											</div>
-											<div className="flex flex-col min-w-0">
-												<span className="text-xs text-muted-foreground">
-													Main Campus
-												</span>
-												<span className="text-sm font-medium truncate">
-													Phnom Penh Branch
-												</span>
-											</div>
-										</div>
-									</div>
+										</DropdownMenuTrigger>
+										<DropdownMenuContent align="start" className="w-52">
+											<DropdownMenuLabel>
+												{t("switch_branch")}
+											</DropdownMenuLabel>
+											<DropdownMenuSeparator />
+											{currentRole === "owner" && (
+												<DropdownMenuItem
+													onClick={() => setSelectedBranchId(null)}
+													className="gap-2"
+												>
+													<Building className="h-4 w-4" />
+													<span className="flex-1">{t("all_branches")}</span>
+													{!selectedBranchId &&
+														!currentMembership?.branchId && (
+															<Check className="h-4 w-4 text-primary" />
+														)}
+												</DropdownMenuItem>
+											)}
+											{branches.map((branch) => (
+												<DropdownMenuItem
+													key={branch.id}
+													onClick={() => setSelectedBranchId(branch.id)}
+													className="gap-2"
+												>
+													<Building className="h-4 w-4" />
+													<span className="flex-1">{branch.name}</span>
+													{currentBranch?.id === branch.id && (
+														<Check className="h-4 w-4 text-primary" />
+													)}
+												</DropdownMenuItem>
+											))}
+										</DropdownMenuContent>
+									</DropdownMenu>
 								</motion.div>
 							)}
 
@@ -667,7 +738,7 @@ export const Sidebar = () => {
 							>
 								<SidebarLink
 									link={{
-										label: "Logout",
+										label: t("logout"),
 										href: "#",
 										icon: (
 											<LogOut className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
@@ -690,7 +761,7 @@ export const Sidebar = () => {
 								</div>
 								<div className="flex flex-col min-w-0">
 									<span className="text-sm font-semibold truncate text-neutral-900 dark:text-neutral-100">
-										{user?.name || "User"}
+										{user?.name || t("user")}
 									</span>
 									<div className="flex items-center gap-1.5">
 										<div
@@ -719,6 +790,7 @@ export const Sidebar = () => {
 };
 
 export const Logo = () => {
+	const { t } = useLanguage();
 	return (
 		<Link
 			className="font-normal flex space-x-2 items-center text-sm py-1 relative z-20"
@@ -738,9 +810,11 @@ export const Logo = () => {
 				className="flex flex-col"
 			>
 				<span className="font-bold text-base text-black dark:text-white whitespace-pre">
-					Cambodia SMS
+					{t("app_title")}
 				</span>
-				<span className="text-xs text-muted-foreground">School Management</span>
+				<span className="text-xs text-muted-foreground">
+					{t("app_subtitle")}
+				</span>
 			</motion.div>
 		</Link>
 	);

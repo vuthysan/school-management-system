@@ -1,60 +1,50 @@
 "use client";
 
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from "react";
+import React, { createContext, useContext, ReactNode } from "react";
+import { useTranslation } from "react-i18next";
+import { SupportedLang } from "@/config/translations";
 
-import { translations, SupportedLang } from "@/config/translations";
+// Import i18n configuration (this initializes i18next)
+import "@/config/i18n";
 
 type LanguageContextType = {
-  language: SupportedLang;
-  setLanguage: (lang: SupportedLang) => void;
-  t: (key: keyof typeof translations.en) => string;
+	language: SupportedLang;
+	setLanguage: (lang: SupportedLang) => void;
+	t: (key: string, options?: Record<string, unknown>) => string;
 };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(
-  undefined,
+	undefined
 );
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [language, setLanguage] = useState<SupportedLang>("en");
+	// useTranslation hook handles re-renders automatically when language changes
+	const { t: i18nT, i18n } = useTranslation();
 
-  useEffect(() => {
-    const savedLang = localStorage.getItem("sms-language") as SupportedLang;
+	const language = (i18n.language as SupportedLang) || "en";
 
-    if (savedLang && (savedLang === "en" || savedLang === "km")) {
-      setLanguage(savedLang);
-    }
-  }, []);
+	const setLanguage = (lang: SupportedLang) => {
+		i18n.changeLanguage(lang);
+	};
 
-  const handleSetLanguage = (lang: SupportedLang) => {
-    setLanguage(lang);
-    localStorage.setItem("sms-language", lang);
-  };
+	const t = (key: string, options?: Record<string, unknown>): string => {
+		const result = i18nT(key, options as any);
+		return typeof result === "string" ? result : key;
+	};
 
-  const t = (key: keyof typeof translations.en) => {
-    return translations[language][key] || translations["en"][key] || key;
-  };
-
-  return (
-    <LanguageContext.Provider
-      value={{ language, setLanguage: handleSetLanguage, t }}
-    >
-      {children}
-    </LanguageContext.Provider>
-  );
+	return (
+		<LanguageContext.Provider value={{ language, setLanguage, t }}>
+			{children}
+		</LanguageContext.Provider>
+	);
 };
 
 export const useLanguage = () => {
-  const context = useContext(LanguageContext);
+	const context = useContext(LanguageContext);
 
-  if (context === undefined) {
-    throw new Error("useLanguage must be used within a LanguageProvider");
-  }
+	if (context === undefined) {
+		throw new Error("useLanguage must be used within a LanguageProvider");
+	}
 
-  return context;
+	return context;
 };

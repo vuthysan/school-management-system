@@ -1,54 +1,23 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import {
-	graphqlRequest,
-	CLASS_QUERIES,
-	CLASS_MUTATIONS,
-} from "@/lib/graphql-client";
+import { graphqlRequest } from "@/lib/graphql-client";
+import { CLASS_QUERIES, CLASS_MUTATIONS } from "@/app/graphql/class";
 import { useAuth } from "@/contexts/auth-context";
+import {
+	Class,
+	ClassFormData,
+	ClassFilterInput,
+	ClassSortInput,
+	PaginatedClassesResult,
+} from "@/types/academic";
 
-export interface ClassPeriod {
-	periodNumber: number;
-	subjectId: string;
-	teacherId: string;
-	startTime: string;
-	endTime: string;
-}
-
-export interface ClassSchedule {
-	day: string;
-	periods: ClassPeriod[];
-}
-
-export interface Class {
-	id: string;
-	schoolId: string;
-	academicYearId: string;
-	name: string;
-	code: string;
-	gradeLevel: string;
-	section?: string;
-	homeroomTeacherId?: string;
-	roomNumber?: string;
-	capacity: number;
-	currentEnrollment: number;
-	status: string;
-	schedule?: ClassSchedule[];
-	hasCapacity: boolean;
-	availableSpots: number;
-}
-
-export interface CreateClassInput {
-	schoolId: string;
-	academicYearId: string;
-	name: string;
-	code: string;
-	gradeLevel: string;
-	section?: string;
-	homeroomTeacherId?: string;
-	roomNumber?: string;
-	capacity: number;
+export interface UseClassesOptions {
+	schoolId: string | null;
+	page?: number;
+	pageSize?: number;
+	filter?: ClassFilterInput;
+	sort?: ClassSortInput;
 }
 
 export interface UpdateClassInput {
@@ -60,15 +29,20 @@ export interface UpdateClassInput {
 	status?: string;
 }
 
-export function useClasses(schoolId: string | null) {
+export function useClasses(options: UseClassesOptions) {
+	const { schoolId, page = 1, pageSize = 10, filter, sort } = options;
 	const { getAccessToken, isAuthenticated } = useAuth();
 	const [classes, setClasses] = useState<Class[]>([]);
+	const [total, setTotal] = useState(0);
+	const [totalPages, setTotalPages] = useState(0);
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
 	const fetchClasses = useCallback(async () => {
 		if (!schoolId || !isAuthenticated) {
 			setClasses([]);
+			setTotal(0);
+			setTotalPages(0);
 			return;
 		}
 
@@ -77,26 +51,36 @@ export function useClasses(schoolId: string | null) {
 
 		try {
 			const token = getAccessToken();
-			const data = await graphqlRequest<{ classesBySchool: Class[] }>(
+			const data = await graphqlRequest<{
+				classesBySchool: PaginatedClassesResult;
+			}>(
 				CLASS_QUERIES.BY_SCHOOL,
-				{ schoolId },
+				{
+					schoolId,
+					page,
+					pageSize,
+					filter: filter || undefined,
+					sort: sort || undefined,
+				},
 				token
 			);
-			setClasses(data.classesBySchool || []);
+			setClasses(data.classesBySchool.items || []);
+			setTotal(data.classesBySchool.total);
+			setTotalPages(data.classesBySchool.totalPages);
 		} catch (err) {
 			console.error("Failed to fetch classes:", err);
 			setError(err instanceof Error ? err.message : "Failed to load classes");
 		} finally {
 			setIsLoading(false);
 		}
-	}, [schoolId, isAuthenticated, getAccessToken]);
+	}, [schoolId, page, pageSize, filter, sort, isAuthenticated, getAccessToken]);
 
 	useEffect(() => {
 		fetchClasses();
 	}, [fetchClasses]);
 
 	const createClass = useCallback(
-		async (input: CreateClassInput) => {
+		async (input: ClassFormData) => {
 			const token = getAccessToken();
 			const data = await graphqlRequest<{ createClass: Class }>(
 				CLASS_MUTATIONS.CREATE,
@@ -138,6 +122,8 @@ export function useClasses(schoolId: string | null) {
 
 	return {
 		classes,
+		total,
+		totalPages,
 		isLoading,
 		error,
 		refresh: fetchClasses,

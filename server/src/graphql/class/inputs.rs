@@ -64,3 +64,29 @@ pub struct UpdateClassInput {
     /// Status
     pub status: Option<Status>,
 }
+
+// ============================================================================
+// FILTER AND SORT INPUTS
+// ============================================================================
+
+/// Input for filtering classes
+#[derive(InputObject, Default)]
+pub struct ClassFilterInput {
+    /// Search by name or code (case-insensitive)
+    pub search: Option<String>,
+    /// Filter by status
+    pub status: Option<Status>,
+    /// Filter by grade level
+    pub grade_level: Option<String>,
+    /// Filter by branch ID
+    pub branch_id: Option<String>,
+}
+
+/// Input for sorting classes
+#[derive(InputObject, Default)]
+pub struct ClassSortInput {
+    /// Field to sort by: "name", "code", "gradeLevel", "createdAt", "currentEnrollment"
+    pub sort_by: Option<String>,
+    /// Sort order: "asc" or "desc" (default: "asc")
+    pub sort_order: Option<String>,
+}

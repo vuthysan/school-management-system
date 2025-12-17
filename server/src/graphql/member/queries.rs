@@ -104,4 +104,45 @@ impl MemberQuery {
 
         Ok(members)
     }
+
+    /// Get members by branch in a specific school
+    async fn members_by_branch(
+        &self,
+        ctx: &Context<'_>,
+        school_id: String,
+        branch_id: Option<String>,
+    ) -> Result<Vec<Member>> {
+        let db = ctx.data::<Database>()?;
+        let collection = db.collection::<Member>("members");
+
+        let mut filter = doc! {
+            "school_id": &school_id,
+            "status": "Active",
+            "soft_delete.is_deleted": false
+        };
+
+        // Filter by branch_id if provided
+        if let Some(ref branch) = branch_id {
+            filter.insert("branch_id", branch);
+        } else {
+            // If no branch_id provided, get members without branch (school-wide)
+            filter.insert("branch_id", mongodb::bson::Bson::Null);
+        }
+
+        let mut cursor = collection
+            .find(filter, None)
+            .await
+            .map_err(|e| Error::new(e.to_string()))?;
+
+        let mut members = Vec::new();
+        while let Some(member) = cursor
+            .try_next()
+            .await
+            .map_err(|e| Error::new(e.to_string()))?
+        {
+            members.push(member);
+        }
+
+        Ok(members)
+    }
 }

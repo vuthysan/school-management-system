@@ -6,13 +6,16 @@ export const SUBJECT_QUERIES = {
       subjects {
         id
         schoolId
-        name
-        code
+        branchId
+        subjectName
+        subjectCode
         description
-        category
+        gradeLevels
         credits
-        isElective
+        department
         status
+        createdAt
+        updatedAt
       }
     }
   `,
@@ -22,43 +25,53 @@ export const SUBJECT_QUERIES = {
       subject(id: $id) {
         id
         schoolId
-        name
-        code
+        branchId
+        subjectName
+        subjectCode
         description
-        category
+        gradeLevels
         credits
-        isElective
+        department
         status
-        prerequisites
-        assessmentWeights {
-          type
-          weight
-        }
+        createdAt
+        updatedAt
       }
     }
   `,
 
 	BY_SCHOOL: `
-    query SubjectsBySchool($schoolId: String!) {
-      subjectsBySchool(schoolId: $schoolId) {
-        id
-        name
-        code
-        category
-        credits
-        status
-      }
-    }
-  `,
-
-	BY_GRADE_LEVEL: `
-    query SubjectsByGradeLevel($schoolId: String!, $gradeLevel: String!) {
-      subjectsByGradeLevel(schoolId: $schoolId, gradeLevel: $gradeLevel) {
-        id
-        name
-        code
-        category
-        isElective
+    query SubjectsBySchool(
+      $schoolId: String!
+      $page: Int
+      $pageSize: Int
+      $filter: SubjectFilterInput
+      $sort: SubjectSortInput
+    ) {
+      subjectsBySchool(
+        schoolId: $schoolId
+        page: $page
+        pageSize: $pageSize
+        filter: $filter
+        sort: $sort
+      ) {
+        items {
+          id
+          schoolId
+          branchId
+          subjectName
+          subjectCode
+          description
+          gradeLevels
+          credits
+          department
+          status
+          createdAt
+          updatedAt
+        }
+        total
+        page
+        pageSize
+        totalPages
       }
     }
   `,
@@ -69,9 +82,8 @@ export const SUBJECT_MUTATIONS = {
     mutation CreateSubject($input: SubjectInput!) {
       createSubject(input: $input) {
         id
-        name
-        code
-        category
+        subjectName
+        subjectCode
       }
     }
   `,
@@ -80,9 +92,8 @@ export const SUBJECT_MUTATIONS = {
     mutation UpdateSubject($id: String!, $input: UpdateSubjectInput!) {
       updateSubject(id: $id, input: $input) {
         id
-        name
-        code
-        description
+        subjectName
+        subjectCode
         status
       }
     }

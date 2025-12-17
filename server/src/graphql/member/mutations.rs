@@ -1,6 +1,6 @@
 use super::inputs::{AddMemberInput, RemoveMemberInput, UpdateMemberRoleInput};
 use crate::models::member::{Member, SchoolRole};
-use crate::utils::permissions::can_manage_members;
+use crate::utils::permissions::{can_manage_branch, can_manage_members};
 use async_graphql::*;
 use mongodb::{
     bson::{doc, oid::ObjectId},
@@ -44,6 +44,17 @@ impl MemberMutation {
             ));
         }
 
+        // Check branch-level permission
+        // Directors can only add members to their assigned branch
+        let target_branch_id = input.branch_id.as_deref();
+        let auth_branch_id = auth_member.branch_id.as_deref();
+
+        if !can_manage_branch(&auth_member.role, auth_branch_id, target_branch_id) {
+            return Err(Error::new(
+                "You can only add members to your assigned branch.",
+            ));
+        }
+
         // Parse role string to SchoolRole
         let school_role: SchoolRole = serde_json::from_str(&format!("\"{}\"", input.role))
             .map_err(|_| Error::new("Invalid role"))?;
@@ -64,8 +75,9 @@ impl MemberMutation {
             return Err(Error::new("User is already a member of this school"));
         }
 
-        // Create new member
-        let member = Member::new(input.user_id, input.school_id, school_role);
+        // Create new member with branch assignment
+        let mut member = Member::new(input.user_id, input.school_id, school_role);
+        member.branch_id = input.branch_id;
 
         members_collection
             .insert_one(&member, None)
