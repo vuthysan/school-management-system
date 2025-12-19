@@ -6,6 +6,7 @@ pub mod common;
 pub mod grade;
 pub mod grade_level;
 pub mod graphql_context;
+pub mod hr;
 pub mod member;
 pub mod schema;
 pub mod school;
@@ -31,6 +32,7 @@ pub struct QueryRoot(
     grade_level::GradeLevelQuery,
     member::MemberQuery,
     user::UserQuery,
+    hr::HRQuery,
 );
 
 // Merged Mutation combining all domain mutations
@@ -45,4 +47,5 @@ pub struct MutationRoot(
     grade::GradeMutation,
     grade_level::GradeLevelMutation,
     member::MemberMutation,
+    hr::HRMutation,
 );

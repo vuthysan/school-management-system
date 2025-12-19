@@ -76,7 +76,7 @@ export default function RegisterPage() {
 
     try {
       const token = getAccessToken();
-      const response = await fetch("http://localhost:8080/graphql", {
+      const response = await fetch("http://localhost:8081/graphql", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

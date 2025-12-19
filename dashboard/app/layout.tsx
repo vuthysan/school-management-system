@@ -1,6 +1,7 @@
 import "@/styles/globals.css";
 import { Metadata, Viewport } from "next";
 import clsx from "clsx";
+import { Toaster } from "sonner";
 
 import { LanguageProvider } from "@/contexts/language-context";
 import { AuthProvider } from "@/contexts/auth-context";
@@ -46,6 +47,7 @@ export default function RootLayout({
 						<LanguageProvider>{children}</LanguageProvider>
 					</AuthProvider>
 				</Providers>
+				<Toaster richColors position="top-right" />
 			</body>
 		</html>
 	);

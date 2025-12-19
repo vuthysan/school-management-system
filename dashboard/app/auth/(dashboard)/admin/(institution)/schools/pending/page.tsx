@@ -121,7 +121,7 @@ export default function PendingSchoolsPage() {
   const fetchPendingSchools = async () => {
     try {
       const token = getAccessToken();
-      const response = await fetch("http://localhost:8080/graphql", {
+      const response = await fetch("http://localhost:8081/graphql", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -167,7 +167,7 @@ export default function PendingSchoolsPage() {
     setActionLoading(true);
     try {
       const token = getAccessToken();
-      const response = await fetch("http://localhost:8080/graphql", {
+      const response = await fetch("http://localhost:8081/graphql", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -215,7 +215,7 @@ export default function PendingSchoolsPage() {
     setActionLoading(true);
     try {
       const token = getAccessToken();
-      const response = await fetch("http://localhost:8080/graphql", {
+      const response = await fetch("http://localhost:8081/graphql", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -64,7 +64,7 @@ function CallbackContent() {
           // Check if user has any school memberships
           try {
             const membershipResponse = await fetch(
-              "http://localhost:8080/graphql",
+              "http://localhost:8081/graphql",
               {
                 method: "POST",
                 headers: {

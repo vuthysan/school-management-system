@@ -8,7 +8,6 @@
 @config "../tailwind.config.js";
 
 @theme inline {
-
   --radius-sm: calc(var(--radius) - 4px);
 
   --radius-md: calc(var(--radius) - 2px);
@@ -84,7 +83,7 @@
 @layer base {
   :root {
 
-    --background: oklch(1 0 0);
+    --background: oklch(95.514% 0.00011 271.152);
 
     --foreground: oklch(0.145 0 0);
 
@@ -273,7 +272,7 @@
 
 /* SLATE ------------------------------------------------------------------- */
 [data-theme-variant="slate"] {
-    --background: oklch(1 0 0);
+    --background: oklch(94.611% 0.00011 271.152);
     --foreground: oklch(0.13 0.028 261.692);
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.13 0.028 261.692);
@@ -325,7 +324,7 @@
 
 /* STONE ------------------------------------------------------------------- */
 [data-theme-variant="stone"] {
-    --background: oklch(1 0 0);
+    --background: oklch(0.97 0 0);
     --foreground: oklch(0.17 0.015 85.089);
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.17 0.015 85.089);
@@ -377,7 +376,7 @@
 
 /* GRAY -------------------------------------------------------------------- */
 [data-theme-variant="gray"] {
-    --background: oklch(1 0 0);
+    --background: oklch(0.97 0 0);
     --foreground: oklch(0.147 0.005 264.052);
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.147 0.005 264.052);
@@ -429,7 +428,7 @@
 
 /* NEUTRAL ----------------------------------------------------------------- */
 [data-theme-variant="neutral"] {
-    --background: oklch(1 0 0);
+    --background: oklch(0.97 0 0);
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.145 0 0);
@@ -486,4 +485,31 @@
   body {
     @apply bg-background text-foreground;
   }
+  input, textarea, select {
+    @apply focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary transition-all;
+  }
+}
+
+/* Thin scrollbar styles */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.5 0 0 / 30%) transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 2px;
+  height: 2px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: oklch(0.5 0 0 / 30%);
+  border-radius: 9999px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: oklch(0.5 0 0 / 50%);
 }

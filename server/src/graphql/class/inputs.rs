@@ -63,6 +63,8 @@ pub struct UpdateClassInput {
     pub capacity: Option<i32>,
     /// Status
     pub status: Option<Status>,
+    /// Academic year ID
+    pub academic_year_id: Option<String>,
 }
 
 // ============================================================================

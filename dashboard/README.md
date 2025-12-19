@@ -1,32 +1,57 @@
-# Next.js & HeroUI Template
+# SMS Dashboard
 
-This is a template for creating applications using Next.js 14 (app directory) and HeroUI (v2).
+Modern school management system dashboard built with Next.js, HeroUI, and Tailwind CSS.
 
-[Try it on CodeSandbox](https://githubbox.com/heroui-inc/heroui/next-app-template)
+## Project Structure
+
+The application uses a role-based and semantically grouped directory structure within the Next.js App Router.
+
+### Directory Map (Routes)
+
+```
+app/
+├── (public)/              # Public landing and auth entry
+│   └── page.tsx           # Login page (at /)
+└── auth/                  # Protected routes prefix
+    ├── (dashboard)/       # Main application space
+    │   ├── page.tsx       # Core dashboard (at /auth)
+    │   ├── admin/         # Admin specialized features
+    │   │   ├── (academic)     # Classes, attendance, grading
+    │   │   ├── (institution)  # Branches, schools, settings
+    │   │   ├── (management)   # Staff, students, members
+    │   │   ├── (operations)   # Inventory, library, transport
+    │   │   └── (finance)      # Financial management
+    │   └── owner/         # School owner features
+    ├── callback/          # OAuth callback processing
+    ├── get-started/       # Onboarding flow
+    ├── pending-approval/  # Access request status
+    └── settings/          # Shared user settings & profile
+```
+
+## Authentication Architecture
+
+The application implements a robust authentication and authorization flow:
+
+1.  **Public entry**: Users arrive at `/` (Login).
+2.  **OAuth flow**: Users login via KOOMPI ID, redirecting to `/auth/callback`.
+3.  **Prefix-based protection**: All core application features are prefixed with `/auth`.
+4.  **Guards**:
+    - `AuthGuard`: Ensures the user has a valid JWT session.
+    - `MembershipGuard`: Standardizes access based on school membership and approval status.
+5.  **Role-based UI**: Sidebar modules and dashboard stats dynamically adapt based on the user's current role (Admin, Teacher, Student, etc.).
 
 ## Technologies Used
 
 - [Next.js 14](https://nextjs.org/docs/getting-started)
 - [HeroUI v2](https://heroui.com/)
 - [Tailwind CSS](https://tailwindcss.com/)
-- [Tailwind Variants](https://tailwind-variants.org)
-- [TypeScript](https://www.typescriptlang.org/)
 - [Framer Motion](https://www.framer.com/motion/)
-- [next-themes](https://github.com/pacocoursey/next-themes)
+- [react-i18next](https://react.i18next.com/)
+- [GraphQL/Apollo](https://www.apollographql.com/)
 
-## How to Use
-
-### Use the template with create-next-app
-
-To create a new project based on this template using `create-next-app`, run the following command:
-
-```bash
-npx create-next-app -e https://github.com/heroui-inc/next-app-template
-```
+## Development
 
 ### Install dependencies
-
-You can use one of them `npm`, `yarn`, `pnpm`, `bun`, Example using `npm`:
 
 ```bash
 npm install
@@ -38,16 +63,6 @@ npm install
 npm run dev
 ```
 
-### Setup pnpm (optional)
-
-If you are using `pnpm`, you need to add the following code to your `.npmrc` file:
-
-```bash
-public-hoist-pattern[]=*@heroui/*
-```
-
-After modifying the `.npmrc` file, you need to run `pnpm install` again to ensure that the dependencies are installed correctly.
-
 ## License
 
-Licensed under the [MIT license](https://github.com/heroui-inc/next-app-template/blob/main/LICENSE).
+Licensed under the [MIT license](LICENSE).

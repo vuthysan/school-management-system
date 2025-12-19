@@ -215,16 +215,16 @@ pub struct Student {
     // ========================
     // Personal Information
     // ========================
-    /// First name (English)
-    pub first_name: String,
-    /// Last name (English)
-    pub last_name: String,
-    /// First name (Khmer)
+    /// First name (Khmer) - primary/required
+    pub first_name_km: String,
+    /// Last name (Khmer) - primary/required
+    pub last_name_km: String,
+    /// First name (English) - optional
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub first_name_km: Option<String>,
-    /// Last name (Khmer)
+    pub first_name_en: Option<String>,
+    /// Last name (English) - optional
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub last_name_km: Option<String>,
+    pub last_name_en: Option<String>,
     /// Date of birth
     pub date_of_birth: DateOfBirth,
     /// Gender
@@ -307,14 +307,14 @@ impl Student {
         self.id.map(|oid| oid.to_hex())
     }
 
-    /// Get full name in English
+    /// Get full name in Khmer (primary)
     async fn full_name(&self) -> String {
-        format!("{} {}", self.first_name, self.last_name)
+        format!("{} {}", self.first_name_km, self.last_name_km)
     }
 
-    /// Get full name in Khmer (if available)
-    async fn full_name_km(&self) -> Option<String> {
-        match (&self.first_name_km, &self.last_name_km) {
+    /// Get full name in English (if available)
+    async fn full_name_en(&self) -> Option<String> {
+        match (&self.first_name_en, &self.last_name_en) {
             (Some(first), Some(last)) => Some(format!("{} {}", first, last)),
             _ => None,
         }
@@ -337,8 +337,8 @@ impl Student {
     pub fn new(
         school_id: impl Into<String>,
         student_id: impl Into<String>,
-        first_name: impl Into<String>,
-        last_name: impl Into<String>,
+        first_name_km: impl Into<String>,
+        last_name_km: impl Into<String>,
         date_of_birth: DateOfBirth,
         grade_level: impl Into<String>,
     ) -> Self {
@@ -348,10 +348,10 @@ impl Student {
             branch_id: None,
             student_id: student_id.into(),
             national_id: None,
-            first_name: first_name.into(),
-            last_name: last_name.into(),
-            first_name_km: None,
-            last_name_km: None,
+            first_name_km: first_name_km.into(),
+            last_name_km: last_name_km.into(),
+            first_name_en: None,
+            last_name_en: None,
             date_of_birth,
             gender: Gender::default(),
             nationality: Some("Cambodian".to_string()),

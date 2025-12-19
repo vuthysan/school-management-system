@@ -109,7 +109,7 @@ export default function OwnerSchoolsPage() {
       // TODO: Get owner email from auth context
       const ownerEmail = "owner@example.com";
 
-      const response = await fetch("http://localhost:8080/graphql", {
+      const response = await fetch("http://localhost:8081/graphql", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

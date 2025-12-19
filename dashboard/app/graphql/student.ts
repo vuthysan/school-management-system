@@ -1,34 +1,38 @@
 // Student GraphQL Queries and Mutations
 
 export const STUDENT_QUERIES = {
-  GET_ALL: `
+	GET_ALL: `
     query GetStudents {
       students {
         id
         schoolId
         studentId
-        firstName
-        lastName
         firstNameKm
         lastNameKm
+        firstNameEn
+        lastNameEn
         gradeLevel
         status
         fullName
         age
+        contact {
+          email
+          phone
+        }
       }
     }
   `,
 
-  GET_BY_ID: `
+	GET_BY_ID: `
     query GetStudent($id: String!) {
       student(id: $id) {
         id
         schoolId
         studentId
-        firstName
-        lastName
         firstNameKm
         lastNameKm
+        firstNameEn
+        lastNameEn
         dateOfBirth {
           day
           month
@@ -38,15 +42,14 @@ export const STUDENT_QUERIES = {
         gradeLevel
         status
         fullName
-        fullNameKm
+        fullNameEn
         age
         guardians {
-          firstName
-          lastName
+          name
           relationship
           phone
           email
-          isPrimary
+          isEmergencyContact
         }
         enrollment {
           enrollmentDate
@@ -62,27 +65,52 @@ export const STUDENT_QUERIES = {
     }
   `,
 
-  BY_SCHOOL: `
+	BY_SCHOOL: `
     query StudentsBySchool($schoolId: String!) {
       studentsBySchool(schoolId: $schoolId) {
         id
         studentId
-        firstName
-        lastName
+        nationalId
+        firstNameKm
+        lastNameKm
+        firstNameEn
+        lastNameEn
+        dateOfBirth {
+          day
+          month
+          year
+        }
         gradeLevel
+        gender
         status
         fullName
+        nationality
+        religion
+        contact {
+          email
+          phone
+          address {
+            province
+          }
+        }
+        guardians {
+          name
+          relationship
+          phone
+          email
+          isEmergencyContact
+        }
       }
     }
   `,
 
-  BY_CLASS: `
+	BY_CLASS: `
     query StudentsByClass($classId: String!) {
       studentsByClass(classId: $classId) {
         id
         studentId
-        firstName
-        lastName
+        firstNameKm
+        lastNameKm
         fullName
         status
       }
@@ -91,33 +119,33 @@ export const STUDENT_QUERIES = {
 };
 
 export const STUDENT_MUTATIONS = {
-  CREATE: `
+	CREATE: `
     mutation CreateStudent($input: CreateStudentInput!) {
       createStudent(input: $input) {
         id
         schoolId
         studentId
-        firstName
-        lastName
+        firstNameKm
+        lastNameKm
         gradeLevel
         status
       }
     }
   `,
 
-  UPDATE: `
+	UPDATE: `
     mutation UpdateStudent($id: String!, $input: UpdateStudentInput!) {
       updateStudent(id: $id, input: $input) {
         id
-        firstName
-        lastName
+        firstNameKm
+        lastNameKm
         gradeLevel
         status
       }
     }
   `,
 
-  DELETE: `
+	DELETE: `
     mutation DeleteStudent($id: String!) {
       deleteStudent(id: $id)
     }

@@ -1,7 +1,7 @@
 // Attendance GraphQL Queries and Mutations
 
 export const ATTENDANCE_QUERIES = {
-  GET_BY_CLASS: `
+	GET_BY_CLASS: `
     query AttendanceByClass($classId: String!, $date: String!) {
       attendanceByClass(classId: $classId, date: $date) {
         id
@@ -14,7 +14,7 @@ export const ATTENDANCE_QUERIES = {
     }
   `,
 
-  GET_BY_STUDENT: `
+	GET_BY_STUDENT: `
     query AttendanceByStudent($studentId: String!, $startDate: String, $endDate: String) {
       attendanceByStudent(studentId: $studentId, startDate: $startDate, endDate: $endDate) {
         id
@@ -26,7 +26,7 @@ export const ATTENDANCE_QUERIES = {
     }
   `,
 
-  SUMMARY_BY_CLASS: `
+	SUMMARY_BY_CLASS: `
     query AttendanceSummaryByClass($classId: String!, $month: Int!, $year: Int!) {
       attendanceSummaryByClass(classId: $classId, month: $month, year: $year) {
         totalDays
@@ -40,7 +40,7 @@ export const ATTENDANCE_QUERIES = {
 };
 
 export const ATTENDANCE_MUTATIONS = {
-  MARK_ATTENDANCE: `
+	MARK_ATTENDANCE: `
     mutation MarkAttendance($input: AttendanceInput!) {
       markAttendance(input: $input) {
         id
@@ -52,16 +52,16 @@ export const ATTENDANCE_MUTATIONS = {
     }
   `,
 
-  MARK_BULK_ATTENDANCE: `
-    mutation MarkBulkAttendance($classId: String!, $date: String!, $records: [AttendanceRecordInput!]!) {
-      markBulkAttendance(classId: $classId, date: $date, records: $records) {
+	MARK_BULK_ATTENDANCE: `
+    mutation MarkBulkAttendance($classId: String!, $date: String!, $markedBy: String!, $records: [AttendanceRecordInput!]!) {
+      markBulkAttendance(classId: $classId, date: $date, markedBy: $markedBy, records: $records) {
         success
         count
       }
     }
   `,
 
-  UPDATE_ATTENDANCE: `
+	UPDATE_ATTENDANCE: `
     mutation UpdateAttendance($id: String!, $status: String!, $remarks: String) {
       updateAttendance(id: $id, status: $status, remarks: $remarks) {
         id

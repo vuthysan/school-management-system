@@ -42,7 +42,7 @@ impl ClassMutation {
         &self,
         ctx: &Context<'_>,
         id: String,
-        input: ClassInput,
+        input: super::inputs::UpdateClassInput,
     ) -> Result<ClassType> {
         let db = ctx.data::<Database>()?;
         let collection = db.collection::<models::class::Class>("classes");
@@ -50,16 +50,32 @@ impl ClassMutation {
         // Parse ObjectId
         let obj_id = ObjectId::parse_str(&id).map_err(|_| Error::new("Invalid ID format"))?;
 
-        let mut class: models::class::Class = input.into();
-        class.id = Some(obj_id);
-        // Update the audit timestamp
-        class.audit.touch(None);
+        // Build update document with only provided fields
+        let mut update_fields = doc! {};
+        if let Some(name) = &input.name {
+            update_fields.insert("name", name);
+        }
+        if let Some(section) = &input.section {
+            update_fields.insert("section", section);
+        }
+        if let Some(homeroom_teacher_id) = &input.homeroom_teacher_id {
+            update_fields.insert("homeroom_teacher_id", homeroom_teacher_id);
+        }
+        if let Some(room_number) = &input.room_number {
+            update_fields.insert("room_number", room_number);
+        }
+        if let Some(capacity) = input.capacity {
+            update_fields.insert("capacity", capacity);
+        }
+        if let Some(status) = &input.status {
+            update_fields.insert("status", mongodb::bson::to_bson(status).unwrap());
+        }
+        if let Some(academic_year_id) = &input.academic_year_id {
+            update_fields.insert("academic_year_id", academic_year_id);
+        }
+        update_fields.insert("audit.updated_at", mongodb::bson::DateTime::now());
 
-        // Update class in database
-        let update_doc = doc! {
-            "$set": mongodb::bson::to_document(&class)
-                .map_err(|e| Error::new(e.to_string()))?
-        };
+        let update_doc = doc! { "$set": update_fields };
 
         collection
             .update_one(doc! { "_id": obj_id }, update_doc, None)

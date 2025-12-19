@@ -1,7 +1,7 @@
 // Attendance GraphQL inputs
+use crate::models::attendance::Attendance;
 use async_graphql::*;
 use mongodb::bson::{oid::ObjectId, DateTime};
-use crate::models::attendance::Attendance;
 
 #[derive(InputObject)]
 pub struct AttendanceInput {
@@ -29,4 +29,20 @@ impl From<AttendanceInput> for Attendance {
             updated_at: now,
         }
     }
+}
+
+/// Input for a single attendance record in bulk operations
+#[derive(InputObject)]
+pub struct AttendanceRecordInput {
+    pub student_id: String,
+    pub status: String,
+    pub remarks: Option<String>,
+}
+
+/// Input for updating an existing attendance record
+#[derive(InputObject)]
+pub struct UpdateAttendanceInput {
+    pub id: String,
+    pub status: String,
+    pub remarks: Option<String>,
 }

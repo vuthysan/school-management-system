@@ -50,4 +50,54 @@ impl StudentQuery {
 
         Ok(student.map(|s| s.into()))
     }
+
+    async fn students_by_school(
+        &self,
+        ctx: &Context<'_>,
+        school_id: String,
+    ) -> Result<Vec<StudentType>> {
+        let db = ctx.data::<Database>()?;
+        let collection = db.collection::<models::student::Student>("students");
+
+        let mut cursor = collection
+            .find(doc! { "school_id": school_id }, None)
+            .await
+            .map_err(|e| Error::new(e.to_string()))?;
+
+        let mut students = Vec::new();
+        while let Some(student) = cursor
+            .try_next()
+            .await
+            .map_err(|e| Error::new(e.to_string()))?
+        {
+            students.push(student);
+        }
+
+        Ok(students.into_iter().map(|s| s.into()).collect())
+    }
+
+    async fn students_by_class(
+        &self,
+        ctx: &Context<'_>,
+        class_id: String,
+    ) -> Result<Vec<StudentType>> {
+        let db = ctx.data::<Database>()?;
+        let collection = db.collection::<models::student::Student>("students");
+
+        let mut cursor = collection
+            .find(doc! { "current_class_id": class_id }, None)
+            .await
+            .map_err(|e| Error::new(e.to_string()))?;
+
+        let mut students = Vec::new();
+        while let Some(student) = cursor
+            .try_next()
+            .await
+            .map_err(|e| Error::new(e.to_string()))?
+        {
+            students.push(student);
+        }
+
+        Ok(students.into_iter().map(|s| s.into()).collect())
+    }
 }
