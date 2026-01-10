@@ -8,3 +8,7 @@ export * from "./subject";
 export * from "./grade";
 export * from "./branch";
 export * from "./attendance";
+export * from "./academic-year";
+export * from "./term";
+export * from "./calendar";
+export * from "./finance";

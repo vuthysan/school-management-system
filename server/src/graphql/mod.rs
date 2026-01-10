@@ -1,8 +1,11 @@
 // GraphQL module - modular domain-based structure
+pub mod academic_year;
 pub mod attendance;
 pub mod branch;
+pub mod calendar;
 pub mod class;
 pub mod common;
+pub mod finance;
 pub mod grade;
 pub mod grade_level;
 pub mod graphql_context;
@@ -12,6 +15,7 @@ pub mod schema;
 pub mod school;
 pub mod student;
 pub mod subject;
+pub mod term;
 pub mod user;
 
 use async_graphql::MergedObject;
@@ -33,6 +37,10 @@ pub struct QueryRoot(
     member::MemberQuery,
     user::UserQuery,
     hr::HRQuery,
+    academic_year::AcademicYearQuery,
+    term::TermQuery,
+    calendar::CalendarQuery,
+    finance::FinanceQuery,
 );
 
 // Merged Mutation combining all domain mutations
@@ -48,4 +56,8 @@ pub struct MutationRoot(
     grade_level::GradeLevelMutation,
     member::MemberMutation,
     hr::HRMutation,
+    academic_year::AcademicYearMutation,
+    term::TermMutation,
+    calendar::CalendarMutation,
+    finance::FinanceMutation,
 );

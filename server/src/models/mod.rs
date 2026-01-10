@@ -1,5 +1,7 @@
+pub mod academic_year;
 pub mod attendance;
 pub mod branch;
+pub mod calendar_event;
 pub mod class;
 pub mod finance;
 pub mod grade;
@@ -9,4 +11,5 @@ pub mod member;
 pub mod school;
 pub mod student;
 pub mod subject;
+pub mod term;
 pub mod user;

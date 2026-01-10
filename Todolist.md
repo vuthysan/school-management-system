@@ -46,7 +46,7 @@
 
 ### School Setup & Configuration
 
-- [ ] School profile creation (name, logo, banners, contact)
+- [x] School profile creation (name, logo, banners, contact)
 - [ ] Multi-branch/campus management
 - [ ] Academic year configuration
 - [ ] Term/semester setup
@@ -96,9 +96,9 @@
 
 ### Academic Management
 
-- [ ] Class creation and management
-- [ ] Subject allocation to classes
-- [ ] Teacher assignment to subjects
+- [x] Class creation and management
+- [x] Subject allocation to classes
+- [x] Teacher assignment to subjects
 - [ ] Classroom allocation
 - [ ] Timetable/schedule creation
 - [ ] Exam schedule management
@@ -106,25 +106,25 @@
 
 ### Student Management
 
-- [ ] Student enrollment and registration
-- [ ] Student profile management (photo, documents)
+- [x] Student enrollment and registration
+- [x] Student profile management (photo, documents)
 - [ ] Student ID card generation
-- [ ] Class assignment and transfers
+- [x] Class assignment and transfers
 - [ ] Promotion and graduation processing
 - [ ] Student records archival
 
 ### Attendance Management
 
-- [ ] Daily attendance tracking
-- [ ] Attendance reports by class/student
+- [x] Daily attendance tracking
+- [x] Attendance reports by class/student
 - [ ] Absence notifications to parents
 - [ ] Late arrival tracking
 - [ ] Attendance statistics and trends
 
 ### Grade & Assessment Management
 
-- [ ] Grade entry and management
-- [ ] Report card generation
+- [x] Grade entry and management
+- [x] Report card generation
 - [ ] Progress reports
 - [ ] Academic performance analytics
 - [ ] Honor roll and awards tracking
@@ -170,22 +170,22 @@
 
 ### Class Management
 
-- [ ] View assigned classes and subjects
-- [ ] Access class rosters
-- [ ] View class schedule/timetable
+- [x] View assigned classes and subjects
+- [x] Access class rosters
+- [x] View class schedule/timetable
 - [ ] Classroom resources management
 
 ### Attendance
 
-- [ ] Mark daily attendance
+- [x] Mark daily attendance
 - [ ] Quick attendance entry (mobile-friendly)
-- [ ] View attendance history
+- [x] View attendance history
 - [ ] Generate attendance reports
 
 ### Grade Management
 
-- [ ] Enter assignment grades
-- [ ] Enter exam scores
+- [x] Enter assignment grades
+- [x] Enter exam scores
 - [ ] Calculate final grades
 - [ ] Submit report cards
 - [ ] View grade distribution analytics

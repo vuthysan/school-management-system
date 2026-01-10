@@ -199,7 +199,7 @@ export const MarkAttendance: React.FC<MarkAttendanceProps> = ({
 									<Avatar className="h-10 w-10">
 										<AvatarImage
 											alt={student.fullName}
-											src={student.photoUrl}
+											src={(student as any).photoUrl || ""}
 										/>
 										<AvatarFallback className="bg-primary/10 text-primary">
 											{getInitials(student.fullName)}

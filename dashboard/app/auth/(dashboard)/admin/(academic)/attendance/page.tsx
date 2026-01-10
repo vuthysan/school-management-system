@@ -97,7 +97,7 @@ export default function AttendancePage() {
 			totalPresent: summary.presentCount,
 			totalAbsent: summary.absentCount,
 			totalLate: summary.lateCount,
-			totalExcused: summary.excusedCount || 0,
+			totalExcused: (summary as any).excusedCount || 0,
 		};
 	}, [summary]);
 

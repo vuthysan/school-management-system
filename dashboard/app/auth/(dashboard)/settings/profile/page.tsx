@@ -57,7 +57,9 @@ export default function ProfilePage() {
 				{/* Header Section */}
 				<div className="flex flex-col md:flex-row items-center gap-6">
 					<Avatar className="h-24 w-24 border-4 border-primary/10">
-						<AvatarImage src={user?.avatar_url || ""} />
+						<AvatarImage
+							src={(user as any)?.avatar_url || user?.picture || ""}
+						/>
 						<AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-primary/80 to-primary text-white">
 							{user?.name?.charAt(0).toUpperCase() || "U"}
 						</AvatarFallback>

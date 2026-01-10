@@ -166,6 +166,11 @@ export const getModulesByRole = (
 								href: "/auth/admin/grading",
 								icon: FileText,
 							},
+							{
+								label: t("school_setup"),
+								href: "/auth/admin/setup",
+								icon: Settings,
+							},
 						],
 					},
 				],
