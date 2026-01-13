@@ -73,6 +73,9 @@ impl ClassMutation {
         if let Some(academic_year_id) = &input.academic_year_id {
             update_fields.insert("academic_year_id", academic_year_id);
         }
+        if let Some(schedule) = &input.schedule {
+            update_fields.insert("schedule", mongodb::bson::to_bson(schedule).unwrap());
+        }
         update_fields.insert("audit.updated_at", mongodb::bson::DateTime::now());
 
         let update_doc = doc! { "$set": update_fields };

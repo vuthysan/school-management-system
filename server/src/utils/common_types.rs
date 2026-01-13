@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use async_graphql::{Enum, InputObject, SimpleObject};
 use mongodb::bson::DateTime;
 use serde::{Deserialize, Serialize};

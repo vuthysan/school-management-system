@@ -1,12 +1,11 @@
 "use client";
 
-import { useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { CalendarCheck, Loader2 } from "lucide-react";
+import { CalendarCheck, Loader2, Bell } from "lucide-react";
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/language-context";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useClasses } from "@/hooks/useClasses";
@@ -14,9 +13,15 @@ import { useAttendanceSummary } from "@/hooks/useAttendance";
 import { AttendanceStats } from "@/components/attendance/attendance-stats";
 import { MarkAttendance } from "@/components/attendance/mark-attendance";
 import { AttendanceHistory } from "@/components/attendance/attendance-history";
+import { AbsenceNotificationDialog } from "@/components/attendance/absence-notification-dialog";
+import { Button } from "@/components/ui/button";
+
+import { PageHeader } from "@/components/dashboard/page-header";
 
 export default function AttendancePage() {
 	const { t } = useLanguage();
+	const [isNotificationDialogOpen, setIsNotificationDialogOpen] =
+		useState(false);
 	const router = useRouter();
 	const pathname = usePathname();
 	const searchParams = useSearchParams();
@@ -103,16 +108,18 @@ export default function AttendancePage() {
 
 	if (isDashboardLoading) {
 		return (
-			<div className="flex items-center justify-center h-64">
-				<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+			<div className="flex items-center justify-center min-h-[400px]">
+				<div className="w-16 h-16 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
 			</div>
 		);
 	}
 
 	if (!schoolId) {
 		return (
-			<div className="flex flex-col items-center justify-center h-64 gap-2">
-				<p className="text-muted-foreground">{t("no_school_selected")}</p>
+			<div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+				<p className="text-muted-foreground font-black uppercase tracking-widest text-xs">
+					{t("no_school_selected")}
+				</p>
 			</div>
 		);
 	}
@@ -121,29 +128,27 @@ export default function AttendancePage() {
 		<motion.div
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
-			className="space-y-6 pb-10"
+			className="p-6 space-y-10 max-w-[1600px] mx-auto bg-background/50 text-foreground"
 		>
-			{/* Hero Header Section */}
-			<Card className="p-4">
-				<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative">
-					<div className="flex items-center gap-5">
-						<div className="relative group">
-							<div className="absolute -inset-1 bg-primary/20 blur opacity-0 group-hover:opacity-100 transition duration-500 rounded-lg" />
-							<div className="relative p-4 bg-primary rounded-lg shadow-lg shadow-primary/20 text-primary-foreground">
-								<CalendarCheck className="w-8 h-8" />
-							</div>
-						</div>
-						<div className="space-y-1">
-							<h1 className="text-3xl font-bold tracking-tight text-foreground/90">
-								{t("attendance_management")}
-							</h1>
-							<p className="text-sm text-muted-foreground/80 font-medium">
-								{t("track_attendance")}
-							</p>
-						</div>
-					</div>
-				</div>
-			</Card>
+			<PageHeader
+				title={t("attendance_management")}
+				subtitle={t("track_attendance")}
+				icon={CalendarCheck}
+				gradient="green"
+			>
+				<Button
+					onClick={() => setIsNotificationDialogOpen(true)}
+					className="h-12 rounded-2xl px-6 font-black uppercase tracking-widest bg-green-500 hover:bg-green-600 shadow-xl shadow-green-500/20 border-none transition-all hover:scale-105 active:scale-95"
+				>
+					<Bell className="h-5 w-5 mr-2" strokeWidth={3} />
+					Notify Parents
+				</Button>
+			</PageHeader>
+
+			<AbsenceNotificationDialog
+				open={isNotificationDialogOpen}
+				onOpenChange={setIsNotificationDialogOpen}
+			/>
 
 			{/* Stats */}
 			<AttendanceStats stats={stats} />

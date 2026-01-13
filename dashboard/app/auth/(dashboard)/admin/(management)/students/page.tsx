@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Plus, GraduationCap, Sparkles, Users } from "lucide-react";
 
 import { StudentsTable } from "@/components/students/students-table";
+import { PageHeader } from "@/components/dashboard/page-header";
 import { StudentForm } from "@/components/students/student-form";
+import { PromotionDialog } from "@/components/students/promotion-dialog";
 import { StudentStats } from "@/components/students/student-stats";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,15 +24,28 @@ import { motion } from "framer-motion";
 
 export default function StudentsPage() {
 	const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+	const [isPromotionModalOpen, setIsPromotionModalOpen] = useState(false);
+	const [selectedStudentsForPromotion, setSelectedStudentsForPromotion] =
+		useState<{ id: string; name: string; currentGrade: string }[]>([]);
 	const { currentSchool } = useDashboard();
 	const schoolId = currentSchool?.idStr || currentSchool?.id || null;
 	const { students, isLoading, refresh } = useStudents(schoolId);
 	const { t } = useLanguage();
 
-	const handleAddSuccess = () => {
+	const handleAddSuccess = useCallback(() => {
 		setIsAddModalOpen(false);
 		refresh();
-	};
+	}, [refresh]);
+
+	const handleSelectionChange = useCallback((selected: any[]) => {
+		setSelectedStudentsForPromotion(
+			selected.map((s) => ({
+				id: s.id,
+				name: s.fullName || `${s.firstNameKm} ${s.lastNameKm}`,
+				currentGrade: s.gradeLevel,
+			}))
+		);
+	}, []);
 
 	return (
 		<motion.div
@@ -39,25 +54,20 @@ export default function StudentsPage() {
 			className="space-y-4 pb-10"
 		>
 			{/* Header Section */}
-			<Card className="p-4">
-				<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 relative">
-					<div className="flex items-center gap-5">
-						<div className="relative group">
-							<div className="absolute -inset-1 bg-primary/20 blur opacity-0 group-hover:opacity-100 transition duration-500 rounded-lg" />
-							<div className="relative p-4 bg-primary rounded-lg shadow-lg shadow-primary/20 text-primary-foreground">
-								<GraduationCap className="w-8 h-8" />
-							</div>
-						</div>
-						<div className="space-y-1">
-							<h1 className="text-3xl font-black tracking-tight text-foreground/90">
-								{t("student_management")}
-							</h1>
-							<p className="text-sm text-muted-foreground/80 font-medium">
-								{t("manage_student_records")}
-							</p>
-						</div>
-					</div>
-
+			<PageHeader
+				title={t("student_management")}
+				subtitle={t("manage_student_records")}
+				icon={GraduationCap}
+			>
+				<div className="flex gap-2">
+					<Button
+						onClick={() => setIsPromotionModalOpen(true)}
+						variant="outline"
+						className="rounded-lg px-6 h-12 gap-2"
+					>
+						<GraduationCap className="w-5 h-5" />
+						{t("promote")}
+					</Button>
 					<Button
 						onClick={() => setIsAddModalOpen(true)}
 						className="rounded-lg px-6 h-12 bg-primary hover:opacity-90 text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95 text-sm gap-2"
@@ -66,7 +76,7 @@ export default function StudentsPage() {
 						{t("add_student")}
 					</Button>
 				</div>
-			</Card>
+			</PageHeader>
 
 			{/* Statistics Section */}
 			{students.length > 0 && <StudentStats students={students} />}
@@ -74,7 +84,10 @@ export default function StudentsPage() {
 			{/* StudentsTable handles its own container */}
 			<div className="relative">
 				<div className="absolute -bottom-40 -right-20 w-96 h-96 bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
-				<StudentsTable schoolId={schoolId} />
+				<StudentsTable
+					schoolId={schoolId}
+					onSelectionChange={handleSelectionChange}
+				/>
 			</div>
 
 			{/* Add Student Modal */}
@@ -91,6 +104,14 @@ export default function StudentsPage() {
 					<StudentForm schoolId={schoolId} onSuccess={handleAddSuccess} />
 				</DialogContent>
 			</Dialog>
+
+			{/* Promotion Modal */}
+			<PromotionDialog
+				open={isPromotionModalOpen}
+				onOpenChange={setIsPromotionModalOpen}
+				selectedStudents={selectedStudentsForPromotion}
+				onSuccess={refresh}
+			/>
 		</motion.div>
 	);
 }

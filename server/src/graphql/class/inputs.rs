@@ -65,6 +65,8 @@ pub struct UpdateClassInput {
     pub status: Option<Status>,
     /// Academic year ID
     pub academic_year_id: Option<String>,
+    /// Weekly schedule
+    pub schedule: Option<Vec<ClassSchedule>>,
 }
 
 // ============================================================================

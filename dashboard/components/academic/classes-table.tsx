@@ -12,6 +12,7 @@ import {
 	ArrowUp,
 	ArrowDown,
 	Filter,
+	Clock,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -63,6 +64,7 @@ interface ClassesTableProps {
 	onSortChange?: (sort: ClassSortInput) => void;
 	onPageChange?: (page: number) => void;
 	onEdit: (cls: Class) => void;
+	onEditTimetable?: (cls: Class) => void;
 	onDelete: (cls: Class) => void;
 	onView?: (cls: Class) => void;
 }
@@ -84,6 +86,7 @@ export const ClassesTable: React.FC<ClassesTableProps> = ({
 	onSortChange,
 	onPageChange,
 	onEdit,
+	onEditTimetable,
 	onDelete,
 	onView,
 }) => {
@@ -377,6 +380,17 @@ export const ClassesTable: React.FC<ClassesTableProps> = ({
 															{t("edit_class")}
 														</span>
 													</DropdownMenuItem>
+													{onEditTimetable && (
+														<DropdownMenuItem
+															onClick={() => onEditTimetable(cls)}
+															className="rounded-lg gap-2 cursor-pointer focus:bg-primary/5 focus:text-primary transition-colors"
+														>
+															<Clock className="h-4 w-4" />
+															<span className="font-medium">
+																{t("edit_timetable") || "Edit Timetable"}
+															</span>
+														</DropdownMenuItem>
+													)}
 													<DropdownMenuItem
 														onClick={() => onDelete(cls)}
 														className="rounded-lg gap-2 cursor-pointer focus:bg-destructive/5 focus:text-destructive transition-colors"

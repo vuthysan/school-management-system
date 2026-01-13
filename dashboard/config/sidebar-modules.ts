@@ -17,6 +17,7 @@ import {
 	Home,
 	UserCheck,
 	ClipboardList,
+	DoorOpen,
 } from "lucide-react";
 
 import { UserRole } from "@/components/sidebar";
@@ -142,6 +143,30 @@ export const getModulesByRole = (
 				],
 			});
 
+			// Analytics & Reporting
+			modules.push({
+				id: "analytics",
+				label: t("analytics_reporting"),
+				icon: BarChart3,
+				sections: [
+					{
+						title: t("overview"),
+						items: [
+							{
+								label: t("analytics"),
+								href: "/auth/admin/analytics",
+								icon: BarChart3,
+							},
+							{
+								label: t("reports"),
+								href: "/auth/admin/reports",
+								icon: FileText,
+							},
+						],
+					},
+				],
+			});
+
 			// Academic
 			modules.push({
 				id: "academic",
@@ -155,6 +180,11 @@ export const getModulesByRole = (
 								label: t("classes_subjects"),
 								href: "/auth/admin/academic",
 								icon: BookOpen,
+							},
+							{
+								label: t("rooms") || "Rooms",
+								href: "/auth/admin/rooms",
+								icon: DoorOpen,
 							},
 							{
 								label: t("attendance"),

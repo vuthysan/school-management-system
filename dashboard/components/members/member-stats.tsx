@@ -59,25 +59,25 @@ export const MemberStats: React.FC<MemberStatsProps> = ({
 				bg: "bg-card",
 				icon: "bg-blue-500 text-white shadow-blue-500/20",
 				glow: "from-blue-500/10 to-transparent",
-				label: "text-slate-400",
+				label: "text-muted-foreground",
 			},
 			emerald: {
 				bg: "bg-card",
 				icon: "bg-emerald-500 text-white shadow-emerald-500/20",
 				glow: "from-emerald-500/10 to-transparent",
-				label: "text-slate-400",
+				label: "text-muted-foreground",
 			},
 			amber: {
 				bg: "bg-card",
 				icon: "bg-amber-500 text-white shadow-amber-500/20",
 				glow: "from-amber-500/10 to-transparent",
-				label: "text-slate-400",
+				label: "text-muted-foreground",
 			},
 			violet: {
 				bg: "bg-card",
 				icon: "bg-violet-500 text-white shadow-violet-500/20",
 				glow: "from-violet-500/10 to-transparent",
-				label: "text-slate-400",
+				label: "text-muted-foreground",
 			},
 		};
 
@@ -112,7 +112,7 @@ export const MemberStats: React.FC<MemberStatsProps> = ({
 							>
 								{title}
 							</h3>
-							<span className="text-4xl font-black tracking-tighter text-slate-900">
+							<span className="text-4xl font-black tracking-tighter text-foreground">
 								{value}
 							</span>
 						</div>

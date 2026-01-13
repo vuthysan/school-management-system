@@ -11,13 +11,16 @@ import {
 	ChevronRight,
 	Copy,
 	MoreHorizontal,
+	FileText,
 } from "lucide-react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
 import { ViewStudentModal } from "./view-student-modal";
 import { DeleteStudentModal } from "./delete-student-modal";
 import { StudentForm } from "./student-form";
+import { Checkbox } from "@/components/ui/checkbox";
 
 import {
 	Table,
@@ -71,15 +74,36 @@ const ROWS_PER_PAGE_OPTIONS = [10, 25, 50, 100];
 interface StudentsTableProps {
 	schoolId: string | null;
 	onStudentsChange?: (students: Student[]) => void;
+	onSelectionChange?: (selectedStudents: Student[]) => void;
 }
 
 export const StudentsTable: React.FC<StudentsTableProps> = ({
 	schoolId,
 	onStudentsChange,
+	onSelectionChange,
 }) => {
 	const { t } = useLanguage();
 	const { students, isLoading, error, refresh, deleteStudent, createStudent } =
 		useStudents(schoolId);
+
+	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+	const lastSelectedIds = React.useRef<string[]>([]);
+
+	// Notify parent when selection changes
+	React.useEffect(() => {
+		if (onSelectionChange) {
+			const selectedIdsArray = Array.from(selectedIds).sort();
+			if (
+				JSON.stringify(lastSelectedIds.current) !==
+				JSON.stringify(selectedIdsArray)
+			) {
+				const selectedStudents = students.filter((s) => selectedIds.has(s.id));
+				onSelectionChange(selectedStudents);
+				lastSelectedIds.current = selectedIdsArray;
+			}
+		}
+	}, [selectedIds, students, onSelectionChange]);
 
 	// Dynamic arrays that use translations
 	const GENDERS = [
@@ -89,6 +113,7 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
 	];
 
 	const columns = [
+		{ key: "select", label: "", sortable: false },
 		{ key: "name", label: t("name").toUpperCase(), sortable: true },
 		{ key: "email", label: t("email").toUpperCase(), sortable: true },
 		{ key: "phone", label: t("phone").toUpperCase(), sortable: false },
@@ -219,6 +244,29 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
 	}, [sortedStudents, page, rowsPerPage]);
 
 	const totalPages = Math.ceil(sortedStudents.length / rowsPerPage);
+
+	const handleToggleSelectAll = useCallback(() => {
+		if (
+			selectedIds.size === paginatedStudents.length &&
+			paginatedStudents.length > 0
+		) {
+			setSelectedIds(new Set());
+		} else {
+			setSelectedIds(new Set(paginatedStudents.map((s) => s.id)));
+		}
+	}, [selectedIds.size, paginatedStudents]);
+
+	const handleToggleSelect = useCallback((id: string) => {
+		setSelectedIds((prev) => {
+			const next = new Set(prev);
+			if (next.has(id)) {
+				next.delete(id);
+			} else {
+				next.add(id);
+			}
+			return next;
+		});
+	}, []);
 
 	const handleViewStudent = useCallback((student: Student) => {
 		setSelectedStudent(student);
@@ -417,10 +465,21 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
 									key={column.key}
 									className={cn(
 										"uppercase tracking-widest px-4",
-										column.key === "actions" && "text-right"
+										column.key === "actions" && "text-right",
+										column.key === "select" && "w-10"
 									)}
 								>
-									{column.label}
+									{column.key === "select" ? (
+										<Checkbox
+											checked={
+												paginatedStudents.length > 0 &&
+												selectedIds.size === paginatedStudents.length
+											}
+											onCheckedChange={handleToggleSelectAll}
+										/>
+									) : (
+										column.label
+									)}
 								</TableHead>
 							))}
 						</TableRow>
@@ -454,6 +513,13 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
 										transition={{ duration: 0.3, delay: index * 0.05 }}
 										className="group transition-all hover:bg-secondary/10 cursor-pointer"
 									>
+										<TableCell className="px-4">
+											<Checkbox
+												checked={selectedIds.has(student.id)}
+												onCheckedChange={() => handleToggleSelect(student.id)}
+												onClick={(e) => e.stopPropagation()}
+											/>
+										</TableCell>
 										<TableCell className="px-6 py-4">
 											<div className="flex items-center gap-4">
 												<div className="relative">
@@ -555,6 +621,15 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
 													>
 														<Trash2 className="mr-2 h-4 w-4" />
 														<span>{t("delete")}</span>
+													</DropdownMenuItem>
+													<DropdownMenuItem asChild>
+														<Link
+															href={`/auth/admin/analytics?studentId=${student.id}`}
+															className="flex items-center px-2 py-1.5 text-sm text-purple-500 hover:text-purple-600 hover:bg-purple-50 rounded-md transition-colors"
+														>
+															<FileText className="mr-2 h-4 w-4" />
+															<span>{t("view_report")}</span>
+														</Link>
 													</DropdownMenuItem>
 												</DropdownMenuContent>
 											</DropdownMenu>

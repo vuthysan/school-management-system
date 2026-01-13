@@ -162,7 +162,7 @@ export const StudentStats: React.FC<StudentStatsProps> = ({ students }) => {
 							>
 								{title}
 							</h3>
-							<span className="text-4xl font-black tracking-tighter text-slate-900">
+							<span className="text-4xl font-black tracking-tighter text-foreground">
 								{value}
 							</span>
 						</div>

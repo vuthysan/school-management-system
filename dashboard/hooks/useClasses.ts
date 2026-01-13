@@ -29,6 +29,7 @@ export interface UpdateClassInput {
 	capacity?: number;
 	status?: string;
 	academicYearId?: string;
+	schedule?: any[]; // Simplified for the hook
 }
 
 export function useClasses(options: UseClassesOptions) {

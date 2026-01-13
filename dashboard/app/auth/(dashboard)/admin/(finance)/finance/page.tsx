@@ -30,24 +30,40 @@ import {
 	useFees,
 	useFeeMutations,
 	usePayments,
+	useInvoices,
 	useFinanceSummary,
+	usePaymentMutations,
 } from "@/hooks/useFinance";
 import {
 	Fee,
+	Invoice,
 	FeeFormData,
 	CreateFeeInput,
 	UpdateFeeInput,
+	CreatePaymentInput,
 } from "@/types/finance";
 
 import { FinanceStats } from "@/components/finance/finance-stats";
 import { FeeTable } from "@/components/finance/fee-table";
 import { FeeForm } from "@/components/finance/fee-form";
 import { PaymentTable } from "@/components/finance/payment-table";
+import { InvoiceTable } from "@/components/finance/invoice-table";
+import { RecordPaymentForm } from "@/components/finance/record-payment-form";
 
 export default function FinancePage() {
 	const { t } = useLanguage();
 	const { currentSchool, isLoading: isDashboardLoading } = useDashboard();
 	const schoolId = currentSchool?.idStr || currentSchool?.id || null;
+
+	// UI State
+	const [activeTab, setActiveTab] = useState<"fees" | "payments" | "invoices">(
+		"fees"
+	);
+	const [isFormOpen, setIsFormOpen] = useState(false);
+	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+	const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+	const [selectedFee, setSelectedFee] = useState<Fee | null>(null);
+	const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 
 	// Data hooks
 	const {
@@ -55,20 +71,28 @@ export default function FinancePage() {
 		isLoading: isFeesLoading,
 		refresh: refreshFees,
 	} = useFees(schoolId);
-	const { payments, isLoading: isPaymentsLoading } = usePayments(schoolId);
-	const { summary, isLoading: isSummaryLoading } = useFinanceSummary(schoolId);
+	const {
+		payments,
+		isLoading: isPaymentsLoading,
+		refresh: refreshPayments,
+	} = usePayments(schoolId);
+	const {
+		invoices,
+		isLoading: isInvoicesLoading,
+		refresh: refreshInvoices,
+	} = useInvoices(schoolId);
+	const {
+		summary,
+		isLoading: isSummaryLoading,
+		refresh: refreshSummary,
+	} = useFinanceSummary(schoolId);
 	const {
 		createFee,
 		updateFee,
 		deleteFee,
 		isLoading: isMutating,
 	} = useFeeMutations();
-
-	// UI State
-	const [activeTab, setActiveTab] = useState<"fees" | "payments">("fees");
-	const [isFormOpen, setIsFormOpen] = useState(false);
-	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-	const [selectedFee, setSelectedFee] = useState<Fee | null>(null);
+	const { recordPayment } = usePaymentMutations();
 
 	// Handlers
 	const handleAddFee = () => {
@@ -84,6 +108,26 @@ export default function FinancePage() {
 	const handleDeleteFee = (fee: Fee) => {
 		setSelectedFee(fee);
 		setIsDeleteOpen(true);
+	};
+
+	const handleRecordPayment = (invoice: Invoice) => {
+		setSelectedInvoice(invoice);
+		setIsPaymentOpen(true);
+	};
+
+	const handlePaymentSubmit = async (input: CreatePaymentInput) => {
+		await recordPayment(input);
+		refreshPayments();
+		refreshInvoices();
+		refreshSummary();
+		setIsPaymentOpen(false);
+	};
+
+	const handleViewInvoice = (invoice: Invoice) => {
+		// For now just open the record payment if not paid
+		if (invoice.status !== "paid") {
+			handleRecordPayment(invoice);
+		}
 	};
 
 	const handleFormSubmit = useCallback(
@@ -204,6 +248,12 @@ export default function FinancePage() {
 					>
 						{t("payments") || "Payments"}
 					</TabsTrigger>
+					<TabsTrigger
+						className="relative h-12 rounded-none border-b-2 border-transparent bg-transparent px-2 pb-3 pt-2 font-semibold text-muted-foreground transition-all data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary/70"
+						value="invoices"
+					>
+						{t("invoices") || "Invoices"}
+					</TabsTrigger>
 				</TabsList>
 
 				<TabsContent className="mt-4" value="fees">
@@ -218,6 +268,15 @@ export default function FinancePage() {
 
 				<TabsContent className="mt-4" value="payments">
 					<PaymentTable payments={payments} isLoading={isPaymentsLoading} />
+				</TabsContent>
+
+				<TabsContent className="mt-4" value="invoices">
+					<InvoiceTable
+						invoices={invoices}
+						isLoading={isInvoicesLoading}
+						onView={handleViewInvoice}
+						onRecordPayment={handleRecordPayment}
+					/>
 				</TabsContent>
 			</Tabs>
 
@@ -268,6 +327,21 @@ export default function FinancePage() {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
+
+			{/* Record Payment Dialog */}
+			{schoolId && selectedInvoice && (
+				<RecordPaymentForm
+					isOpen={isPaymentOpen}
+					onClose={() => setIsPaymentOpen(false)}
+					onSubmit={handlePaymentSubmit}
+					schoolId={schoolId}
+					studentId={selectedInvoice.studentId}
+					feeId={selectedInvoice.feeIds[0]} // Simplification: use first fee ID
+					feeName={`${t("invoice")} #${selectedInvoice.invoiceNumber}`}
+					maxAmount={selectedInvoice.balance}
+					currency={selectedInvoice.currency}
+				/>
+			)}
 		</motion.div>
 	);
 }

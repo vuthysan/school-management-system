@@ -2,759 +2,564 @@
 
 import { motion } from "framer-motion";
 import {
-  Users,
-  GraduationCap,
-  BookOpen,
-  TrendingUp,
-  Calendar,
-  DollarSign,
-  UserCheck,
-  AlertCircle,
-  Award,
-  Building,
-  BarChart3,
-  Clock,
-  CheckCircle2,
-  XCircle,
+	Users,
+	GraduationCap,
+	BookOpen,
+	TrendingUp,
+	Calendar,
+	DollarSign,
+	AlertCircle,
+	Building,
+	BarChart3,
+	Clock,
+	CheckCircle2,
+	XCircle,
+	ArrowUpRight,
 } from "lucide-react";
 
 import { useDashboard } from "@/hooks/useDashboard";
+import Link from "next/link";
+import { AnnouncementFeed } from "@/components/dashboard/announcement-feed";
+import { PageHeader } from "@/components/dashboard/page-header";
+import { DashboardCard } from "@/components/dashboard/dashboard-card";
+import { StatsCard } from "@/components/dashboard/stats-card";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
-// Mock data - in production, this would come from your API
+// Mock data remains the same
 const stats = {
-  admin: [
-    {
-      title: "Total Students",
-      value: "1,234",
-      change: "+12%",
-      trend: "up",
-      icon: Users,
-      color: "bg-blue-500",
-    },
-    {
-      title: "Total Teachers",
-      value: "89",
-      change: "+3%",
-      trend: "up",
-      icon: GraduationCap,
-      color: "bg-green-500",
-    },
-    {
-      title: "Active Classes",
-      value: "42",
-      change: "0%",
-      trend: "neutral",
-      icon: BookOpen,
-      color: "bg-purple-500",
-    },
-    {
-      title: "Attendance Rate",
-      value: "94.5%",
-      change: "+2.3%",
-      trend: "up",
-      icon: UserCheck,
-      color: "bg-orange-500",
-    },
-  ],
-  teacher: [
-    {
-      title: "My Classes",
-      value: "6",
-      change: "",
-      trend: "neutral",
-      icon: BookOpen,
-      color: "bg-blue-500",
-    },
-    {
-      title: "Total Students",
-      value: "187",
-      change: "",
-      trend: "neutral",
-      icon: Users,
-      color: "bg-green-500",
-    },
-    {
-      title: "Avg. Attendance",
-      value: "92%",
-      change: "+1.5%",
-      trend: "up",
-      icon: UserCheck,
-      color: "bg-purple-500",
-    },
-    {
-      title: "Pending Grades",
-      value: "23",
-      change: "",
-      trend: "neutral",
-      icon: AlertCircle,
-      color: "bg-orange-500",
-    },
-  ],
-  parent: [
-    {
-      title: "Children",
-      value: "2",
-      change: "",
-      trend: "neutral",
-      icon: Users,
-      color: "bg-blue-500",
-    },
-    {
-      title: "Attendance",
-      value: "96%",
-      change: "+2%",
-      trend: "up",
-      icon: Calendar,
-      color: "bg-green-500",
-    },
-    {
-      title: "Avg. Grade",
-      value: "A-",
-      change: "",
-      trend: "neutral",
-      icon: Award,
-      color: "bg-purple-500",
-    },
-    {
-      title: "Outstanding Fees",
-      value: "$450",
-      change: "",
-      trend: "neutral",
-      icon: DollarSign,
-      color: "bg-orange-500",
-    },
-  ],
-  student: [
-    {
-      title: "My Classes",
-      value: "8",
-      change: "",
-      trend: "neutral",
-      icon: BookOpen,
-      color: "bg-blue-500",
-    },
-    {
-      title: "Attendance",
-      value: "95%",
-      change: "+3%",
-      trend: "up",
-      icon: Calendar,
-      color: "bg-green-500",
-    },
-    {
-      title: "Current GPA",
-      value: "3.7",
-      change: "+0.2",
-      trend: "up",
-      icon: Award,
-      color: "bg-purple-500",
-    },
-    {
-      title: "Assignments Due",
-      value: "4",
-      change: "",
-      trend: "neutral",
-      icon: AlertCircle,
-      color: "bg-orange-500",
-    },
-  ],
-  owner: [
-    {
-      title: "Total Revenue",
-      value: "$125K",
-      change: "+15%",
-      trend: "up",
-      icon: DollarSign,
-      color: "bg-blue-500",
-    },
-    {
-      title: "Total Students",
-      value: "2,456",
-      change: "+8%",
-      trend: "up",
-      icon: Users,
-      color: "bg-green-500",
-    },
-    {
-      title: "Active Branches",
-      value: "3",
-      change: "",
-      trend: "neutral",
-      icon: Building,
-      color: "bg-purple-500",
-    },
-    {
-      title: "Staff Count",
-      value: "156",
-      change: "+5%",
-      trend: "up",
-      icon: GraduationCap,
-      color: "bg-orange-500",
-    },
-  ],
-  ministry: [
-    {
-      title: "Total Schools",
-      value: "1,234",
-      change: "+45",
-      trend: "up",
-      icon: Building,
-      color: "bg-blue-500",
-    },
-    {
-      title: "Total Students",
-      value: "456K",
-      change: "+12K",
-      trend: "up",
-      icon: Users,
-      color: "bg-green-500",
-    },
-    {
-      title: "Total Teachers",
-      value: "23K",
-      change: "+890",
-      trend: "up",
-      icon: GraduationCap,
-      color: "bg-purple-500",
-    },
-    {
-      title: "Compliance Rate",
-      value: "87%",
-      change: "+3%",
-      trend: "up",
-      icon: BarChart3,
-      color: "bg-orange-500",
-    },
-  ],
+	admin: [
+		{ title: "Total Students", value: "1,234", icon: Users },
+		{ title: "Total Teachers", value: "89", icon: GraduationCap },
+		{ title: "Active Classes", value: "42", icon: BookOpen },
+		{ title: "Attendance Rate", value: "94.5%", icon: TrendingUp },
+	],
+	teacher: [
+		{ title: "My Classes", value: "6", icon: BookOpen },
+		{ title: "Total Students", value: "187", icon: Users },
+		{ title: "Avg. Attendance", value: "92%", icon: TrendingUp },
+		{ title: "Pending Grades", value: "23", icon: AlertCircle },
+	],
+	parent: [
+		{ title: "Children", value: "2", icon: Users },
+		{ title: "Attendance", value: "96%", icon: Calendar },
+		{ title: "Avg. Grade", value: "A-", icon: GraduationCap },
+		{ title: "Outstanding Fees", value: "$450", icon: DollarSign },
+	],
+	student: [
+		{ title: "My Classes", value: "8", icon: BookOpen },
+		{ title: "Attendance", value: "95%", icon: Calendar },
+		{ title: "Current GPA", value: "3.7", icon: GraduationCap },
+		{ title: "Assignments Due", value: "4", icon: AlertCircle },
+	],
+	owner: [
+		{ title: "Total Revenue", value: "$125K", icon: DollarSign },
+		{ title: "Total Students", value: "2,456", icon: Users },
+		{ title: "Active Branches", value: "3", icon: Building },
+		{ title: "Staff Count", value: "156", icon: GraduationCap },
+	],
+	ministry: [
+		{ title: "Total Schools", value: "1,234", icon: Building },
+		{ title: "Total Students", value: "456K", icon: Users },
+		{ title: "Total Teachers", value: "23K", icon: GraduationCap },
+		{ title: "Compliance Rate", value: "87%", icon: BarChart3 },
+	],
 };
 
 const recentActivities = {
-  admin: [
-    {
-      title: "New student enrollment",
-      description: "John Doe enrolled in Grade 10A",
-      time: "5 minutes ago",
-      icon: Users,
-      color: "text-blue-500",
-    },
-    {
-      title: "Attendance submitted",
-      description: "Grade 9B attendance marked by Ms. Smith",
-      time: "1 hour ago",
-      icon: CheckCircle2,
-      color: "text-green-500",
-    },
-    {
-      title: "Fee payment received",
-      description: "$500 payment from Sarah Johnson",
-      time: "2 hours ago",
-      icon: DollarSign,
-      color: "text-purple-500",
-    },
-    {
-      title: "New teacher added",
-      description: "Mr. Brown joined as Math teacher",
-      time: "3 hours ago",
-      icon: GraduationCap,
-      color: "text-orange-500",
-    },
-  ],
-  teacher: [
-    {
-      title: "Assignment submitted",
-      description: "Math homework from Grade 10A",
-      time: "10 minutes ago",
-      icon: BookOpen,
-      color: "text-blue-500",
-    },
-    {
-      title: "Parent message",
-      description: "Message from Mrs. Johnson about exam",
-      time: "1 hour ago",
-      icon: Users,
-      color: "text-green-500",
-    },
-    {
-      title: "Attendance reminder",
-      description: "Mark attendance for Grade 9B",
-      time: "2 hours ago",
-      icon: AlertCircle,
-      color: "text-orange-500",
-    },
-  ],
-  parent: [
-    {
-      title: "Grade updated",
-      description: "Math test score: A (95%)",
-      time: "30 minutes ago",
-      icon: Award,
-      color: "text-green-500",
-    },
-    {
-      title: "Fee reminder",
-      description: "Tuition fee due in 5 days",
-      time: "2 hours ago",
-      icon: DollarSign,
-      color: "text-orange-500",
-    },
-    {
-      title: "School announcement",
-      description: "Parent-teacher meeting on Friday",
-      time: "1 day ago",
-      icon: Calendar,
-      color: "text-blue-500",
-    },
-  ],
-  student: [
-    {
-      title: "New assignment",
-      description: "Physics homework due Friday",
-      time: "1 hour ago",
-      icon: BookOpen,
-      color: "text-blue-500",
-    },
-    {
-      title: "Grade posted",
-      description: "Chemistry quiz: B+ (88%)",
-      time: "3 hours ago",
-      icon: Award,
-      color: "text-green-500",
-    },
-    {
-      title: "Library reminder",
-      description: "Return 'Physics Fundamentals' by tomorrow",
-      time: "1 day ago",
-      icon: AlertCircle,
-      color: "text-orange-500",
-    },
-  ],
-  owner: [
-    {
-      title: "Revenue milestone",
-      description: "Monthly revenue exceeded target by 15%",
-      time: "2 hours ago",
-      icon: TrendingUp,
-      color: "text-green-500",
-    },
-    {
-      title: "New branch proposal",
-      description: "Siem Reap branch feasibility study completed",
-      time: "5 hours ago",
-      icon: Building,
-      color: "text-blue-500",
-    },
-    {
-      title: "Compliance report",
-      description: "Q4 MoEYS report submitted successfully",
-      time: "1 day ago",
-      icon: CheckCircle2,
-      color: "text-purple-500",
-    },
-  ],
-  ministry: [
-    {
-      title: "New school registered",
-      description: "International School of Phnom Penh",
-      time: "1 hour ago",
-      icon: Building,
-      color: "text-blue-500",
-    },
-    {
-      title: "Compliance alert",
-      description: "3 schools pending accreditation review",
-      time: "3 hours ago",
-      icon: AlertCircle,
-      color: "text-orange-500",
-    },
-    {
-      title: "National report",
-      description: "Q4 education statistics published",
-      time: "1 day ago",
-      icon: BarChart3,
-      color: "text-green-500",
-    },
-  ],
-};
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.5,
-    },
-  },
+	admin: [
+		{
+			title: "New student enrollment",
+			description: "John Doe enrolled in Grade 10A",
+			time: "5 minutes ago",
+			icon: Users,
+			color: "text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-900/30",
+		},
+		{
+			title: "Attendance submitted",
+			description: "Grade 9B attendance marked by Ms. Smith",
+			time: "1 hour ago",
+			icon: CheckCircle2,
+			color:
+				"text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900/30",
+		},
+		{
+			title: "Fee payment received",
+			description: "$500 payment from Sarah Johnson",
+			time: "2 hours ago",
+			icon: DollarSign,
+			color:
+				"text-purple-600 bg-purple-100 dark:text-purple-400 dark:bg-purple-900/30",
+		},
+		{
+			title: "New teacher added",
+			description: "Mr. Brown joined as Math teacher",
+			time: "3 hours ago",
+			icon: GraduationCap,
+			color:
+				"text-orange-600 bg-orange-100 dark:text-orange-400 dark:bg-orange-900/30",
+		},
+	],
+	teacher: [
+		{
+			title: "Assignment submitted",
+			description: "Math homework from Grade 10A",
+			time: "10 minutes ago",
+			icon: BookOpen,
+			color: "text-blue-600 bg-blue-100",
+		},
+		{
+			title: "Parent message",
+			description: "Message from Mrs. Johnson about exam",
+			time: "1 hour ago",
+			icon: Users,
+			color: "text-green-600 bg-green-100",
+		},
+		{
+			title: "Attendance reminder",
+			description: "Mark attendance for Grade 9B",
+			time: "2 hours ago",
+			icon: AlertCircle,
+			color: "text-orange-600 bg-orange-100",
+		},
+	],
+	parent: [
+		{
+			title: "Grade updated",
+			description: "Math test score: A (95%)",
+			time: "30 minutes ago",
+			icon: GraduationCap,
+			color: "text-green-600 bg-green-100",
+		},
+		{
+			title: "Fee reminder",
+			description: "Tuition fee due in 5 days",
+			time: "2 hours ago",
+			icon: DollarSign,
+			color: "text-orange-600 bg-orange-100",
+		},
+		{
+			title: "School announcement",
+			description: "Parent-teacher meeting on Friday",
+			time: "1 day ago",
+			icon: Calendar,
+			color: "text-blue-600 bg-blue-100",
+		},
+	],
+	student: [
+		{
+			title: "New assignment",
+			description: "Physics homework due Friday",
+			time: "1 hour ago",
+			icon: BookOpen,
+			color: "text-blue-600 bg-blue-100",
+		},
+		{
+			title: "Grade posted",
+			description: "Chemistry quiz: B+ (88%)",
+			time: "3 hours ago",
+			icon: GraduationCap,
+			color: "text-green-600 bg-green-100",
+		},
+		{
+			title: "Library reminder",
+			description: "Return 'Physics Fundamentals' by tomorrow",
+			time: "1 day ago",
+			icon: AlertCircle,
+			color: "text-orange-600 bg-orange-100",
+		},
+	],
+	owner: [
+		{
+			title: "Revenue milestone",
+			description: "Monthly revenue exceeded target by 15%",
+			time: "2 hours ago",
+			icon: TrendingUp,
+			color: "text-green-600 bg-green-100",
+		},
+		{
+			title: "New branch proposal",
+			description: "Siem Reap branch feasibility study completed",
+			time: "5 hours ago",
+			icon: Building,
+			color: "text-blue-600 bg-blue-100",
+		},
+		{
+			title: "Compliance report",
+			description: "Q4 MoEYS report submitted successfully",
+			time: "1 day ago",
+			icon: CheckCircle2,
+			color: "text-purple-600 bg-purple-100",
+		},
+	],
+	ministry: [
+		{
+			title: "New school registered",
+			description: "International School of Phnom Penh",
+			time: "1 hour ago",
+			icon: Building,
+			color: "text-blue-600 bg-blue-100",
+		},
+		{
+			title: "Compliance alert",
+			description: "3 schools pending accreditation review",
+			time: "3 hours ago",
+			icon: AlertCircle,
+			color: "text-orange-600 bg-orange-100",
+		},
+		{
+			title: "National report",
+			description: "Q4 education statistics published",
+			time: "1 day ago",
+			icon: BarChart3,
+			color: "text-green-600 bg-green-100",
+		},
+	],
 };
 
 export default function DashboardPage() {
-  // Use real data from API
-  const {
-    currentSchool,
-    currentRole,
-    memberships,
-    isLoading,
-    error,
-    hasSchools,
-    user,
-  } = useDashboard();
+	const {
+		currentSchool,
+		currentRole,
+		memberships,
+		isLoading,
+		error,
+		hasSchools,
+		user,
+	} = useDashboard();
+	const schoolId = currentSchool?.idStr || currentSchool?.id || null;
 
-  // Map API role to UI role
-  const uiRole = currentRole?.toLowerCase() || "admin";
-  const roleForStats =
-    uiRole === "owner"
-      ? "owner"
-      : uiRole === "teacher"
-        ? "teacher"
-        : uiRole === "student"
-          ? "student"
-          : uiRole === "parent"
-            ? "parent"
-            : "admin";
+	const uiRole = currentRole?.toLowerCase() || "admin";
+	const roleForStats =
+		uiRole === "owner"
+			? "owner"
+			: uiRole === "teacher"
+				? "teacher"
+				: uiRole === "student"
+					? "student"
+					: uiRole === "parent"
+						? "parent"
+						: "admin";
 
-  const currentStats =
-    hasSchools && currentSchool?.stats
-      ? [
-          {
-            title: "Total Students",
-            value: currentSchool.stats.totalStudents?.toString() || "0",
-            change: "",
-            trend: "neutral" as const,
-            icon: Users,
-            color: "bg-blue-500",
-          },
-          {
-            title: "Total Teachers",
-            value: currentSchool.stats.totalTeachers?.toString() || "0",
-            change: "",
-            trend: "neutral" as const,
-            icon: GraduationCap,
-            color: "bg-green-500",
-          },
-          {
-            title: "Active Classes",
-            value: currentSchool.stats.totalClasses?.toString() || "0",
-            change: "",
-            trend: "neutral" as const,
-            icon: BookOpen,
-            color: "bg-purple-500",
-          },
-          {
-            title: "Branches",
-            value: currentSchool.stats.totalBranches?.toString() || "0",
-            change: "",
-            trend: "neutral" as const,
-            icon: Building,
-            color: "bg-orange-500",
-          },
-        ]
-      : stats[roleForStats as keyof typeof stats] || stats.admin;
+	const currentStats =
+		hasSchools && currentSchool?.stats
+			? [
+					{
+						title: "Total Students",
+						value: currentSchool.stats.totalStudents?.toString() || "0",
+						icon: Users,
+						gradient: "blue",
+					},
+					{
+						title: "Total Teachers",
+						value: currentSchool.stats.totalTeachers?.toString() || "0",
+						icon: GraduationCap,
+						gradient: "green",
+					},
+					{
+						title: "Active Classes",
+						value: currentSchool.stats.totalClasses?.toString() || "0",
+						icon: BookOpen,
+						gradient: "purple",
+					},
+					{
+						title: "Branches",
+						value: currentSchool.stats.totalBranches?.toString() || "0",
+						icon: Building,
+						gradient: "orange",
+					},
+				]
+			: (stats[roleForStats as keyof typeof stats] || stats.admin).map(
+					(s, idx) => ({
+						...s,
+						gradient: ["blue", "green", "purple", "orange"][idx % 4],
+					})
+				);
 
-  const currentActivities =
-    recentActivities[roleForStats as keyof typeof recentActivities] ||
-    recentActivities.admin;
+	const currentActivities =
+		recentActivities[roleForStats as keyof typeof recentActivities] ||
+		recentActivities.admin;
 
-  // Show loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-neutral-900 dark:to-neutral-800 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
-          <p className="mt-4 text-gray-600 dark:text-gray-400">
-            Loading dashboard...
-          </p>
-        </div>
-      </div>
-    );
-  }
+	if (isLoading) {
+		return (
+			<div className="min-h-screen flex items-center justify-center">
+				<div className="text-center space-y-4">
+					<div className="h-16 w-16 rounded-full border-4 border-primary/30 border-t-primary animate-spin mx-auto" />
+					<p className="font-bold uppercase tracking-widest text-primary animate-pulse text-sm">
+						Initializing Dashboard...
+					</p>
+				</div>
+			</div>
+		);
+	}
 
-  // Show error state
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-neutral-900 dark:to-neutral-800 flex items-center justify-center">
-        <div className="text-center">
-          <XCircle className="h-12 w-12 text-red-500 mx-auto" />
-          <p className="mt-4 text-gray-600 dark:text-gray-400">{error}</p>
-        </div>
-      </div>
-    );
-  }
+	if (error) {
+		return (
+			<div className="min-h-screen flex items-center justify-center p-6">
+				<div className="text-center p-12 glass-card max-w-md w-full">
+					<XCircle className="h-20 w-20 text-destructive mx-auto mb-6 opacity-30" />
+					<h3 className="text-2xl font-black text-foreground mb-2">
+						System Error
+					</h3>
+					<p className="text-muted-foreground">{error}</p>
+				</div>
+			</div>
+		);
+	}
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-neutral-900 dark:to-neutral-800">
-      <motion.div
-        animate="visible"
-        className="space-y-6"
-        initial="hidden"
-        variants={containerVariants}
-      >
-        {/* Header with School Info */}
-        <motion.div variants={itemVariants}>
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                {currentSchool ? currentSchool.name.en : "Dashboard"}
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">
-                {currentRole && (
-                  <span className="capitalize font-medium">{currentRole}</span>
-                )}
-                {currentRole && " • "}
-                Welcome back{user?.name ? `, ${user.name}` : ""}! Here&apos;s
-                what&apos;s happening today.
-              </p>
-            </div>
-            {memberships.length > 1 && (
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                {memberships.length} schools
-              </div>
-            )}
-          </div>
-          {!hasSchools && (
-            <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-              <p className="text-blue-700 dark:text-blue-300">
-                You are not a member of any school yet. Contact your school
-                administrator to get added.
-              </p>
-            </div>
-          )}
-        </motion.div>
+	const schoolName =
+		hasSchools && currentSchool ? currentSchool.name.en : "Academic Hub";
 
-        {/* Stats Grid */}
-        <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-          variants={containerVariants}
-        >
-          {currentStats.map((stat, index) => {
-            const Icon = stat.icon;
+	return (
+		<div className="space-y-10 pb-10">
+			{/* Professional Header */}
+			<PageHeader
+				title={schoolName}
+				subtitle={`Welcome back, ${user?.name || "Member"}! Here is your daily overview.`}
+				icon={Building}
+			>
+				{memberships.length > 1 && (
+					<div className="hidden md:flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 font-bold text-xs uppercase tracking-widest text-foreground shadow-sm hover:bg-white/20 transition-colors cursor-pointer">
+						<Building className="w-4 h-4 text-primary" />
+						{memberships.length} Schools Connected
+					</div>
+				)}
+			</PageHeader>
 
-            return (
-              <motion.div
-                key={index}
-                className="bg-white dark:bg-neutral-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-neutral-700"
-                variants={itemVariants}
-                whileHover={{ scale: 1.02, y: -5 }}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      {stat.title}
-                    </p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white mt-2">
-                      {stat.value}
-                    </p>
-                    {stat.change && (
-                      <p
-                        className={`text-sm mt-2 flex items-center gap-1 ${
-                          stat.trend === "up"
-                            ? "text-green-600"
-                            : stat.trend === "down"
-                              ? "text-red-600"
-                              : "text-gray-600"
-                        }`}
-                      >
-                        {stat.trend === "up" && (
-                          <TrendingUp className="h-4 w-4" />
-                        )}
-                        {stat.change}
-                        {stat.trend === "up" && " from last month"}
-                      </p>
-                    )}
-                  </div>
-                  <div className={`${stat.color} p-3 rounded-lg bg-opacity-10`}>
-                    <Icon
-                      className={`h-6 w-6 ${stat.color.replace("bg-", "text-")}`}
-                    />
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </motion.div>
+			{!hasSchools && (
+				<motion.div
+					initial={{ opacity: 0, y: -20 }}
+					animate={{ opacity: 1, y: 0 }}
+					className="p-8 bg-blue-500/10 text-blue-600 dark:text-blue-300 rounded-2xl border border-blue-500/20 backdrop-blur-md"
+				>
+					<div className="flex items-center gap-6">
+						<div className="w-16 h-16 rounded-3xl bg-blue-500/20 flex items-center justify-center shadow-lg shadow-blue-500/10">
+							<AlertCircle className="w-8 h-8" />
+						</div>
+						<div>
+							<h3 className="font-bold text-xl mb-1">
+								No School Membership Found
+							</h3>
+							<p className="opacity-80 max-w-xl">
+								It looks like you aren't managing any schools yet. Contact your
+								administrator to be added to a school and access specific
+								features.
+							</p>
+						</div>
+					</div>
+				</motion.div>
+			)}
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Recent Activity */}
-          <motion.div
-            className="lg:col-span-2 bg-white dark:bg-neutral-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-neutral-700"
-            variants={itemVariants}
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                Recent Activity
-              </h2>
-              <button className="text-sm text-primary hover:text-primary/80 font-medium">
-                View All
-              </button>
-            </div>
-            <div className="space-y-4">
-              {currentActivities.map((activity, index) => {
-                const Icon = activity.icon;
+			{/* Colorful Stats Grid */}
+			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+				{currentStats.map((stat: any, index: number) => (
+					<StatsCard
+						key={index}
+						title={stat.title}
+						value={stat.value}
+						icon={stat.icon}
+						color={stat.gradient || "blue"}
+						delay={index * 0.1}
+						trend={{ value: 12, isPositive: true }}
+					/>
+				))}
+			</div>
 
-                return (
-                  <motion.div
-                    key={index}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="flex items-start gap-4 p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-colors"
-                    initial={{ opacity: 0, x: -20 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <div
-                      className={`${activity.color} bg-opacity-10 p-2 rounded-lg`}
-                    >
-                      <Icon className={`h-5 w-5 ${activity.color}`} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {activity.title}
-                      </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        {activity.description}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-500 mt-1 flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {activity.time}
-                      </p>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </motion.div>
+			{/* Content Grid */}
+			<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+				{/* Recent Activity */}
+				<div className="lg:col-span-2 space-y-6">
+					<div className="flex items-center justify-between px-2">
+						<h2 className="text-xl font-black uppercase tracking-tight text-foreground flex items-center gap-3">
+							<div className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
+								<Clock className="w-5 h-5 text-primary" strokeWidth={2.5} />
+							</div>
+							Recent Activity
+						</h2>
+						<Button
+							variant="ghost"
+							className="text-xs font-black uppercase tracking-widest text-primary hover:bg-primary/10 hover:text-primary"
+						>
+							View History
+						</Button>
+					</div>
 
-          {/* Quick Actions */}
-          <motion.div
-            className="bg-white dark:bg-neutral-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-neutral-700"
-            variants={itemVariants}
-          >
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-              Quick Actions
-            </h2>
-            <div className="space-y-3">
-              <QuickActionButton
-                color="bg-blue-500"
-                icon={Users}
-                label="Add Student"
-              />
-              <QuickActionButton
-                color="bg-green-500"
-                icon={Calendar}
-                label="Mark Attendance"
-              />
-              <QuickActionButton
-                color="bg-purple-500"
-                icon={BookOpen}
-                label="Create Class"
-              />
-              <QuickActionButton
-                color="bg-orange-500"
-                icon={DollarSign}
-                label="Record Payment"
-              />
-            </div>
+					<div className="space-y-4">
+						{currentActivities.map((activity, index) => {
+							const Icon = activity.icon;
+							return (
+								<motion.div
+									key={index}
+									initial={{ opacity: 0, x: -20 }}
+									animate={{ opacity: 1, x: 0 }}
+									transition={{ delay: 0.1 * index }}
+									className=" group glass-card p-5 flex items-start gap-5 hover:border-primary/30 relative overflow-hidden"
+								>
+									{/* Hover Gradient */}
+									<div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-            {/* Upcoming Events */}
-            <div className="mt-8">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Upcoming Events
-              </h3>
-              <div className="space-y-3">
-                <EventItem
-                  color="bg-blue-500"
-                  date="Dec 10, 2025"
-                  title="Parent-Teacher Meeting"
-                />
-                <EventItem
-                  color="bg-red-500"
-                  date="Dec 15-20, 2025"
-                  title="Final Exams"
-                />
-                <EventItem
-                  color="bg-green-500"
-                  date="Dec 25, 2025"
-                  title="Winter Break"
-                />
-              </div>
-            </div>
-          </motion.div>
-        </div>
+									<div
+										className={cn(
+											"p-4 rounded-2xl smooth-transition group-hover:scale-110 shadow-sm z-10",
+											"bg-white/10 dark:bg-black/20 backdrop-blur-md"
+										)}
+									>
+										<Icon
+											className="h-5 w-5 text-foreground"
+											strokeWidth={2.5}
+										/>
+									</div>
+									<div className="flex-1 min-w-0 pt-1 z-10">
+										<div className="flex justify-between items-start">
+											<p className="text-base font-bold text-foreground group-hover:text-primary transition-colors">
+												{activity.title}
+											</p>
+											<span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 whitespace-nowrap ml-2 bg-white/5 px-2 py-1 rounded-full">
+												{activity.time}
+											</span>
+										</div>
+										<p className="text-sm text-muted-foreground font-medium mt-1 pr-4">
+											{activity.description}
+										</p>
+									</div>
+								</motion.div>
+							);
+						})}
+					</div>
+				</div>
 
-        {/* Additional Charts/Graphs Section */}
-        <motion.div
-          className="bg-white dark:bg-neutral-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-neutral-700"
-          variants={itemVariants}
-        >
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-            Performance Overview
-          </h2>
-          <div className="h-64 flex items-center justify-center text-gray-400">
-            <div className="text-center">
-              <BarChart3 className="h-16 w-16 mx-auto mb-4 opacity-50" />
-              <p>Charts and graphs will be displayed here</p>
-              <p className="text-sm mt-2">
-                Integration with Chart.js or Recharts coming soon
-              </p>
-            </div>
-          </div>
-        </motion.div>
-      </motion.div>
-    </div>
-  );
-}
+				{/* Quick Actions & Others */}
+				<div className="space-y-8">
+					<DashboardCard
+						title="Quick Actions"
+						className="glass-panel bg-transparent border-0 shadow-none p-0"
+					>
+						<div className="grid grid-cols-2 gap-4">
+							{[
+								{
+									icon: Users,
+									label: "Students",
+									color: "blue",
+									href: "/auth/admin/students",
+								},
+								{
+									icon: Calendar,
+									label: "Attendance",
+									color: "green",
+									href: "/auth/admin/attendance",
+								},
+								{
+									icon: BookOpen,
+									label: "Classes",
+									color: "purple",
+									href: "/auth/admin/academic",
+								},
+								{
+									icon: DollarSign,
+									label: "Finance",
+									color: "orange",
+									href: "/auth/admin/finance",
+								},
+							].map((action, i) => (
+								<Link key={i} href={action.href} className="block">
+									<div className="group glass-card p-5 flex flex-col items-center justify-center hover:border-primary/40 hover:bg-white/10 dark:hover:bg-white/5 transition-all duration-300">
+										<div
+											className={cn(
+												"w-12 h-12 rounded-2xl flex items-center justify-center text-white mb-3 shadow-lg group-hover:scale-110 transition-transform duration-300",
+												action.color === "blue" &&
+													"bg-gradient-to-br from-blue-400 to-blue-600 shadow-blue-500/30",
+												action.color === "green" &&
+													"bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-emerald-500/30",
+												action.color === "purple" &&
+													"bg-gradient-to-br from-violet-400 to-violet-600 shadow-violet-500/30",
+												action.color === "orange" &&
+													"bg-gradient-to-br from-amber-400 to-amber-600 shadow-amber-500/30"
+											)}
+										>
+											<action.icon className="w-6 h-6" strokeWidth={2.5} />
+										</div>
+										<span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">
+											{action.label}
+										</span>
+									</div>
+								</Link>
+							))}
+						</div>
+					</DashboardCard>
 
-// Quick Action Button Component
-function QuickActionButton({
-  icon: Icon,
-  label,
-  color,
-}: {
-  icon: any;
-  label: string;
-  color: string;
-}) {
-  return (
-    <motion.button
-      className="w-full flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-neutral-700/50 hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors text-left"
-      whileHover={{ scale: 1.02, x: 5 }}
-      whileTap={{ scale: 0.98 }}
-    >
-      <div className={`${color} p-2 rounded-lg`}>
-        <Icon className="h-5 w-5 text-white" />
-      </div>
-      <span className="font-medium text-gray-900 dark:text-white">{label}</span>
-    </motion.button>
-  );
-}
+					<div className="glass-panel p-8">
+						<AnnouncementFeed schoolId={schoolId} limit={3} />
+					</div>
 
-// Event Item Component
-function EventItem({
-  title,
-  date,
-  color,
-}: {
-  title: string;
-  date: string;
-  color: string;
-}) {
-  return (
-    <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-neutral-700/50">
-      <div className={`w-2 h-2 rounded-full ${color}`} />
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-          {title}
-        </p>
-        <p className="text-xs text-gray-600 dark:text-gray-400">{date}</p>
-      </div>
-    </div>
-  );
+					<div className="space-y-5">
+						<h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2 flex items-center gap-2">
+							<Calendar className="w-3 h-3" />
+							Upcoming Events
+						</h3>
+						<div className="space-y-3">
+							{[
+								{
+									color: "bg-blue-500 shadow-blue-500/40",
+									date: "10",
+									month: "DEC",
+									title: "Parent Meeting",
+								},
+								{
+									color: "bg-rose-500 shadow-rose-500/40",
+									date: "15",
+									month: "DEC",
+									title: "Final Exams",
+								},
+								{
+									color: "bg-emerald-500 shadow-emerald-500/40",
+									date: "25",
+									month: "DEC",
+									title: "Winter Break",
+								},
+							].map((event, i) => (
+								<motion.div
+									whileHover={{ x: 5 }}
+									key={i}
+									className="glass-card flex items-center gap-4 p-4 hover:border-primary/30 cursor-pointer group"
+								>
+									<div
+										className={cn(
+											"w-12 h-12 rounded-2xl flex flex-col items-center justify-center text-white font-black text-xs shadow-lg group-hover:scale-105 transition-transform",
+											event.color
+										)}
+									>
+										<span className="text-[10px] opacity-80">
+											{event.month}
+										</span>
+										<span className="text-base leading-none">{event.date}</span>
+									</div>
+									<p className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
+										{event.title}
+									</p>
+									<ArrowUpRight className="w-4 h-4 ml-auto text-muted-foreground/30 group-hover:text-primary/50 transition-colors" />
+								</motion.div>
+							))}
+						</div>
+					</div>
+				</div>
+			</div>
+
+			{/* Footer Charts Section */}
+			<DashboardCard
+				title="Performance Analytics"
+				className="glass-panel bg-transparent border-0 p-0"
+			>
+				<div className="glass-card p-8 flex items-center justify-center min-h-[200px]">
+					<div className="text-center space-y-4">
+						<div className="w-20 h-20 rounded-full bg-primary/5 flex items-center justify-center mx-auto animate-pulse">
+							<BarChart3 className="h-10 w-10 text-primary opacity-50" />
+						</div>
+						<p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+							Dynamic charts rendering in real-time...
+						</p>
+					</div>
+				</div>
+			</DashboardCard>
+		</div>
+	);
 }

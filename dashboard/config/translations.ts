@@ -158,6 +158,9 @@ export const translations = {
 		transport: "Transport",
 		inventory: "Inventory",
 		communication: "Communication",
+		analytics_reporting: "Analytics & Reports",
+		analytics: "Analytics",
+		reports: "Reports",
 		settings: "Settings",
 
 		// Dashboard Home
@@ -487,6 +490,9 @@ export const translations = {
 		transport: "ការដឹកជញ្ជូន",
 		inventory: "សារពើភ័ណ្ឌ",
 		communication: "ទំនាក់ទំនង",
+		analytics_reporting: "ស្ថិតិ & របាយការណ៍",
+		analytics: "ស្ថិតិ",
+		reports: "របាយការណ៍",
 		settings: "ការកំណត់",
 
 		// Dashboard Home

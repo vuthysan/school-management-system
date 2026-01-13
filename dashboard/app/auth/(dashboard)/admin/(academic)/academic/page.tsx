@@ -35,6 +35,7 @@ import { useSubjects } from "@/hooks/useSubjects";
 import { useGradeLevels } from "@/hooks/useGradeLevels";
 import { GradeLevelsTable } from "@/components/academic/grade-levels-table";
 import { GradeLevelForm } from "@/components/academic/grade-level-form";
+import { TimetableEditor } from "@/components/academic/timetable-editor";
 import {
 	Class,
 	Subject,
@@ -80,6 +81,7 @@ export default function AcademicPage() {
 	// Modal states
 	const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 	const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+	const [isTimetableEditOpen, setIsTimetableEditOpen] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [selectedClass, setSelectedClass] = useState<Class | null>(null);
 	const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
@@ -250,6 +252,11 @@ export default function AcademicPage() {
 		setIsEditModalOpen(true);
 	};
 
+	const handleEditTimetable = (cls: Class) => {
+		setSelectedClass(cls);
+		setIsTimetableEditOpen(true);
+	};
+
 	const handleEditSubject = (sub: Subject) => {
 		setSelectedSubject(sub);
 		setIsEditModalOpen(true);
@@ -406,6 +413,25 @@ export default function AcademicPage() {
 		}
 	};
 
+	const handleTimetableSave = async (schedule: any[]) => {
+		if (!selectedClass) return;
+		setIsSubmitting(true);
+		try {
+			await updateClass(selectedClass.id, { schedule });
+			console.log(
+				t("timetable_updated_successfully") || "Timetable updated successfully"
+			);
+			setIsTimetableEditOpen(false);
+		} catch (error) {
+			console.error(
+				t("error"),
+				error instanceof Error ? error.message : t("save_failed")
+			);
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
 	// ============================================================================
 	// RENDER
 	// ============================================================================
@@ -530,6 +556,7 @@ export default function AcademicPage() {
 							totalPages={classTotalPages}
 							onDelete={handleDeleteClass}
 							onEdit={handleEditClass}
+							onEditTimetable={handleEditTimetable}
 							onGradeLevelFilterChange={setClassGradeLevelFilter}
 							onPageChange={setClassPage}
 							onSearchChange={setClassSearch}
@@ -652,6 +679,19 @@ export default function AcademicPage() {
 								setIsEditModalOpen(false);
 							}}
 							onSuccess={handleGradeLevelFormSuccess}
+						/>
+					)}
+				</DialogContent>
+			</Dialog>
+
+			{/* Timetable Editor Modal */}
+			<Dialog open={isTimetableEditOpen} onOpenChange={setIsTimetableEditOpen}>
+				<DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-lg p-0 border-none">
+					{selectedClass && (
+						<TimetableEditor
+							classData={selectedClass}
+							onCancel={() => setIsTimetableEditOpen(false)}
+							onSave={handleTimetableSave}
 						/>
 					)}
 				</DialogContent>

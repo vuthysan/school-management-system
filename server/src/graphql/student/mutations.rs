@@ -187,6 +187,113 @@ impl StudentMutation {
 
         Ok(result.deleted_count > 0)
     }
+
+    /// Promote multiple students to the next grade level
+    /// If new_grade is "Graduated", sets student status to Graduated
+    async fn promote_students(
+        &self,
+        ctx: &Context<'_>,
+        student_ids: Vec<String>,
+        new_grade: String,
+        new_class_id: Option<String>,
+    ) -> Result<PromotionResult> {
+        let db = ctx.data::<Database>()?;
+        let student_collection = db.collection::<models::student::Student>("students");
+        let class_collection = db.collection::<models::class::Class>("classes");
+
+        let now = DateTime::now();
+        let mut promoted_count = 0;
+        let mut failed_count = 0;
+        let is_graduation = new_grade.to_lowercase() == "graduated";
+
+        for student_id in student_ids {
+            let obj_id = match ObjectId::parse_str(&student_id) {
+                Ok(id) => id,
+                Err(_) => {
+                    failed_count += 1;
+                    continue;
+                }
+            };
+
+            // Get current student
+            let current_student = match student_collection
+                .find_one(doc! { "_id": obj_id }, None)
+                .await
+            {
+                Ok(Some(s)) => s,
+                _ => {
+                    failed_count += 1;
+                    continue;
+                }
+            };
+
+            let old_class_id = current_student.current_class_id.clone();
+
+            // Build update document
+            let mut update_doc = doc! {
+                "grade_level": &new_grade,
+                "audit.updated_at": now
+            };
+
+            // If graduating, set status to Graduated and clear class
+            if is_graduation {
+                update_doc.insert("status", "Graduated");
+                update_doc.insert("current_class_id", mongodb::bson::Bson::Null);
+            } else if let Some(ref cid) = new_class_id {
+                update_doc.insert("current_class_id", cid);
+            }
+
+            // Update student
+            if student_collection
+                .update_one(doc! { "_id": obj_id }, doc! { "$set": update_doc }, None)
+                .await
+                .is_err()
+            {
+                failed_count += 1;
+                continue;
+            }
+
+            // Remove from old class
+            if let Some(ref old_cid) = old_class_id {
+                let _ = class_collection
+                    .update_one(
+                        doc! { "_id": old_cid },
+                        doc! { "$pull": { "student_ids": &student_id } },
+                        None,
+                    )
+                    .await;
+            }
+
+            // Add to new class (if not graduating)
+            if !is_graduation {
+                if let Some(ref new_cid) = new_class_id {
+                    let _ = class_collection
+                        .update_one(
+                            doc! { "_id": new_cid },
+                            doc! { "$addToSet": { "student_ids": &student_id } },
+                            None,
+                        )
+                        .await;
+                }
+            }
+
+            promoted_count += 1;
+        }
+
+        Ok(PromotionResult {
+            success: failed_count == 0,
+            promoted_count,
+            failed_count,
+        })
+    }
+}
+
+/// Result of bulk promotion operation
+#[derive(SimpleObject)]
+pub struct PromotionResult {
+    pub success: bool,
+    pub promoted_count: i32,
+    pub failed_count: i32,
 }
 
 impl StudentMutation {

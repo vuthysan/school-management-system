@@ -109,6 +109,7 @@ export const CLASS_MUTATIONS = {
         section
         capacity
         status
+        academicYearId
       }
     }
   `,

@@ -21,6 +21,9 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
+import { PageHeader } from "@/components/dashboard/page-header";
+import { StatsCard } from "@/components/dashboard/stats-card";
+import { LoadingState } from "@/components/dashboard/loading-state";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -330,122 +333,52 @@ export default function HRPage() {
 	return (
 		<div className="flex flex-col gap-6">
 			{/* Hero Header Section */}
-			<Card className="p-4">
-				<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 relative">
-					<div className="flex items-center gap-5">
-						<div className="relative group">
-							<div className="absolute -inset-1 bg-primary/20 blur opacity-0 group-hover:opacity-100 transition duration-500 rounded-lg" />
-							<div className="relative p-4 bg-primary rounded-lg shadow-lg shadow-primary/20 text-primary-foreground">
-								<Briefcase className="w-8 h-8" />
-							</div>
-						</div>
-						<div className="space-y-1">
-							<h1 className="text-3xl font-bold tracking-tight text-foreground/90">
-								{t("hr_payroll")}
-							</h1>
-							<p className="text-sm text-muted-foreground/80 font-medium">
-								{t("manage_staff")}
-							</p>
-						</div>
-					</div>
-
-					<Button
-						onClick={handleOpenAdd}
-						className="rounded-lg px-6 h-12 bg-primary hover:opacity-90 text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95 text-sm gap-2"
-					>
-						<Plus className="w-5 h-5" />
-						{t("add_member")}
-					</Button>
-				</div>
-			</Card>
+			<PageHeader
+				title={t("hr_payroll")}
+				subtitle={t("manage_staff")}
+				icon={Briefcase}
+			>
+				<Button
+					onClick={handleOpenAdd}
+					className="rounded-lg px-6 h-10 bg-primary hover:opacity-90 text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95 text-xs font-bold uppercase tracking-wider gap-2"
+				>
+					<Plus className="w-4 h-4" />
+					{t("add_member")}
+				</Button>
+			</PageHeader>
 
 			{/* Statistics Section */}
 			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-				{[
-					{
-						title: t("total_teachers"),
-						value: staffList.length,
-						icon: Users,
-						color: "blue",
-					},
-					{
-						title: t("revenue"),
-						value: "$12,450",
-						icon: DollarSign,
-						color: "emerald",
-					},
-					{
-						title: t("active_members"),
-						value: staffList.filter((s) => s.status === "active").length,
-						icon: Briefcase,
-						color: "violet",
-					},
-					{
-						title: t("avg_tenure"),
-						value: "2.4 Yrs",
-						icon: Calendar,
-						color: "amber",
-					},
-				].map((stat, index) => {
-					const colors = {
-						blue: {
-							bg: "bg-card",
-							icon: "bg-blue-500 text-white shadow-blue-500/20",
-							glow: "from-blue-500/10 to-transparent",
-						},
-						emerald: {
-							bg: "bg-card",
-							icon: "bg-emerald-500 text-white shadow-emerald-500/20",
-							glow: "from-emerald-500/10 to-transparent",
-						},
-						violet: {
-							bg: "bg-card",
-							icon: "bg-violet-500 text-white shadow-violet-500/20",
-							glow: "from-violet-500/10 to-transparent",
-						},
-						amber: {
-							bg: "bg-card",
-							icon: "bg-amber-500 text-white shadow-amber-500/20",
-							glow: "from-amber-500/10 to-transparent",
-						},
-					}[stat.color as "blue" | "emerald" | "violet" | "amber"];
-
-					return (
-						<motion.div
-							key={index}
-							initial={{ opacity: 0, y: 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.4, delay: index * 0.1 }}
-						>
-							<Card className="relative overflow-hidden border-none rounded-lg shadow-sm transition-all duration-300 hover:shadow-md group h-[140px]">
-								<div
-									className={cn(
-										"absolute right-0 top-0 bottom-0 w-1/2 bg-gradient-to-l opacity-50 group-hover:opacity-100 transition-opacity duration-500",
-										colors.glow
-									)}
-								/>
-								<CardContent className="p-6 h-full flex items-center justify-between relative z-10">
-									<div className="flex flex-col justify-between h-full py-1">
-										<h3 className="text-xs font-medium tracking-wide uppercase text-slate-400">
-											{stat.title}
-										</h3>
-										<span className="text-4xl font-black tracking-tighter text-slate-900 dark:text-slate-100">
-											{stat.value}
-										</span>
-									</div>
-									<div
-										className={cn(
-											"p-4 rounded-lg shadow-xl transition-transform duration-500 group-hover:scale-110",
-											colors.icon
-										)}
-									>
-										<stat.icon className="h-7 w-7" />
-									</div>
-								</CardContent>
-							</Card>
-						</motion.div>
-					);
-				})}
+				<StatsCard
+					title={t("total_teachers")}
+					value={staffList.length.toString()}
+					icon={Users}
+					color="blue"
+					delay={0}
+				/>
+				<StatsCard
+					title={t("revenue")}
+					value="$12,450"
+					icon={DollarSign}
+					color="emerald"
+					delay={0.1}
+				/>
+				<StatsCard
+					title={t("active_members")}
+					value={staffList
+						.filter((s) => s.status === "active")
+						.length.toString()}
+					icon={Briefcase}
+					color="violet"
+					delay={0.2}
+				/>
+				<StatsCard
+					title={t("avg_tenure")}
+					value="2.4 Yrs"
+					icon={Calendar}
+					color="amber"
+					delay={0.3}
+				/>
 			</div>
 
 			{/* Main Content Sections */}
@@ -455,33 +388,33 @@ export default function HRPage() {
 				onValueChange={setActiveTab}
 				className="w-full"
 			>
-				<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-					<TabsList className="bg-muted/50 p-1 rounded-xl border border-border/50">
+				<div className="flex  flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+					<TabsList className=" p-1.5 rounded-xl border border-border/40 shadow-sm">
 						<TabsTrigger
 							value="staff"
-							className="rounded-lg px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all"
+							className="rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all"
 						>
 							{t("all_members")}
 						</TabsTrigger>
 						<TabsTrigger
 							value="payroll"
-							className="rounded-lg px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all"
+							className="rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all"
 						>
 							{t("payroll")}
 						</TabsTrigger>
 						<TabsTrigger
 							value="attendance"
-							className="rounded-lg px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all"
+							className="rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all"
 						>
 							{t("attendance")}
 						</TabsTrigger>
 					</TabsList>
 
 					<div className="relative w-full sm:w-72 group">
-						<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+						<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
 						<Input
 							placeholder={t("search_staff")}
-							className="pl-10 h-11 bg-muted/30 border-border/50 rounded-lg focus-visible:ring-primary/20 focus-visible:border-primary transition-all shadow-sm"
+							className="pl-10 h-11 bg-white dark:bg-neutral-900 border-border/60 rounded-xl focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary transition-all shadow-sm hover:border-primary/30"
 							value={searchQuery}
 							onChange={(e) => setSearchQuery(e.target.value)}
 						/>
@@ -519,12 +452,7 @@ export default function HRPage() {
 										{loading ? (
 											<TableRow>
 												<TableCell colSpan={6} className="h-32 text-center">
-													<div className="flex flex-col items-center justify-center gap-2">
-														<Loader2 className="h-8 w-8 animate-spin text-primary" />
-														<p className="text-sm text-muted-foreground">
-															{t("loading_staff")}
-														</p>
-													</div>
+													<LoadingState message={t("loading_staff")} />
 												</TableCell>
 											</TableRow>
 										) : filteredStaff.length === 0 ? (

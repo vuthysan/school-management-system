@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 // Role-based permission utilities
 use crate::models::member::SchoolRole;
 

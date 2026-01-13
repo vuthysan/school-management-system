@@ -4,6 +4,7 @@ use super::types::{AttendanceType, BulkAttendanceResult};
 use crate::models;
 use async_graphql::*;
 use chrono::{NaiveDate, TimeZone, Utc};
+use futures::stream::TryStreamExt;
 use mongodb::{
     bson::{doc, oid::ObjectId, DateTime},
     options::UpdateOptions,
@@ -163,4 +164,110 @@ impl AttendanceMutation {
 
         Ok(result.deleted_count > 0)
     }
+
+    /// Send absence notification to parents for students marked absent
+    async fn send_absence_notifications(
+        &self,
+        ctx: &Context<'_>,
+        class_id: String,
+        date: String,
+    ) -> Result<AbsenceNotificationResult> {
+        let db = ctx.data::<Database>()?;
+        let attendance_collection = db.collection::<models::attendance::Attendance>("attendances");
+        let student_collection = db.collection::<models::student::Student>("students");
+        let notification_collection =
+            db.collection::<models::notification::Notification>("notifications");
+
+        let class_oid =
+            ObjectId::parse_str(&class_id).map_err(|_| Error::new("Invalid class ID format"))?;
+
+        // Parse date
+        let parsed_date = NaiveDate::parse_from_str(&date, "%Y-%m-%d")
+            .map_err(|_| Error::new("Invalid date format. Use YYYY-MM-DD"))?;
+        let date_dt = Utc.from_utc_datetime(&parsed_date.and_hms_opt(12, 0, 0).unwrap());
+        let attendance_date = DateTime::from_millis(date_dt.timestamp_millis());
+
+        // Find all absent students for this class and date
+        let filter = doc! {
+            "class_id": class_oid,
+            "date": attendance_date,
+            "status": "Absent"
+        };
+
+        let mut cursor = attendance_collection
+            .find(filter, None)
+            .await
+            .map_err(|e| Error::new(e.to_string()))?;
+
+        let mut notifications_sent = 0;
+        let mut notifications_failed = 0;
+
+        while let Some(attendance) = cursor
+            .try_next()
+            .await
+            .map_err(|e| Error::new(e.to_string()))?
+        {
+            // Get the student's guardian info
+            let student_oid = attendance.student_id;
+            let student = match student_collection
+                .find_one(doc! { "_id": student_oid }, None)
+                .await
+            {
+                Ok(Some(s)) => s,
+                _ => {
+                    notifications_failed += 1;
+                    continue;
+                }
+            };
+
+            // Get primary guardian contact info
+            let guardian = student
+                .guardians
+                .get(student.primary_guardian_index as usize);
+            let (parent_phone, parent_email) = match guardian {
+                Some(g) => (Some(g.phone.clone()), g.email.clone()),
+                None => (None, None),
+            };
+
+            if parent_phone.is_none() && parent_email.is_none() {
+                notifications_failed += 1;
+                continue;
+            }
+
+            // Create notification
+            let student_name = format!("{} {}", student.first_name_km, student.last_name_km);
+            let notification = models::notification::Notification::new_absence_notification(
+                student.school_id.clone(),
+                student_oid.to_hex(),
+                student_name,
+                date.clone(),
+                parent_phone,
+                parent_email,
+            );
+
+            if notification_collection
+                .insert_one(notification, None)
+                .await
+                .is_ok()
+            {
+                notifications_sent += 1;
+            } else {
+                notifications_failed += 1;
+            }
+        }
+
+        Ok(AbsenceNotificationResult {
+            success: notifications_failed == 0,
+            notifications_sent,
+            notifications_failed,
+        })
+    }
+}
+
+/// Result of sending absence notifications
+#[derive(SimpleObject)]
+pub struct AbsenceNotificationResult {
+    pub success: bool,
+    pub notifications_sent: i32,
+    pub notifications_failed: i32,
 }

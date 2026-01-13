@@ -99,20 +99,25 @@ export const DesktopSidebar = ({
 	return (
 		<motion.div
 			animate={{
-				width: animate ? (open ? "220px" : "60px") : "220px",
+				width: animate ? (open ? "280px" : "80px") : "280px",
 			}}
 			className={cn(
-				"h-full px-4 py-4 hidden md:flex md:flex-col bg-white dark:bg-neutral-800 w-[220px] flex-shrink-0 relative",
+				"h-full px-4 py-6 hidden md:flex md:flex-col flex-shrink-0 relative z-50 transition-all duration-300",
+				"bg-sidebar backdrop-blur-xl border-r border-white/10 dark:border-white/5 shadow-[5px_0_30px_0_rgba(0,0,0,0.02)]",
 				className
 			)}
 			{...props}
 		>
 			{children}
 			<button
-				className="absolute -right-3 top-20 z-50 rounded-full border bg-white dark:bg-neutral-800 p-1 shadow-md hover:bg-neutral-100 dark:hover:bg-neutral-700"
+				className="absolute -right-3 top-20 z-50 rounded-full border border-white/20 bg-white/50 dark:bg-black/50 backdrop-blur-md p-1.5 shadow-lg hover:bg-white/80 dark:hover:bg-white/10 transition-colors text-primary"
 				onClick={() => setOpen(!open)}
 			>
-				{open ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+				{open ? (
+					<ChevronLeft size={14} strokeWidth={3} />
+				) : (
+					<ChevronRight size={14} strokeWidth={3} />
+				)}
 			</button>
 		</motion.div>
 	);
@@ -129,14 +134,15 @@ export const MobileSidebar = ({
 		<>
 			<div
 				className={cn(
-					"h-10 px-4 py-4 flex flex-row md:hidden items-center justify-between bg-neutral-100 dark:bg-neutral-800 w-full"
+					"h-16 px-6 flex flex-row md:hidden items-center justify-between w-full z-50",
+					"bg-sidebar/90 backdrop-blur-xl border-b border-white/10"
 				)}
 				{...props}
 			>
 				<div className="flex justify-end z-20 w-full">
 					<button
 						aria-label="Toggle Menu"
-						className="text-neutral-800 dark:text-neutral-200 cursor-pointer focus:outline-none"
+						className="text-foreground cursor-pointer focus:outline-none hover:text-primary transition-colors"
 						onClick={() => setOpen(!open)}
 					>
 						<Menu />
@@ -147,7 +153,8 @@ export const MobileSidebar = ({
 						<motion.div
 							animate={{ x: 0, opacity: 1 }}
 							className={cn(
-								"fixed h-full w-full inset-0 bg-white dark:bg-neutral-900 p-10 z-[100] flex flex-col justify-between",
+								"fixed h-full w-full inset-0 p-8 z-[100] flex flex-col justify-between",
+								"bg-background/95 backdrop-blur-2xl",
 								className
 							)}
 							exit={{ x: "-100%", opacity: 0 }}
@@ -159,7 +166,7 @@ export const MobileSidebar = ({
 						>
 							<button
 								aria-label="Close Menu"
-								className="absolute right-10 top-10 z-50 text-neutral-800 dark:text-neutral-200 cursor-pointer focus:outline-none"
+								className="absolute right-8 top-8 z-50 text-foreground cursor-pointer focus:outline-none hover:text-red-500 transition-colors"
 								onClick={() => setOpen(!open)}
 							>
 								<X />
@@ -189,12 +196,20 @@ export const SidebarLink = ({
 	return (
 		<Link
 			className={cn(
-				"flex items-center justify-start gap-2 group/sidebar py-2",
+				"flex items-center justify-start gap-4 group/sidebar py-3 px-4 rounded-2xl transition-all smooth-transition relative overflow-hidden",
+				active
+					? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
+					: "hover:bg-primary/10 hover:text-primary text-muted-foreground",
 				className
 			)}
 			href={link.href}
 			{...props}
 		>
+			{/* Active Glow/Shine */}
+			{active && (
+				<div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover/sidebar:opacity-100 transition-opacity" />
+			)}
+
 			{link.icon}
 			<motion.span
 				animate={{
@@ -202,8 +217,8 @@ export const SidebarLink = ({
 					opacity: animate ? (open ? 1 : 0) : 1,
 				}}
 				className={cn(
-					"text-neutral-700 dark:text-neutral-200 text-sm group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !p-0 !m-0",
-					active && "text-primary dark:text-primary"
+					"text-sm font-medium transition duration-150 whitespace-pre inline-block !p-0 !m-0",
+					active && "font-bold tracking-wide"
 				)}
 			>
 				{link.label}

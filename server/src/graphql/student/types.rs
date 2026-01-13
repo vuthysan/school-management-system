@@ -8,7 +8,6 @@ use crate::utils::common_types::{ContactInfo, DateOfBirth, Gender};
 use async_graphql::*;
 
 // Re-export the student model types since they already have GraphQL derives
-pub use crate::models::student::Guardian as GuardianType;
 
 // Legacy StudentType for backward compatibility
 // New code should use Student directly from the model

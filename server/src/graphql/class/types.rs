@@ -7,7 +7,6 @@ use crate::utils::common_types::Status;
 use async_graphql::*;
 
 // Re-export schedule types from the model since they already have GraphQL derives
-pub use crate::models::class::{ClassSchedule, SchedulePeriod};
 
 // Legacy ClassType for backward compatibility
 // New code should use Class directly from the model

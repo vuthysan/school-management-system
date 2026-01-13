@@ -1,13 +1,18 @@
+#![allow(dead_code)]
 pub mod academic_year;
+pub mod announcement;
 pub mod attendance;
 pub mod branch;
 pub mod calendar_event;
 pub mod class;
+pub mod exam;
 pub mod finance;
 pub mod grade;
 pub mod grade_level;
 pub mod hr;
 pub mod member;
+pub mod notification;
+pub mod room;
 pub mod school;
 pub mod student;
 pub mod subject;
