@@ -25,13 +25,13 @@ export function DashboardCard({
 	const content = (
 		<Card
 			className={cn(
-				"glass-card border-black/5 premium-shadow overflow-hidden smooth-transition hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/5",
+				"liquid-glass-card overflow-hidden hover:border-foreground/10 transition-all duration-200 border-0",
 				className
 			)}
 		>
 			{title && (
 				<CardHeader className="pb-2">
-					<CardTitle className="font-bold uppercase tracking-widest text-xs text-foreground/80">
+					<CardTitle className="text-sm font-semibold text-foreground">
 						{title}
 					</CardTitle>
 				</CardHeader>
@@ -46,9 +46,9 @@ export function DashboardCard({
 
 	return (
 		<motion.div
-			initial={{ opacity: 0, y: 20 }}
+			initial={{ opacity: 0, y: 12 }}
 			animate={{ opacity: 1, y: 0 }}
-			transition={{ duration: 0.5, delay }}
+			transition={{ duration: 0.3, delay }}
 		>
 			{content}
 		</motion.div>

@@ -2,8 +2,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { motion } from "framer-motion";
-import { CalendarCheck, Loader2, Bell } from "lucide-react";
+import { CalendarCheck, Bell, AlertCircle } from "lucide-react";
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useLanguage } from "@/contexts/language-context";
@@ -15,7 +14,6 @@ import { MarkAttendance } from "@/components/attendance/mark-attendance";
 import { AttendanceHistory } from "@/components/attendance/attendance-history";
 import { AbsenceNotificationDialog } from "@/components/attendance/absence-notification-dialog";
 import { Button } from "@/components/ui/button";
-
 import { PageHeader } from "@/components/dashboard/page-header";
 
 export default function AttendancePage() {
@@ -29,13 +27,11 @@ export default function AttendancePage() {
 	const { currentSchool, isLoading: isDashboardLoading } = useDashboard();
 	const schoolId = currentSchool?.idStr || currentSchool?.id || null;
 
-	// Read from URL params
 	const activeTab = (searchParams.get("tab") as "mark" | "history") || "mark";
 	const selectedClassId = searchParams.get("classId") || null;
 	const selectedDate =
 		searchParams.get("date") || new Date().toISOString().split("T")[0];
 
-	// Update URL params
 	const updateParams = useCallback(
 		(updates: Record<string, string | null>) => {
 			const params = new URLSearchParams(searchParams.toString());
@@ -72,14 +68,12 @@ export default function AttendancePage() {
 		[updateParams]
 	);
 
-	// Fetch classes for the school
 	const { classes, isLoading: isClassesLoading } = useClasses({
 		schoolId,
 		page: 1,
 		pageSize: 100,
 	});
 
-	// Get current month/year for summary
 	const now = new Date();
 	const { summary } = useAttendanceSummary(
 		selectedClassId,
@@ -108,40 +102,45 @@ export default function AttendancePage() {
 
 	if (isDashboardLoading) {
 		return (
-			<div className="flex items-center justify-center min-h-[400px]">
-				<div className="w-16 h-16 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+			<div className="min-h-[60vh] flex items-center justify-center">
+				<div className="text-center space-y-3">
+					<div className="h-8 w-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin mx-auto" />
+					<p className="text-sm text-muted-foreground">{t("loading") || "Loading..."}</p>
+				</div>
 			</div>
 		);
 	}
 
 	if (!schoolId) {
 		return (
-			<div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-				<p className="text-muted-foreground font-black uppercase tracking-widest text-xs">
-					{t("no_school_selected")}
-				</p>
+			<div className="min-h-[60vh] flex items-center justify-center">
+				<div className="text-center space-y-3">
+					<div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center mx-auto">
+						<AlertCircle className="h-5 w-5 text-amber-500" />
+					</div>
+					<p className="text-sm text-muted-foreground">
+						{t("no_school_selected")}
+					</p>
+				</div>
 			</div>
 		);
 	}
 
 	return (
-		<motion.div
-			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
-			className="p-6 space-y-10 max-w-[1600px] mx-auto bg-background/50 text-foreground"
-		>
+		<div className="space-y-6 pb-10">
 			<PageHeader
 				title={t("attendance_management")}
 				subtitle={t("track_attendance")}
 				icon={CalendarCheck}
-				gradient="green"
 			>
 				<Button
 					onClick={() => setIsNotificationDialogOpen(true)}
-					className="h-12 rounded-2xl px-6 font-black uppercase tracking-widest bg-green-500 hover:bg-green-600 shadow-xl shadow-green-500/20 border-none transition-all hover:scale-105 active:scale-95"
+					size="sm"
+					variant="outline"
+					className="gap-2"
 				>
-					<Bell className="h-5 w-5 mr-2" strokeWidth={3} />
-					Notify Parents
+					<Bell className="h-4 w-4" />
+					{t("notify_parents") || "Notify Parents"}
 				</Button>
 			</PageHeader>
 
@@ -151,30 +150,25 @@ export default function AttendancePage() {
 			/>
 
 			{/* Stats */}
-			<AttendanceStats stats={stats} />
+			{selectedClassId && summary && (
+				<AttendanceStats stats={stats} />
+			)}
 
 			{/* Tabs */}
 			<Tabs
 				value={activeTab}
 				onValueChange={handleTabChange}
-				className="w-full"
 			>
-				<TabsList className="flex w-full justify-start border-b border-border/50 bg-transparent p-0 h-auto gap-8">
-					<TabsTrigger
-						className="relative h-12 rounded-none border-b-2 border-transparent bg-transparent px-2 pb-3 pt-2 font-semibold text-muted-foreground transition-all data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary/70"
-						value="mark"
-					>
+				<TabsList>
+					<TabsTrigger value="mark">
 						{t("mark_attendance")}
 					</TabsTrigger>
-					<TabsTrigger
-						className="relative h-12 rounded-none border-b-2 border-transparent bg-transparent px-2 pb-3 pt-2 font-semibold text-muted-foreground transition-all data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary/70"
-						value="history"
-					>
+					<TabsTrigger value="history">
 						{t("attendance_history")}
 					</TabsTrigger>
 				</TabsList>
 
-				<TabsContent className="mt-4" value="mark">
+				<TabsContent value="mark">
 					<MarkAttendance
 						classes={classes}
 						isClassesLoading={isClassesLoading}
@@ -184,7 +178,7 @@ export default function AttendancePage() {
 						onDateChange={handleDateChange}
 					/>
 				</TabsContent>
-				<TabsContent className="mt-4" value="history">
+				<TabsContent value="history">
 					<AttendanceHistory
 						classes={classes}
 						selectedClassId={selectedClassId}
@@ -194,6 +188,6 @@ export default function AttendancePage() {
 					/>
 				</TabsContent>
 			</Tabs>
-		</motion.div>
+		</div>
 	);
 }

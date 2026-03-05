@@ -225,7 +225,7 @@ export function RecordPaymentForm({
 										${
 											selectedMethod === method.value
 												? "border-primary bg-primary/5 ring-1 ring-primary"
-												: "border-border hover:border-primary/50"
+												: "border-black/6 dark:border-white/6 hover:border-primary/50"
 										}
 									`}
 								>

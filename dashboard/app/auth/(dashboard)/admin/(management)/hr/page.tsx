@@ -1,32 +1,32 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import {
 	Users,
 	Plus,
-	Search,
 	Briefcase,
 	DollarSign,
-	Calendar,
-	MoreVertical,
+	CalendarDays,
 	Pencil,
 	Trash2,
-	Mail,
-	Phone,
-	MapPin,
-	Building2,
 	Loader2,
 	CheckCircle2,
 	MoreHorizontal,
+	CalendarClock,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { StatsCard } from "@/components/dashboard/stats-card";
+import { UserIdInput } from "@/components/shared/user-id-input";
 import { LoadingState } from "@/components/dashboard/loading-state";
+import { SearchInput } from "@/components/shared/search-input";
+import { LeavesTable } from "@/components/hr/leaves-table";
+import { LeaveRequestForm } from "@/components/hr/leave-request-form";
+import { PayrollTable } from "@/components/hr/payroll-table";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -66,6 +66,10 @@ import { useDashboard } from "@/hooks/useDashboard";
 import {
 	useStaff,
 	useHRMutations,
+	useLeaves,
+	useLeaveMutations,
+	usePayroll,
+	usePayrollMutations,
 	CreateStaffInput,
 	Staff,
 	UpdateStaffInput,
@@ -86,8 +90,19 @@ export default function HRPage() {
 	} = useHRMutations();
 	const { searchUser, loading: searching } = useSearchUser();
 
+	// Leave hooks
+	const { leaves, loading: leavesLoading, refetch: refetchLeaves } = useLeaves(schoolId);
+	const { createLeave, updateLeaveStatus, loading: leaveMutationLoading } = useLeaveMutations();
+
+	// Payroll hooks
+	const currentMonth = new Date().toISOString().slice(0, 7); // "2026-03"
+	const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+	const { payrolls, loading: payrollLoading, refetch: refetchPayroll } = usePayroll(schoolId, selectedMonth);
+	const { generateMonthlyPayroll, updatePayrollStatus, loading: payrollMutationLoading } = usePayrollMutations();
+
 	const [searchQuery, setSearchQuery] = useState("");
 	const [activeTab, setActiveTab] = useState("staff");
+	const [isLeaveFormOpen, setIsLeaveFormOpen] = useState(false);
 	const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -97,15 +112,13 @@ export default function HRPage() {
 	const [userSearchQuery, setUserSearchQuery] = useState("");
 	const [foundUser, setFoundUser] = useState<User | null>(null);
 	const [formError, setFormError] = useState<string | null>(null);
-	const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
-	const lastAutoFilledUserRef = useRef<string | null>(null);
-	const MIN_SEARCH_CHARS = 5;
 
 	const [editFormData, setEditFormData] = useState<Partial<UpdateStaffInput>>(
 		{}
 	);
 
 	const [formData, setFormData] = useState<Partial<CreateStaffInput>>({
+		schoolId: schoolId || "",
 		staffId: "",
 		firstName: "",
 		lastName: "",
@@ -121,71 +134,16 @@ export default function HRPage() {
 		currency: "USD",
 	});
 
-	// Debounced auto-search when user stops typing
-	useEffect(() => {
-		if (debounceTimerRef.current) {
-			clearTimeout(debounceTimerRef.current);
-		}
-
-		// Don't search if we already have a user found
-		if (foundUser) {
-			return;
-		}
-
-		if (userSearchQuery.trim().length >= MIN_SEARCH_CHARS) {
-			debounceTimerRef.current = setTimeout(async () => {
-				setFormError(null);
-				const user = await searchUser(userSearchQuery.trim());
-				if (user) {
-					setFoundUser(user);
-					// Only auto-fill if this is a NEW user (not already filled)
-					if (user.idStr !== lastAutoFilledUserRef.current) {
-						lastAutoFilledUserRef.current = user.idStr || null;
-						setFormData((prev) => ({
-							...prev,
-							firstName:
-								user.fullName?.split(" ")[0] ||
-								user.displayName?.split(" ")[0] ||
-								"",
-							lastName:
-								user.fullName?.split(" ").slice(1).join(" ") ||
-								user.displayName?.split(" ").slice(1).join(" ") ||
-								"",
-							email: user.email || "",
-						}));
-					}
-				} else {
-					setFormError(t("user_not_found"));
-					setFoundUser(null);
-				}
-			}, 2000);
-		} else {
-			setFoundUser(null);
-			lastAutoFilledUserRef.current = null;
-		}
-
-		return () => {
-			if (debounceTimerRef.current) {
-				clearTimeout(debounceTimerRef.current);
-			}
-		};
-	}, [userSearchQuery, searchUser, t, foundUser]);
-
-	const handleSearchUser = async () => {
-		if (userSearchQuery.trim().length < MIN_SEARCH_CHARS) {
-			setFormError(t("min_search_chars", { count: MIN_SEARCH_CHARS }));
-			return;
-		}
-		if (debounceTimerRef.current) {
-			clearTimeout(debounceTimerRef.current);
-		}
+	const handleUserIdChange = async (value: string) => {
+		setUserSearchQuery(value);
+		setFoundUser(null);
 		setFormError(null);
-		const user = await searchUser(userSearchQuery);
-		if (user) {
-			setFoundUser(user);
-			// Only auto-fill if this is a NEW user (not already filled)
-			if (user.idStr !== lastAutoFilledUserRef.current) {
-				lastAutoFilledUserRef.current = user.idStr || null;
+
+		// Auto-search when all 8 digits are entered
+		if (value.length === 8) {
+			const user = await searchUser(value);
+			if (user) {
+				setFoundUser(user);
 				setFormData((prev) => ({
 					...prev,
 					firstName:
@@ -198,10 +156,9 @@ export default function HRPage() {
 						"",
 					email: user.email || "",
 				}));
+			} else {
+				setFormError(t("user_not_found"));
 			}
-		} else {
-			setFormError(t("user_not_found"));
-			setFoundUser(null);
 		}
 	};
 
@@ -209,8 +166,8 @@ export default function HRPage() {
 		setUserSearchQuery("");
 		setFoundUser(null);
 		setFormError(null);
-		lastAutoFilledUserRef.current = null;
 		setFormData({
+			schoolId: schoolId || "",
 			staffId: "",
 			firstName: "",
 			lastName: "",
@@ -246,6 +203,7 @@ export default function HRPage() {
 			setFoundUser(null);
 			setUserSearchQuery("");
 			setFormData({
+				schoolId: schoolId || "",
 				staffId: "",
 				firstName: "",
 				lastName: "",
@@ -331,37 +289,34 @@ export default function HRPage() {
 	);
 
 	return (
-		<div className="flex flex-col gap-6">
-			{/* Hero Header Section */}
+		<div className="space-y-6 pb-10">
+			{/* Header */}
 			<PageHeader
 				title={t("hr_payroll")}
 				subtitle={t("manage_staff")}
 				icon={Briefcase}
 			>
-				<Button
-					onClick={handleOpenAdd}
-					className="rounded-lg px-6 h-10 bg-primary hover:opacity-90 text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95 text-xs font-bold uppercase tracking-wider gap-2"
-				>
-					<Plus className="w-4 h-4" />
+				<Button onClick={handleOpenAdd} size="sm" className="gap-2">
+					<Plus className="h-4 w-4" />
 					{t("add_member")}
 				</Button>
 			</PageHeader>
 
-			{/* Statistics Section */}
-			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+			{/* Stats Grid */}
+			<div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
 				<StatsCard
-					title={t("total_teachers")}
+					title={t("total_staff")}
 					value={staffList.length.toString()}
 					icon={Users}
 					color="blue"
 					delay={0}
 				/>
 				<StatsCard
-					title={t("revenue")}
-					value="$12,450"
+					title={t("total_payroll")}
+					value={`$${payrolls.reduce((s, p) => s + p.netSalary, 0).toLocaleString()}`}
 					icon={DollarSign}
 					color="emerald"
-					delay={0.1}
+					delay={0.05}
 				/>
 				<StatsCard
 					title={t("active_members")}
@@ -370,79 +325,85 @@ export default function HRPage() {
 						.length.toString()}
 					icon={Briefcase}
 					color="violet"
-					delay={0.2}
+					delay={0.1}
 				/>
 				<StatsCard
-					title={t("avg_tenure")}
-					value="2.4 Yrs"
-					icon={Calendar}
+					title={t("pending_leaves")}
+					value={leaves.filter((l) => l.status === "Pending").length.toString()}
+					icon={CalendarClock}
 					color="amber"
-					delay={0.3}
+					delay={0.15}
 				/>
 			</div>
 
-			{/* Main Content Sections */}
+			{/* Staff Table Section */}
 			<Tabs
 				defaultValue="staff"
 				value={activeTab}
 				onValueChange={setActiveTab}
-				className="w-full"
 			>
-				<div className="flex  flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-					<TabsList className=" p-1.5 rounded-xl border border-border/40 shadow-sm">
-						<TabsTrigger
-							value="staff"
-							className="rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all"
-						>
-							{t("all_members")}
-						</TabsTrigger>
-						<TabsTrigger
-							value="payroll"
-							className="rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all"
-						>
-							{t("payroll")}
-						</TabsTrigger>
-						<TabsTrigger
-							value="attendance"
-							className="rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all"
-						>
-							{t("attendance")}
-						</TabsTrigger>
-					</TabsList>
+				<motion.div
+					initial={{ opacity: 0, y: 8 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ delay: 0.15, duration: 0.3 }}
+				>
+					<div className="liquid-glass-card rounded-2xl overflow-hidden">
+						{/* Card header with tabs + search */}
+						<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-4 py-3 border-b border-black/6 dark:border-white/6">
+							<div className="flex items-center gap-3">
+								<div className="w-6 h-6 rounded-md bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center">
+									<Users className="w-3 h-3 text-blue-600 dark:text-blue-400" strokeWidth={2} />
+								</div>
+								<TabsList>
+									<TabsTrigger value="staff">
+										{t("all_members")}
+									</TabsTrigger>
+									<TabsTrigger value="leaves">
+										{t("leaves")}
+									</TabsTrigger>
+									<TabsTrigger value="payroll">
+										{t("payroll")}
+									</TabsTrigger>
+								</TabsList>
+							</div>
+							<div className="flex items-center gap-2">
+								{activeTab === "leaves" && (
+									<Button size="sm" className="gap-2" onClick={() => setIsLeaveFormOpen(true)}>
+										<Plus className="h-4 w-4" />
+										{t("request_leave")}
+									</Button>
+								)}
+								{activeTab === "staff" && (
+									<SearchInput
+										placeholder={t("search_staff") || "Search staff..."}
+										value={searchQuery}
+										onChange={setSearchQuery}
+										className="w-full sm:w-64"
+									/>
+								)}
+							</div>
+						</div>
 
-					<div className="relative w-full sm:w-72 group">
-						<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
-						<Input
-							placeholder={t("search_staff")}
-							className="pl-10 h-11 bg-white dark:bg-neutral-900 border-border/60 rounded-xl focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary transition-all shadow-sm hover:border-primary/30"
-							value={searchQuery}
-							onChange={(e) => setSearchQuery(e.target.value)}
-						/>
-					</div>
-				</div>
-
-				<TabsContent value="staff">
-					<Card className="overflow-hidden border border-border/50 shadow-xl shadow-primary/5 bg-card/50 backdrop-blur-sm rounded-2xl">
-						<CardContent className="p-0">
+						<TabsContent value="staff" className="mt-0">
 							<Table>
-								<TableHeader className="bg-muted/30 border-b border-border/50">
-									<TableRow className="hover:bg-transparent border-none">
-										<TableHead className="w-[300px] h-12 uppercase tracking-widest text-[11px] font-bold text-muted-foreground/70">
+								<TableHeader>
+									<TableRow className="hover:bg-transparent border-b border-black/6 dark:border-white/6">
+										<TableHead className="w-[300px] h-10 text-xs font-medium text-muted-foreground">
 											{t("user")}
 										</TableHead>
-										<TableHead className="h-12 uppercase tracking-widest text-[11px] font-bold text-muted-foreground/70">
+										<TableHead className="h-10 text-xs font-medium text-muted-foreground">
 											{t("department")}
 										</TableHead>
-										<TableHead className="h-12 uppercase tracking-widest text-[11px] font-bold text-muted-foreground/70">
+										<TableHead className="h-10 text-xs font-medium text-muted-foreground">
 											{t("role")}
 										</TableHead>
-										<TableHead className="h-12 uppercase tracking-widest text-[11px] font-bold text-muted-foreground/70">
+										<TableHead className="h-10 text-xs font-medium text-muted-foreground">
 											{t("status")}
 										</TableHead>
-										<TableHead className="h-12 uppercase tracking-widest text-[11px] font-bold text-muted-foreground/70">
+										<TableHead className="h-10 text-xs font-medium text-muted-foreground">
 											{t("salary")}
 										</TableHead>
-										<TableHead className="text-right h-12 uppercase tracking-widest text-[11px] font-bold text-muted-foreground/70">
+										<TableHead className="text-right h-10 text-xs font-medium text-muted-foreground">
 											{t("actions")}
 										</TableHead>
 									</TableRow>
@@ -451,34 +412,31 @@ export default function HRPage() {
 									<AnimatePresence mode="popLayout">
 										{loading ? (
 											<TableRow>
-												<TableCell colSpan={6} className="h-32 text-center">
+												<TableCell colSpan={6}>
 													<LoadingState message={t("loading_staff")} />
 												</TableCell>
 											</TableRow>
 										) : filteredStaff.length === 0 ? (
 											<TableRow>
-												<TableCell colSpan={6} className="h-80 text-center">
-													<div className="flex flex-col items-center justify-center gap-4 py-10 animate-in fade-in zoom-in duration-500">
-														<div className="relative group">
-															<div className="absolute -inset-4 bg-primary/5 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition duration-500" />
-															<div className="relative p-6 rounded-full bg-primary/10 border border-primary/20">
-																<Users className="h-12 w-12 text-primary/60" />
-															</div>
+												<TableCell colSpan={6} className="h-60 text-center">
+													<div className="flex flex-col items-center justify-center gap-3">
+														<div className="w-12 h-12 rounded-2xl bg-muted/60 flex items-center justify-center">
+															<Users className="h-5 w-5 text-muted-foreground" />
 														</div>
 														<div className="space-y-1">
-															<p className="text-xl font-bold text-foreground/80">
+															<p className="text-sm font-medium text-foreground">
 																{t("no_staff_records")}
 															</p>
-															<p className="text-sm text-muted-foreground max-w-sm mx-auto">
+															<p className="text-xs text-muted-foreground max-w-xs mx-auto">
 																{t("no_staff_desc")}
 															</p>
 														</div>
 														<Button
-															variant="default"
+															size="sm"
 															onClick={handleOpenAdd}
-															className="mt-2 rounded-lg px-8 h-12 bg-primary hover:opacity-90 transition-all font-semibold"
+															className="mt-1 gap-2"
 														>
-															<Plus className="h-5 w-5 mr-2" />
+															<Plus className="h-4 w-4" />
 															{t("add_member")}
 														</Button>
 													</div>
@@ -488,24 +446,24 @@ export default function HRPage() {
 											filteredStaff.map((staff, index) => (
 												<motion.tr
 													key={staff.id}
-													initial={{ opacity: 0, y: 10 }}
-													animate={{ opacity: 1, y: 0 }}
-													exit={{ opacity: 0, scale: 0.95 }}
-													transition={{ duration: 0.3, delay: index * 0.05 }}
-													className="group transition-all hover:bg-secondary/10 cursor-pointer border-b border-border/50"
+													initial={{ opacity: 0 }}
+													animate={{ opacity: 1 }}
+													exit={{ opacity: 0 }}
+													transition={{ delay: index * 0.03 }}
+													className="group hover:bg-muted/30 transition-colors border-b border-black/6 dark:border-white/6"
 												>
-													<TableCell className="py-4">
-														<div className="flex items-center gap-4">
-															<Avatar className="h-10 w-10 border-2 border-background shadow-sm group-hover:scale-110 transition-transform">
+													<TableCell className="py-3">
+														<div className="flex items-center gap-3">
+															<Avatar className="h-9 w-9 border border-black/6 dark:border-white/6">
 																<AvatarFallback
 																	className={cn(
-																		"text-white font-bold",
+																		"text-xs font-semibold",
 																		[
-																			"bg-blue-500",
-																			"bg-purple-500",
-																			"bg-emerald-500",
-																			"bg-amber-500",
-																			"bg-rose-500",
+																			"bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400",
+																			"bg-violet-50 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400",
+																			"bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400",
+																			"bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400",
+																			"bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400",
 																		][staff.firstName.length % 5]
 																	)}
 																>
@@ -513,18 +471,16 @@ export default function HRPage() {
 																	{staff.lastName[0]}
 																</AvatarFallback>
 															</Avatar>
-															<div className="flex flex-col">
-																<p className="font-medium text-foreground group-hover:text-primary transition-colors">
+															<div className="min-w-0">
+																<p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors truncate">
 																	{staff.firstName} {staff.lastName}
 																</p>
-																<div className="flex items-center gap-2 text-[11px] text-muted-foreground/80 font-medium tracking-wide">
-																	<span className="bg-muted px-1.5 py-0.5 rounded uppercase tracking-wider text-[10px]">
+																<div className="flex items-center gap-1.5 mt-0.5">
+																	<span className="text-xs text-muted-foreground/60 truncate">
 																		{staff.staffId}
 																	</span>
-																	<span className="text-muted-foreground/30">
-																		•
-																	</span>
-																	<span className="truncate max-w-[150px]">
+																	<span className="text-muted-foreground/30">·</span>
+																	<span className="text-xs text-muted-foreground/60 truncate max-w-[140px]">
 																		{staff.email}
 																	</span>
 																</div>
@@ -532,68 +488,75 @@ export default function HRPage() {
 														</div>
 													</TableCell>
 													<TableCell>
-														<div className="flex items-center gap-2">
-															<div className="p-2 rounded-lg bg-primary/5 text-primary group-hover:bg-primary/10 transition-colors">
-																<Briefcase className="h-3.5 w-3.5" />
-															</div>
-															<span className="font-medium text-foreground/80">
-																{staff.department || "N/A"}
-															</span>
-														</div>
+														<span className="text-sm text-foreground/80">
+															{staff.department || "—"}
+														</span>
 													</TableCell>
 													<TableCell>
 														<Badge
 															variant="secondary"
-															className="bg-primary/5 text-primary border-none rounded-lg font-bold uppercase text-[10px]"
+															className="bg-primary/8 text-primary border-none text-xs font-medium capitalize"
 														>
 															{staff.role}
 														</Badge>
 													</TableCell>
 													<TableCell>
-														<Badge
-															className={cn(
-																"rounded-lg px-2.5 py-0.5 text-[11px] border-none font-bold uppercase",
-																staff.status === "active"
-																	? "bg-emerald-500/10 text-emerald-600 animate-pulse"
-																	: "bg-muted text-muted-foreground"
-															)}
-														>
-															{staff.status}
-														</Badge>
+														<div className="flex items-center gap-1.5">
+															<div
+																className={cn(
+																	"w-1.5 h-1.5 rounded-full",
+																	staff.status === "active"
+																		? "bg-emerald-500"
+																		: "bg-muted-foreground/30"
+																)}
+															/>
+															<span
+																className={cn(
+																	"text-xs font-medium capitalize",
+																	staff.status === "active"
+																		? "text-emerald-600 dark:text-emerald-400"
+																		: "text-muted-foreground"
+																)}
+															>
+																{staff.status}
+															</span>
+														</div>
 													</TableCell>
-													<TableCell className="font-semibold tabular-nums text-foreground/70">
-														<span className="text-[10px] mr-1 opacity-50">
-															{staff.currency}
+													<TableCell>
+														<span className="text-sm font-medium tabular-nums text-foreground/80">
+															<span className="text-xs text-muted-foreground/50 mr-0.5">
+																{staff.currency}
+															</span>
+															{staff.salary.toLocaleString()}
 														</span>
-														{staff.salary.toLocaleString()}
 													</TableCell>
 													<TableCell className="text-right">
 														<DropdownMenu>
 															<DropdownMenuTrigger asChild>
 																<Button
 																	variant="ghost"
-																	className="h-8 w-8 p-0 hover:bg-muted rounded-full"
+																	size="sm"
+																	className="h-7 w-7 p-0 hover:bg-muted"
 																>
 																	<MoreHorizontal className="h-4 w-4" />
 																</Button>
 															</DropdownMenuTrigger>
 															<DropdownMenuContent
 																align="end"
-																className="w-[160px] rounded-lg"
+																className="w-[150px]"
 															>
 																<DropdownMenuItem
 																	onClick={() => handleOpenEdit(staff)}
-																	className="text-emerald-500 focus:text-emerald-600 focus:bg-emerald-50"
 																>
-																	<Pencil className="mr-2 h-4 w-4" />
-																	<span>{t("edit")}</span>
+																	<Pencil className="mr-2 h-3.5 w-3.5" />
+																	{t("edit")}
 																</DropdownMenuItem>
 																<DropdownMenuItem
 																	onClick={() => handleOpenDelete(staff)}
 																	className="text-destructive focus:text-destructive focus:bg-destructive/10"
 																>
-																	<Trash2 className="mr-2 h-4 w-4" />
-																	<span>{t("remove")}</span>
+																	<Trash2 className="mr-2 h-3.5 w-3.5" />
+																	{t("remove")}
 																</DropdownMenuItem>
 															</DropdownMenuContent>
 														</DropdownMenu>
@@ -604,134 +567,126 @@ export default function HRPage() {
 									</AnimatePresence>
 								</TableBody>
 							</Table>
-						</CardContent>
-					</Card>
-				</TabsContent>
+						</TabsContent>
 
-				<TabsContent value="payroll">
-					<Card className="border-dashed">
-						<CardContent className="flex flex-col items-center justify-center py-12 text-center">
-							<DollarSign className="h-12 w-12 text-muted-foreground mb-4" />
-							<h3 className="text-lg font-medium">{t("payroll_management")}</h3>
-							<p className="text-sm text-muted-foreground max-w-xs">
-								{t("payroll_management_desc")}
-							</p>
-						</CardContent>
-					</Card>
-				</TabsContent>
+						<TabsContent value="leaves" className="mt-0">
+							<LeavesTable
+								leaves={leaves}
+								staffList={staffList}
+								loading={leavesLoading}
+								onApprove={async (id, approvedBy) => {
+									await updateLeaveStatus(id, { status: "Approved", approvedBy });
+									refetchLeaves();
+								}}
+								onReject={async (id, reason) => {
+									await updateLeaveStatus(id, { status: "Rejected", rejectionReason: reason });
+									refetchLeaves();
+								}}
+								mutationLoading={leaveMutationLoading}
+							/>
+						</TabsContent>
 
-				<TabsContent value="attendance">
-					<Card className="border-dashed">
-						<CardContent className="flex flex-col items-center justify-center py-12 text-center">
-							<Calendar className="h-12 w-12 text-muted-foreground mb-4" />
-							<h3 className="text-lg font-medium">{t("staff_attendance")}</h3>
-							<p className="text-sm text-muted-foreground max-w-xs">
-								{t("staff_attendance_desc")}
-							</p>
-						</CardContent>
-					</Card>
-				</TabsContent>
+						<TabsContent value="payroll" className="mt-0">
+							<PayrollTable
+								payrolls={payrolls}
+								loading={payrollLoading}
+								schoolId={schoolId || ""}
+								selectedMonth={selectedMonth}
+								onMonthChange={(month) => {
+									setSelectedMonth(month);
+								}}
+								onGenerate={async (input) => {
+									const result = await generateMonthlyPayroll(input);
+									refetchPayroll();
+									return result;
+								}}
+								onMarkPaid={async (id) => {
+									await updatePayrollStatus(id, "paid");
+									refetchPayroll();
+								}}
+								mutationLoading={payrollMutationLoading}
+							/>
+						</TabsContent>
+					</div>
+				</motion.div>
 			</Tabs>
 
 			{/* Add Staff Dialog */}
 			<Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-				<DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg">
+				<DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
 					<DialogHeader>
-						<DialogTitle className="flex items-center gap-2 text-xl font-bold">
-							<div className="p-2 bg-primary/10 rounded-lg text-primary">
-								<Plus className="h-6 w-6" />
-							</div>
-							{t("add_member")}
-						</DialogTitle>
-						<DialogDescription className="font-medium text-muted-foreground/80">
-							{t("fill_staff_details")}
+						<DialogTitle>{t("add_member")}</DialogTitle>
+						<DialogDescription>
+							{t("search_by_user_id_desc")}
 						</DialogDescription>
 					</DialogHeader>
 
-					{/* Error Message */}
 					{formError && (
-						<div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+						<div className="p-3 bg-red-50 dark:bg-red-950/30 rounded-xl border border-red-200 dark:border-red-800/40">
 							<p className="text-sm text-red-700 dark:text-red-300">
 								{formError}
 							</p>
 						</div>
 					)}
 
-					{/* Step 1: Search User */}
-					<div className="space-y-3 pt-4">
-						<Label htmlFor="userSearch">
-							{t("search_user_label")}{" "}
+					{/* Step 1: Search by User ID */}
+					<div className="space-y-3">
+						<Label>
+							{t("user_id")}{" "}
 							<span className="text-destructive">*</span>
 						</Label>
-						<div className="flex gap-2">
-							<Input
-								id="userSearch"
-								className="flex-1 h-11 bg-muted/30 border-border/50 rounded-lg focus-visible:ring-primary/20"
-								placeholder={t("search_user_placeholder")}
-								value={userSearchQuery}
-								onChange={(e) => setUserSearchQuery(e.target.value)}
-							/>
-							<Button
-								type="button"
-								variant="outline"
-								className="h-11 w-11 p-0 rounded-lg border-border/50 hover:bg-muted/50"
-								disabled={searching}
-								onClick={handleSearchUser}
-							>
-								{searching ? (
-									<Loader2 className="h-4 w-4 animate-spin" />
-								) : (
-									<Search className="h-4 w-4" />
-								)}
-							</Button>
-						</div>
-						<p className="text-xs text-muted-foreground">
-							{t("min_search_chars", { count: MIN_SEARCH_CHARS })}
-						</p>
+						<UserIdInput
+							value={userSearchQuery}
+							onChange={handleUserIdChange}
+							disabled={searching}
+						/>
+						{searching && (
+							<div className="flex items-center gap-2 text-xs text-muted-foreground">
+								<Loader2 className="h-3 w-3 animate-spin" />
+								{t("searching") || "Searching..."}
+							</div>
+						)}
 					</div>
 
 					{/* User Found Preview */}
 					{foundUser && (
-						<div className="p-4 bg-primary/5 rounded-lg border border-primary/20 animate-in fade-in zoom-in duration-300">
-							<div className="flex items-center gap-4">
-								<Avatar className="h-14 w-14 border-2 border-primary/20 shadow-sm">
-									{foundUser.avatarUrl && (
-										<AvatarImage src={foundUser.avatarUrl} />
-									)}
-									<AvatarFallback className="bg-primary/10 text-primary uppercase font-bold text-lg">
-										{foundUser.fullName?.charAt(0) ||
-											foundUser.username?.charAt(0)}
-									</AvatarFallback>
-								</Avatar>
-								<div className="flex-1">
-									<p className="font-medium text-foreground text-lg">
-										{foundUser.fullName ||
-											foundUser.displayName ||
-											foundUser.username ||
-											"Unknown"}
-									</p>
-									<p className="text-sm text-muted-foreground">
-										{foundUser.email || foundUser.username}
-									</p>
-								</div>
-								<Badge className="bg-emerald-500/10 text-emerald-600 border-none px-3 py-1 font-bold rounded-lg">
-									<CheckCircle2 className="h-4 w-4 mr-1.5" />
-									{t("user_found")}
-								</Badge>
+						<div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40">
+							<Avatar className="h-10 w-10 border border-emerald-200 dark:border-emerald-800">
+								{foundUser.avatarUrl && (
+									<AvatarImage src={foundUser.avatarUrl} />
+								)}
+								<AvatarFallback className="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 text-sm font-semibold">
+									{foundUser.fullName?.charAt(0) ||
+										foundUser.username?.charAt(0)}
+								</AvatarFallback>
+							</Avatar>
+							<div className="flex-1 min-w-0">
+								<p className="text-sm font-medium text-foreground truncate">
+									{foundUser.fullName ||
+										foundUser.displayName ||
+										foundUser.username ||
+										"Unknown"}
+								</p>
+								<p className="text-xs text-muted-foreground truncate font-mono">
+									ID: {foundUser.userId}
+								</p>
+							</div>
+							<div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+								<CheckCircle2 className="h-4 w-4" />
+								<span className="text-xs font-medium">{t("user_found")}</span>
 							</div>
 						</div>
 					)}
 
 					{/* Step 2: Staff Details (only show if user found) */}
 					{foundUser && (
-						<div className="grid grid-cols-2 gap-5 pt-6 border-t border-border/50 animate-in slide-in-from-top-4 duration-500">
+						<div className="grid grid-cols-2 gap-4 pt-4 border-t border-black/6 dark:border-white/6">
 							<div className="space-y-2">
 								<Label htmlFor="staffId">
 									{t("staff_id")} <span className="text-destructive">*</span>
 								</Label>
 								<Input
 									id="staffId"
-									className="h-11 bg-muted/20 border-border/50 rounded-lg"
 									value={formData.staffId}
 									onChange={(e) => handleInputChange("staffId", e.target.value)}
 									placeholder="STF-001"
@@ -864,29 +819,27 @@ export default function HRPage() {
 									{t("salary")} <span className="text-destructive">*</span>
 								</Label>
 								<Input
-									id="currency"
-									className="h-11 bg-muted/20 border-border/50 rounded-lg"
-									value={formData.currency}
+									id="salary"
+									type="number"
+									value={formData.salary}
 									onChange={(e) =>
-										handleInputChange("currency", e.target.value)
+										handleInputChange("salary", parseFloat(e.target.value) || 0)
 									}
-									placeholder="USD"
+									placeholder="0"
 								/>
 							</div>
 						</div>
 					)}
-					<DialogFooter className="pt-6 border-t border-border/50 mt-4 gap-2">
+					<DialogFooter className="pt-4 border-t border-black/6 dark:border-white/6 gap-2">
 						<Button
 							variant="ghost"
 							onClick={() => setIsAddDialogOpen(false)}
-							className="rounded-lg font-medium"
 						>
 							{t("cancel")}
 						</Button>
 						<Button
 							onClick={handleAddStaff}
 							disabled={mutationLoading || !foundUser}
-							className="bg-primary hover:opacity-90 rounded-lg px-8 h-11 shadow-lg shadow-primary/20 font-bold"
 						>
 							{mutationLoading && (
 								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -899,28 +852,23 @@ export default function HRPage() {
 
 			{/* Edit Staff Dialog */}
 			<Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-				<DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg">
+				<DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
 					<DialogHeader>
-						<DialogTitle className="flex items-center gap-2 text-xl font-bold">
-							<div className="p-2 bg-primary/10 rounded-lg text-primary">
-								<Pencil className="h-6 w-6" />
-							</div>
-							{t("edit_member")}
-						</DialogTitle>
-						<DialogDescription className="font-medium text-muted-foreground/80">
+						<DialogTitle>{t("edit_member")}</DialogTitle>
+						<DialogDescription>
 							{t("update_staff_details")}
 						</DialogDescription>
 					</DialogHeader>
 
 					{formError && (
-						<div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+						<div className="p-3 bg-red-50 dark:bg-red-950/30 rounded-xl border border-red-200 dark:border-red-800/40">
 							<p className="text-sm text-red-700 dark:text-red-300">
 								{formError}
 							</p>
 						</div>
 					)}
 
-					<div className="grid grid-cols-2 gap-4 pt-4">
+					<div className="grid grid-cols-2 gap-4">
 						<div className="space-y-2">
 							<Label>{t("first_name")}</Label>
 							<Input
@@ -1010,7 +958,6 @@ export default function HRPage() {
 							<Label>{t("salary")}</Label>
 							<Input
 								type="number"
-								className="h-11 bg-muted/20 border-border/50 rounded-lg"
 								value={editFormData.salary}
 								onChange={(e) =>
 									handleEditInputChange(
@@ -1022,18 +969,16 @@ export default function HRPage() {
 						</div>
 					</div>
 
-					<DialogFooter className="pt-6 border-t border-border/50 mt-4 gap-2">
+					<DialogFooter className="pt-4 border-t border-black/6 dark:border-white/6 gap-2">
 						<Button
 							variant="ghost"
 							onClick={() => setIsEditDialogOpen(false)}
-							className="rounded-lg font-medium"
 						>
 							{t("cancel")}
 						</Button>
 						<Button
 							onClick={handleUpdateStaff}
 							disabled={mutationLoading}
-							className="bg-primary hover:opacity-90 rounded-lg px-8 h-11 shadow-lg shadow-primary/20 font-bold"
 						>
 							{mutationLoading && (
 								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -1044,17 +989,25 @@ export default function HRPage() {
 				</DialogContent>
 			</Dialog>
 
+			{/* Leave Request Form Dialog */}
+			<LeaveRequestForm
+				open={isLeaveFormOpen}
+				onOpenChange={setIsLeaveFormOpen}
+				staffList={staffList}
+				schoolId={schoolId || ""}
+				onSubmit={async (input) => {
+					await createLeave(input);
+					refetchLeaves();
+				}}
+				loading={leaveMutationLoading}
+			/>
+
 			{/* Delete Confirmation Dialog */}
 			<Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-				<DialogContent className="max-w-md rounded-lg">
+				<DialogContent className="max-w-sm">
 					<DialogHeader>
-						<DialogTitle className="flex items-center gap-2 text-xl font-bold text-destructive">
-							<div className="p-2 bg-destructive/10 rounded-lg">
-								<Trash2 className="h-6 w-6" />
-							</div>
-							{t("delete_staff")}
-						</DialogTitle>
-						<DialogDescription className="font-medium text-muted-foreground/70 pt-2">
+						<DialogTitle>{t("delete_staff")}</DialogTitle>
+						<DialogDescription>
 							{t("delete_staff_confirm", {
 								name: selectedStaff
 									? `${selectedStaff.firstName} ${selectedStaff.lastName}`
@@ -1062,11 +1015,10 @@ export default function HRPage() {
 							})}
 						</DialogDescription>
 					</DialogHeader>
-					<DialogFooter className="pt-4 gap-2">
+					<DialogFooter className="gap-2">
 						<Button
 							variant="ghost"
 							onClick={() => setIsDeleteDialogOpen(false)}
-							className="rounded-lg font-medium"
 						>
 							{t("cancel")}
 						</Button>
@@ -1074,7 +1026,6 @@ export default function HRPage() {
 							variant="destructive"
 							onClick={handleDeleteStaff}
 							disabled={mutationLoading}
-							className="rounded-lg px-8 h-11 font-bold shadow-lg shadow-destructive/20"
 						>
 							{mutationLoading && (
 								<Loader2 className="mr-2 h-4 w-4 animate-spin" />

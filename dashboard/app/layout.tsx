@@ -6,7 +6,7 @@ import { Toaster } from "sonner";
 import { LanguageProvider } from "@/contexts/language-context";
 import { AuthProvider } from "@/contexts/auth-context";
 import { siteConfig } from "@/config/site";
-import { fontSans, fontKhmer } from "@/config/fonts";
+import { fontSans, fontSerif, fontKhmer } from "@/config/fonts";
 import { Providers } from "@/app/providers";
 
 export const metadata: Metadata = {
@@ -39,6 +39,7 @@ export default function RootLayout({
 				className={clsx(
 					"min-h-screen font-sans antialiased",
 					fontSans.variable,
+					fontSerif.variable,
 					fontKhmer.variable
 				)}
 			>

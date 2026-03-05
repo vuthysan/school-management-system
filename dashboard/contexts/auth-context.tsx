@@ -12,7 +12,8 @@ import { useRouter, usePathname } from "next/navigation";
 
 interface User {
 	id: string;
-	email: string;
+	user_id: string;
+	email?: string;
 	name: string;
 	picture?: string;
 	role: string;

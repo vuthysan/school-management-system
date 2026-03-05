@@ -12,3 +12,8 @@ export * from "./academic-year";
 export * from "./term";
 export * from "./calendar";
 export * from "./finance";
+export * from "./transport";
+export * from "./library";
+export * from "./inventory";
+export * from "./hr";
+export * from "./notification";

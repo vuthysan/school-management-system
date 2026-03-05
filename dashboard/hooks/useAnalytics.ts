@@ -8,6 +8,9 @@ import {
 	PerformanceAnalytics,
 	AttendanceAnalytics,
 	StudentProgress,
+	SchoolOverviewAnalytics,
+	FeeCollectionSummary,
+	StaffStudentRatio,
 } from "@/types/analytics";
 import { toast } from "sonner";
 
@@ -18,6 +21,12 @@ export function useAnalytics(schoolId: string | null) {
 		useState<AttendanceAnalytics | null>(null);
 	const [studentProgress, setStudentProgress] =
 		useState<StudentProgress | null>(null);
+	const [overviewData, setOverviewData] =
+		useState<SchoolOverviewAnalytics | null>(null);
+	const [feeAnalytics, setFeeAnalytics] =
+		useState<FeeCollectionSummary | null>(null);
+	const [ratioData, setRatioData] =
+		useState<StaffStudentRatio | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 	const { getAccessToken } = useAuth();
 
@@ -83,13 +92,58 @@ export function useAnalytics(schoolId: string | null) {
 		[schoolId, getAccessToken]
 	);
 
+	const fetchSchoolOverview = useCallback(async () => {
+		if (!schoolId) return;
+		try {
+			const token = getAccessToken();
+			const data = await graphqlRequest<{
+				getSchoolOverview: SchoolOverviewAnalytics;
+			}>(ANALYTICS_QUERIES.GET_SCHOOL_OVERVIEW, { schoolId }, token);
+			setOverviewData(data.getSchoolOverview);
+		} catch {
+			// Silently fail for overview
+		}
+	}, [schoolId, getAccessToken]);
+
+	const fetchFeeAnalytics = useCallback(async () => {
+		if (!schoolId) return;
+		try {
+			const token = getAccessToken();
+			const data = await graphqlRequest<{
+				getFeeCollectionAnalytics: FeeCollectionSummary;
+			}>(ANALYTICS_QUERIES.GET_FEE_COLLECTION_ANALYTICS, { schoolId }, token);
+			setFeeAnalytics(data.getFeeCollectionAnalytics);
+		} catch {
+			// Silently fail
+		}
+	}, [schoolId, getAccessToken]);
+
+	const fetchStaffStudentRatio = useCallback(async () => {
+		if (!schoolId) return;
+		try {
+			const token = getAccessToken();
+			const data = await graphqlRequest<{
+				getStaffStudentRatio: StaffStudentRatio;
+			}>(ANALYTICS_QUERIES.GET_STAFF_STUDENT_RATIO, { schoolId }, token);
+			setRatioData(data.getStaffStudentRatio);
+		} catch {
+			// Silently fail
+		}
+	}, [schoolId, getAccessToken]);
+
 	return {
 		performanceData,
 		attendanceData,
 		studentProgress,
+		overviewData,
+		feeAnalytics,
+		ratioData,
 		isLoading,
 		fetchPerformanceAnalytics,
 		fetchAttendanceAnalytics,
 		fetchStudentProgress,
+		fetchSchoolOverview,
+		fetchFeeAnalytics,
+		fetchStaffStudentRatio,
 	};
 }

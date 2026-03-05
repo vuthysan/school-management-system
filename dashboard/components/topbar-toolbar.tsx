@@ -1,6 +1,7 @@
 "use client";
 
-import { SearchIcon, Bell } from "lucide-react";
+import Link from "next/link";
+import { SearchIcon, Bell, HelpCircle } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -23,10 +24,16 @@ export function TopbarToolbar() {
           placeholder="Search anything…"
           type="search"
         />
-        <kbd className="hidden lg:inline-flex absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+        <kbd className="hidden lg:inline-flex absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-xs font-medium text-muted-foreground">
           <span className="text-xs">⌘</span>K
         </kbd>
       </div>
+
+      <Link href="/auth/admin/guide" title="Getting Started Guide">
+        <Button aria-label="Getting Started Guide" size="icon" variant="ghost">
+          <HelpCircle className="h-5 w-5" />
+        </Button>
+      </Link>
 
       <div className="relative">
         <Button aria-label="Notifications" size="icon" variant="ghost">

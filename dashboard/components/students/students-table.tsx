@@ -2,7 +2,6 @@
 
 import React, { useMemo, useState, useCallback } from "react";
 import {
-	Search,
 	Eye,
 	Trash2,
 	Filter,
@@ -12,6 +11,7 @@ import {
 	Copy,
 	MoreHorizontal,
 	FileText,
+	GraduationCap,
 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,6 +21,7 @@ import { ViewStudentModal } from "./view-student-modal";
 import { DeleteStudentModal } from "./delete-student-modal";
 import { StudentForm } from "./student-form";
 import { Checkbox } from "@/components/ui/checkbox";
+import { SearchInput } from "@/components/shared/search-input";
 
 import {
 	Table,
@@ -30,7 +31,6 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -40,11 +40,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
 	Dialog,
@@ -87,10 +82,8 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
 		useStudents(schoolId);
 
 	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-
 	const lastSelectedIds = React.useRef<string[]>([]);
 
-	// Notify parent when selection changes
 	React.useEffect(() => {
 		if (onSelectionChange) {
 			const selectedIdsArray = Array.from(selectedIds).sort();
@@ -105,22 +98,10 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
 		}
 	}, [selectedIds, students, onSelectionChange]);
 
-	// Dynamic arrays that use translations
 	const GENDERS = [
 		{ key: "male", label: t("male") },
 		{ key: "female", label: t("female") },
 		{ key: "other", label: t("other") },
-	];
-
-	const columns = [
-		{ key: "select", label: "", sortable: false },
-		{ key: "name", label: t("name").toUpperCase(), sortable: true },
-		{ key: "email", label: t("email").toUpperCase(), sortable: true },
-		{ key: "phone", label: t("phone").toUpperCase(), sortable: false },
-		{ key: "gradeLevel", label: t("grade").toUpperCase(), sortable: true },
-		{ key: "gender", label: t("gender").toUpperCase(), sortable: true },
-		{ key: "status", label: t("status").toUpperCase(), sortable: true },
-		{ key: "actions", label: t("actions").toUpperCase(), sortable: false },
 	];
 
 	const [searchQuery, setSearchQuery] = useState("");
@@ -142,21 +123,18 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
 	const [isDeleting, setIsDeleting] = useState(false);
 	const [isCloning, setIsCloning] = useState(false);
 
-	// Notify parent when students change
 	React.useEffect(() => {
 		if (onStudentsChange) {
 			onStudentsChange(students);
 		}
 	}, [students, onStudentsChange]);
 
-	// Filter and search students
+	// Filter and search
 	const filteredStudents = useMemo(() => {
 		let filtered = [...students];
 
-		// Apply search
 		if (searchQuery) {
 			const query = searchQuery.toLowerCase();
-
 			filtered = filtered.filter(
 				(student) =>
 					student.firstNameKm.toLowerCase().includes(query) ||
@@ -172,7 +150,6 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
 			);
 		}
 
-		// Apply filters
 		if (filters.gradeLevel) {
 			filtered = filtered.filter(
 				(student) => student.gradeLevel === filters.gradeLevel
@@ -188,7 +165,7 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
 		return filtered;
 	}, [students, searchQuery, filters]);
 
-	// Sort students
+	// Sort
 	const sortedStudents = useMemo(() => {
 		const sorted = [...filteredStudents];
 
@@ -235,12 +212,10 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
 		return sorted;
 	}, [filteredStudents, sortDescriptor]);
 
-	// Paginate students
+	// Paginate
 	const paginatedStudents = useMemo(() => {
 		const start = (page - 1) * rowsPerPage;
-		const end = start + rowsPerPage;
-
-		return sortedStudents.slice(start, end);
+		return sortedStudents.slice(start, start + rowsPerPage);
 	}, [sortedStudents, page, rowsPerPage]);
 
 	const totalPages = Math.ceil(sortedStudents.length / rowsPerPage);
@@ -259,11 +234,8 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
 	const handleToggleSelect = useCallback((id: string) => {
 		setSelectedIds((prev) => {
 			const next = new Set(prev);
-			if (next.has(id)) {
-				next.delete(id);
-			} else {
-				next.add(id);
-			}
+			if (next.has(id)) next.delete(id);
+			else next.add(id);
 			return next;
 		});
 	}, []);
@@ -291,7 +263,6 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
 
 	const confirmDelete = useCallback(async () => {
 		if (!selectedStudent) return;
-
 		setIsDeleting(true);
 		try {
 			await deleteStudent(selectedStudent.id);
@@ -316,13 +287,11 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
 
 	const confirmClone = useCallback(async () => {
 		if (!selectedStudent || !schoolId) return;
-
 		setIsCloning(true);
 		try {
 			const cloneInput = {
 				schoolId,
-				// Don't copy studentId - let the backend generate a new one
-				nationalId: undefined, // Don't copy national ID
+				nationalId: undefined,
 				firstNameKm: selectedStudent.firstNameKm,
 				lastNameKm: selectedStudent.lastNameKm,
 				firstNameEn: selectedStudent.firstNameEn || undefined,
@@ -334,8 +303,8 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
 				gradeLevel: selectedStudent.gradeLevel,
 				contact: selectedStudent.contact
 					? {
-							email: undefined, // Don't copy email
-							phone: undefined, // Don't copy phone
+							email: undefined,
+							phone: undefined,
 							address: selectedStudent.contact.address,
 						}
 					: undefined,
@@ -363,377 +332,333 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
 	const hasActiveFilters = searchQuery || filters.gradeLevel || filters.gender;
 
 	return (
-		<div className="flex flex-col gap-6">
-			{/* Toolbar with motion */}
+		<>
 			<motion.div
-				initial={{ opacity: 0, y: -10 }}
+				initial={{ opacity: 0, y: 8 }}
 				animate={{ opacity: 1, y: 0 }}
+				transition={{ delay: 0.15, duration: 0.3 }}
 			>
-				<div className="flex flex-col md:flex-row gap-4">
-					<div className="relative flex-1 group">
-						<Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
-						<Input
-							className="pl-10 h-11 rounded-lg transition-all"
-							placeholder={t("search_placeholder")}
-							value={searchQuery}
-							onChange={(e) => setSearchQuery(e.target.value)}
-						/>
-					</div>
-					<div className="flex flex-wrap gap-3">
-						<Select
-							value={filters.gradeLevel}
-							onValueChange={(value) =>
-								setFilters((prev) => ({ ...prev, gradeLevel: value }))
-							}
-						>
-							<SelectTrigger className="w-[160px] h-11 rounded-lg ">
-								<div className="flex items-center gap-2">
-									<Filter className="h-3.5 w-3.5 text-muted-foreground" />
-									<SelectValue placeholder={t("grade_level")} />
-								</div>
-							</SelectTrigger>
-							<SelectContent className="rounded-xl shadow-xl">
-								{GRADE_LEVELS.map((grade) => (
-									<SelectItem
-										key={grade.key}
-										value={grade.key}
-										className="rounded-lg"
-									>
-										{grade.label}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-						<Select
-							value={filters.gender}
-							onValueChange={(value) =>
-								setFilters((prev) => ({ ...prev, gender: value }))
-							}
-						>
-							<SelectTrigger className="w-[160px] h-11 rounded-lg ">
-								<div className="flex items-center gap-2">
-									<Filter className="h-3.5 w-3.5 text-muted-foreground" />
-									<SelectValue placeholder={t("gender")} />
-								</div>
-							</SelectTrigger>
-							<SelectContent className="rounded-xl shadow-xl">
-								{GENDERS.map((gender) => (
-									<SelectItem
-										key={gender.key}
-										value={gender.key}
-										className="rounded-lg"
-									>
-										{gender.label}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-						{hasActiveFilters && (
-							<Button
-								size="sm"
-								variant="ghost"
-								onClick={handleClearFilters}
-								className="h-11 px-4 rounded-lg hover:bg-destructive/5 text-destructive font-medium"
+				<div className="liquid-glass-card rounded-2xl overflow-hidden">
+					{/* Card header — search + filters */}
+					<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-4 py-3 border-b border-black/6 dark:border-white/6">
+						<div className="flex items-center gap-3">
+							<div className="w-6 h-6 rounded-md bg-violet-50 dark:bg-violet-950/40 flex items-center justify-center">
+								<GraduationCap className="w-3 h-3 text-violet-600 dark:text-violet-400" strokeWidth={2} />
+							</div>
+							<h2 className="text-sm font-semibold text-foreground">
+								{t("all_students") || "All Students"}
+							</h2>
+							<span className="text-xs text-muted-foreground/60 tabular-nums">
+								{sortedStudents.length}
+							</span>
+						</div>
+						<div className="flex items-center gap-2 w-full sm:w-auto">
+							<Select
+								value={filters.gradeLevel}
+								onValueChange={(value) =>
+									setFilters((prev) => ({ ...prev, gradeLevel: value }))
+								}
 							>
-								{t("clear")}
-							</Button>
-						)}
+								<SelectTrigger className="w-[130px] h-9 text-xs">
+									<div className="flex items-center gap-1.5">
+										<Filter className="h-3 w-3 text-muted-foreground" />
+										<SelectValue placeholder={t("grade_level")} />
+									</div>
+								</SelectTrigger>
+								<SelectContent>
+									{GRADE_LEVELS.map((grade) => (
+										<SelectItem key={grade.key} value={grade.key}>
+											{grade.label}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+							<Select
+								value={filters.gender}
+								onValueChange={(value) =>
+									setFilters((prev) => ({ ...prev, gender: value }))
+								}
+							>
+								<SelectTrigger className="w-[110px] h-9 text-xs">
+									<div className="flex items-center gap-1.5">
+										<Filter className="h-3 w-3 text-muted-foreground" />
+										<SelectValue placeholder={t("gender")} />
+									</div>
+								</SelectTrigger>
+								<SelectContent>
+									{GENDERS.map((gender) => (
+										<SelectItem key={gender.key} value={gender.key}>
+											{gender.label}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+							{hasActiveFilters && (
+								<Button
+									size="sm"
+									variant="ghost"
+									onClick={handleClearFilters}
+									className="h-9 text-xs text-muted-foreground"
+								>
+									{t("clear")}
+								</Button>
+							)}
+							<SearchInput
+								placeholder={t("search_placeholder") || "Search..."}
+								value={searchQuery}
+								onChange={setSearchQuery}
+								className="w-full sm:w-56"
+							/>
+						</div>
 					</div>
-				</div>
 
-				{hasActiveFilters && (
-					<motion.div
-						initial={{ opacity: 0, scale: 0.95 }}
-						animate={{ opacity: 1, scale: 1 }}
-						className="flex items-center gap-2 text-sm text-muted-foreground"
-					>
-						<div className="w-1.5 h-1.5 rounded-full bg-primary" />
-						{t("showing_results")
-							.replace("{count}", sortedStudents.length.toString())
-							.replace("{total}", students.length.toString())}
-					</motion.div>
-				)}
-			</motion.div>
-
-			{/* Premium Table */}
-			<div className="rounded-lg border-none shadow-sm overflow-hidden bg-card">
-				<Table>
-					<TableHeader>
-						<TableRow>
-							{columns.map((column) => (
-								<TableHead
-									key={column.key}
-									className={cn(
-										"uppercase tracking-widest px-4",
-										column.key === "actions" && "text-right",
-										column.key === "select" && "w-10"
-									)}
-								>
-									{column.key === "select" ? (
-										<Checkbox
-											checked={
-												paginatedStudents.length > 0 &&
-												selectedIds.size === paginatedStudents.length
-											}
-											onCheckedChange={handleToggleSelectAll}
-										/>
-									) : (
-										column.label
-									)}
+					{/* Table */}
+					<Table>
+						<TableHeader>
+							<TableRow className="hover:bg-transparent border-b border-black/6 dark:border-white/6">
+								<TableHead className="w-10 h-10">
+									<Checkbox
+										checked={
+											paginatedStudents.length > 0 &&
+											selectedIds.size === paginatedStudents.length
+										}
+										onCheckedChange={handleToggleSelectAll}
+									/>
 								</TableHead>
-							))}
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						<AnimatePresence mode="popLayout">
-							{paginatedStudents.length === 0 ? (
-								<motion.tr
-									initial={{ opacity: 0 }}
-									animate={{ opacity: 1 }}
-									exit={{ opacity: 0 }}
-								>
-									<TableCell
-										className="h-64 text-center text-muted-foreground font-medium"
-										colSpan={columns.length}
-									>
-										<div className="flex flex-col items-center gap-3">
-											<div className="p-4 bg-secondary/20 rounded-full">
-												<Search className="h-6 w-6 opacity-20" />
+								<TableHead className="w-75 h-10 text-xs font-medium text-muted-foreground">
+									{t("name")}
+								</TableHead>
+								<TableHead className="h-10 text-xs font-medium text-muted-foreground">
+									{t("email")}
+								</TableHead>
+								<TableHead className="h-10 text-xs font-medium text-muted-foreground">
+									{t("phone")}
+								</TableHead>
+								<TableHead className="h-10 text-xs font-medium text-muted-foreground">
+									{t("grade")}
+								</TableHead>
+								<TableHead className="h-10 text-xs font-medium text-muted-foreground">
+									{t("gender")}
+								</TableHead>
+								<TableHead className="h-10 text-xs font-medium text-muted-foreground">
+									{t("status")}
+								</TableHead>
+								<TableHead className="text-right h-10 text-xs font-medium text-muted-foreground">
+									{t("actions")}
+								</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							<AnimatePresence mode="popLayout">
+								{paginatedStudents.length === 0 ? (
+									<TableRow>
+										<TableCell className="h-60 text-center" colSpan={8}>
+											<div className="flex flex-col items-center justify-center gap-3">
+												<div className="w-12 h-12 rounded-2xl bg-muted/60 flex items-center justify-center">
+													<GraduationCap className="h-5 w-5 text-muted-foreground" />
+												</div>
+												<p className="text-sm font-medium text-foreground">
+													{hasActiveFilters ? t("no_results") : t("no_students")}
+												</p>
 											</div>
-											{hasActiveFilters ? t("no_results") : t("no_students")}
-										</div>
-									</TableCell>
-								</motion.tr>
-							) : (
-								paginatedStudents.map((student, index) => (
-									<motion.tr
-										key={student.id}
-										initial={{ opacity: 0, y: 10 }}
-										animate={{ opacity: 1, y: 0 }}
-										transition={{ duration: 0.3, delay: index * 0.05 }}
-										className="group transition-all hover:bg-secondary/10 cursor-pointer"
-									>
-										<TableCell className="px-4">
-											<Checkbox
-												checked={selectedIds.has(student.id)}
-												onCheckedChange={() => handleToggleSelect(student.id)}
-												onClick={(e) => e.stopPropagation()}
-											/>
 										</TableCell>
-										<TableCell className="px-6 py-4">
-											<div className="flex items-center gap-4">
-												<div className="relative">
-													<Avatar className="h-10 w-10 border-2 border-background shadow-sm transition-transform group-hover:scale-110">
-														<AvatarFallback className="bg-gradient-to-br from-primary/10 to-primary/20 text-primary  text-xs">
+									</TableRow>
+								) : (
+									paginatedStudents.map((student, index) => (
+										<motion.tr
+											key={student.id}
+											initial={{ opacity: 0 }}
+											animate={{ opacity: 1 }}
+											exit={{ opacity: 0 }}
+											transition={{ delay: index * 0.03 }}
+											className="group hover:bg-muted/30 transition-colors border-b border-black/6 dark:border-white/6"
+										>
+											<TableCell className="py-3 px-4">
+												<Checkbox
+													checked={selectedIds.has(student.id)}
+													onCheckedChange={() =>
+														handleToggleSelect(student.id)
+													}
+													onClick={(e) => e.stopPropagation()}
+												/>
+											</TableCell>
+											<TableCell className="py-3">
+												<div className="flex items-center gap-3">
+													<Avatar className="h-9 w-9 border border-black/6 dark:border-white/6">
+														<AvatarFallback className="bg-muted text-muted-foreground text-xs font-semibold">
 															{student.firstNameKm.charAt(0)}
 															{student.lastNameKm.charAt(0)}
 														</AvatarFallback>
 													</Avatar>
+													<div className="min-w-0">
+														<p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors truncate">
+															{student.fullName ||
+																`${student.firstNameKm} ${student.lastNameKm}`}
+														</p>
+														<p className="text-xs text-muted-foreground/60 truncate mt-0.5">
+															ID: {student.studentId}
+														</p>
+													</div>
+												</div>
+											</TableCell>
+											<TableCell className="text-sm text-foreground/70">
+												{student.contact?.email || "-"}
+											</TableCell>
+											<TableCell className="text-sm text-foreground/70">
+												{student.contact?.phone || "-"}
+											</TableCell>
+											<TableCell>
+												<Badge
+													variant="secondary"
+													className="bg-primary/8 text-primary border-none text-xs font-medium"
+												>
+													{t("grade")} {student.gradeLevel}
+												</Badge>
+											</TableCell>
+											<TableCell className="text-sm text-foreground/70 capitalize">
+												{t(student.gender?.toLowerCase() || "other")}
+											</TableCell>
+											<TableCell>
+												<div className="flex items-center gap-1.5">
 													<div
 														className={cn(
-															"absolute -right-0.5 -bottom-0.5 w-3 h-3 rounded-full border-2 border-background",
+															"w-1.5 h-1.5 rounded-full",
 															student.status === "active"
 																? "bg-emerald-500"
-																: "bg-muted-foreground"
+																: "bg-muted-foreground/30"
 														)}
 													/>
-												</div>
-												<div className="flex flex-col">
-													<span className=" text-foreground group-hover:text-primary transition-colors">
-														{student.fullName ||
-															`${student.firstNameKm} ${student.lastNameKm}`}
+													<span
+														className={cn(
+															"text-xs font-medium",
+															student.status === "active"
+																? "text-emerald-600 dark:text-emerald-400"
+																: "text-muted-foreground"
+														)}
+													>
+														{t(student.status?.toLowerCase() || "active")}
 													</span>
-													<span className="text-[11px] text-muted-foreground/80 font-medium tracking-wide">
-														ID: {student.studentId}
-													</span>
 												</div>
-											</div>
-										</TableCell>
-										<TableCell className="px-6 text-sm text-foreground/70 font-medium">
-											{student.contact?.email || "-"}
-										</TableCell>
-										<TableCell className="px-6 text-sm text-foreground/70 font-medium">
-											{student.contact?.phone || "-"}
-										</TableCell>
-										<TableCell className="px-6">
-											<Badge
-												variant="secondary"
-												className="bg-primary/5 text-primary border-none rounded-lg px-2.5 py-0.5  text-[11px]"
-											>
-												{t("grade")} {student.gradeLevel}
-											</Badge>
-										</TableCell>
-										<TableCell className="px-6 text-sm text-foreground/70 font-medium capitalize">
-											{t(student.gender?.toLowerCase() || "other")}
-										</TableCell>
-										<TableCell className="px-6">
-											<Badge
-												variant="secondary"
-												className={cn(
-													"rounded-lg px-2.5 py-0.5  text-[11px] border-none",
-													student.status === "active"
-														? "bg-emerald-500/10 text-emerald-600"
-														: "bg-muted text-muted-foreground"
-												)}
-											>
-												{t(student.status?.toLowerCase() || "active")}
-											</Badge>
-										</TableCell>
-										<TableCell className="px-6 text-right">
-											<DropdownMenu>
-												<DropdownMenuTrigger asChild>
-													<Button
-														variant="ghost"
-														className="h-8 w-8 p-0 hover:bg-muted rounded-full"
-													>
-														<span className="sr-only">Open menu</span>
-														<MoreHorizontal className="h-4 w-4" />
-													</Button>
-												</DropdownMenuTrigger>
-												<DropdownMenuContent
-													align="end"
-													className="w-[160px] rounded-lg"
-												>
-													<DropdownMenuItem
-														onClick={() => handleViewStudent(student)}
-														className="text-blue-500 focus:text-blue-600 focus:bg-blue-50"
-													>
-														<Eye className="mr-2 h-4 w-4" />
-														<span>{t("view_details")}</span>
-													</DropdownMenuItem>
-													<DropdownMenuItem
-														onClick={() => handleEditStudent(student)}
-														className="text-emerald-500 focus:text-emerald-600 focus:bg-emerald-50"
-													>
-														<Pencil className="mr-2 h-4 w-4" />
-														<span>{t("edit")}</span>
-													</DropdownMenuItem>
-													<DropdownMenuItem
-														onClick={() => handleCloneStudent(student)}
-														className="text-amber-500 focus:text-amber-600 focus:bg-amber-50"
-													>
-														<Copy className="mr-2 h-4 w-4" />
-														<span>{t("clone")}</span>
-													</DropdownMenuItem>
-													<DropdownMenuItem
-														onClick={() => handleDeleteStudent(student)}
-														className="text-destructive focus:text-destructive focus:bg-destructive/10"
-													>
-														<Trash2 className="mr-2 h-4 w-4" />
-														<span>{t("delete")}</span>
-													</DropdownMenuItem>
-													<DropdownMenuItem asChild>
-														<Link
-															href={`/auth/admin/analytics?studentId=${student.id}`}
-															className="flex items-center px-2 py-1.5 text-sm text-purple-500 hover:text-purple-600 hover:bg-purple-50 rounded-md transition-colors"
+											</TableCell>
+											<TableCell className="text-right">
+												<DropdownMenu>
+													<DropdownMenuTrigger asChild>
+														<Button
+															variant="ghost"
+															size="sm"
+															className="h-7 w-7 p-0 hover:bg-muted"
 														>
-															<FileText className="mr-2 h-4 w-4" />
-															<span>{t("view_report")}</span>
-														</Link>
-													</DropdownMenuItem>
-												</DropdownMenuContent>
-											</DropdownMenu>
-										</TableCell>
-									</motion.tr>
-								))
-							)}
-						</AnimatePresence>
-					</TableBody>
-				</Table>
-			</div>
+															<MoreHorizontal className="h-4 w-4" />
+														</Button>
+													</DropdownMenuTrigger>
+													<DropdownMenuContent
+														align="end"
+														className="w-[160px]"
+													>
+														<DropdownMenuItem
+															onClick={() => handleViewStudent(student)}
+														>
+															<Eye className="mr-2 h-3.5 w-3.5" />
+															{t("view_details")}
+														</DropdownMenuItem>
+														<DropdownMenuItem
+															onClick={() => handleEditStudent(student)}
+														>
+															<Pencil className="mr-2 h-3.5 w-3.5" />
+															{t("edit")}
+														</DropdownMenuItem>
+														<DropdownMenuItem
+															onClick={() => handleCloneStudent(student)}
+														>
+															<Copy className="mr-2 h-3.5 w-3.5" />
+															{t("clone")}
+														</DropdownMenuItem>
+														<DropdownMenuItem
+															onClick={() => handleDeleteStudent(student)}
+															className="text-destructive focus:text-destructive focus:bg-destructive/10"
+														>
+															<Trash2 className="mr-2 h-3.5 w-3.5" />
+															{t("delete")}
+														</DropdownMenuItem>
+														<DropdownMenuItem asChild>
+															<Link
+																href={`/auth/admin/analytics?studentId=${student.id}`}
+															>
+																<FileText className="mr-2 h-3.5 w-3.5" />
+																{t("view_report")}
+															</Link>
+														</DropdownMenuItem>
+													</DropdownMenuContent>
+												</DropdownMenu>
+											</TableCell>
+										</motion.tr>
+									))
+								)}
+							</AnimatePresence>
+						</TableBody>
+					</Table>
 
-			{/* Footer with Pagination and Rows Selection */}
-			<div className="flex flex-col sm:flex-row items-center justify-between gap-6 px-4 py-2">
-				<div className="flex flex-col gap-1 items-center sm:items-start order-2 sm:order-1">
-					<span className="text-xs  text-muted-foreground/60 uppercase tracking-widest">
-						{t("total_count").replace(
-							"{count}",
-							sortedStudents.length.toString()
-						)}
-					</span>
-					<div className="flex items-center gap-2 mt-1">
-						<span className="text-xs font-medium text-muted-foreground/60">
-							{t("rows_per_page")}
-						</span>
-						<Select
-							value={rowsPerPage.toString()}
-							onValueChange={(value) => {
-								setRowsPerPage(parseInt(value));
-								setPage(1);
-							}}
-						>
-							<SelectTrigger className="w-[70px] h-8 rounded-lg text-xs ">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent className="rounded-xl shadow-xl min-w-[70px]">
-								{ROWS_PER_PAGE_OPTIONS.map((option) => (
-									<SelectItem
-										key={option}
-										value={option.toString()}
-										className="rounded-lg text-xs"
+					{/* Pagination footer */}
+					{totalPages > 0 && (
+						<div className="flex items-center justify-between px-4 py-3 border-t border-black/6 dark:border-white/6">
+							<div className="flex items-center gap-2">
+								<span className="text-xs text-muted-foreground">
+									{sortedStudents.length} {t("total_students_stat") || "students"}
+								</span>
+								<Select
+									value={rowsPerPage.toString()}
+									onValueChange={(value) => {
+										setRowsPerPage(parseInt(value));
+										setPage(1);
+									}}
+								>
+									<SelectTrigger className="w-[65px] h-7 text-xs">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										{ROWS_PER_PAGE_OPTIONS.map((option) => (
+											<SelectItem
+												key={option}
+												value={option.toString()}
+											>
+												{option}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+
+							{totalPages > 1 && (
+								<div className="flex items-center gap-1">
+									<Button
+										disabled={page === 1}
+										size="sm"
+										variant="ghost"
+										className="h-7 w-7 p-0"
+										onClick={() => setPage(Math.max(1, page - 1))}
 									>
-										{option}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
-				</div>
-
-				{totalPages > 1 && (
-					<div className="flex items-center gap-2 order-1 sm:order-2">
-						<Button
-							disabled={page === 1}
-							size="icon"
-							variant="outline"
-							className="h-10 w-10 rounded-xl  hover:bg-primary/5 hover:text-primary transition-all disabled:opacity-30"
-							onClick={() => setPage(Math.max(1, page - 1))}
-						>
-							<ChevronLeft className="h-5 w-5" />
-						</Button>
-
-						<div className="flex items-center gap-1.5 mx-2">
-							{Array.from({ length: Math.min(totalPages, 5) }).map((_, i) => {
-								let pageNum = page;
-								if (page <= 3) pageNum = i + 1;
-								else if (page >= totalPages - 2) pageNum = totalPages - 4 + i;
-								else pageNum = page - 2 + i;
-
-								if (pageNum > 0 && pageNum <= totalPages) {
-									return (
-										<Button
-											key={pageNum}
-											variant={page === pageNum ? "default" : "ghost"}
-											className={cn(
-												"h-10 w-10 rounded-xl transition-all  text-sm",
-												page === pageNum
-													? "shadow-md shadow-primary/5 scale-110"
-													: "hover:bg-primary/5 hover:text-primary text-muted-foreground"
-											)}
-											onClick={() => setPage(pageNum)}
-										>
-											{pageNum}
-										</Button>
-									);
-								}
-								return null;
-							})}
+										<ChevronLeft className="h-4 w-4" />
+									</Button>
+									<span className="text-xs text-muted-foreground px-2 tabular-nums">
+										{page} / {totalPages}
+									</span>
+									<Button
+										disabled={page === totalPages}
+										size="sm"
+										variant="ghost"
+										className="h-7 w-7 p-0"
+										onClick={() => setPage(Math.min(totalPages, page + 1))}
+									>
+										<ChevronRight className="h-4 w-4" />
+									</Button>
+								</div>
+							)}
 						</div>
+					)}
+				</div>
+			</motion.div>
 
-						<Button
-							disabled={page === totalPages}
-							size="icon"
-							variant="outline"
-							className="h-10 w-10 rounded-xl  hover:bg-primary/5 hover:text-primary transition-all disabled:opacity-30"
-							onClick={() => setPage(Math.min(totalPages, page + 1))}
-						>
-							<ChevronRight className="h-5 w-5" />
-						</Button>
-					</div>
-				)}
-			</div>
-
-			{/* (Modals remain same) */}
+			{/* Modals */}
 			<ViewStudentModal
 				isOpen={isViewModalOpen}
 				student={selectedStudent}
@@ -743,13 +668,10 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
 				}}
 			/>
 
-			{/* Edit Student Modal */}
 			<Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-				<DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto rounded-lg shadow-xl">
+				<DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
 					<DialogHeader>
-						<DialogTitle className="text-2xl font-black tracking-tight">
-							{t("edit_student")}
-						</DialogTitle>
+						<DialogTitle>{t("edit_student")}</DialogTitle>
 					</DialogHeader>
 					<StudentForm
 						schoolId={schoolId}
@@ -771,25 +693,21 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
 				onConfirm={confirmDelete}
 			/>
 
-			{/* Clone Student Modal */}
 			<Dialog open={isCloneModalOpen} onOpenChange={setIsCloneModalOpen}>
-				<DialogContent className="max-w-md rounded-xl shadow-xl">
+				<DialogContent className="max-w-md">
 					<DialogHeader>
-						<DialogTitle className="text-2xl font-black tracking-tight">
-							{t("clone_student")}
-						</DialogTitle>
+						<DialogTitle>{t("clone_student")}</DialogTitle>
 					</DialogHeader>
-					<p className="text-muted-foreground font-medium">
+					<p className="text-sm text-muted-foreground">
 						{t("clone_student_confirm", {
 							name:
 								selectedStudent?.fullName ||
 								`${selectedStudent?.firstNameKm} ${selectedStudent?.lastNameKm}`,
 						})}
 					</p>
-					<div className="flex justify-end gap-3 mt-6">
+					<div className="flex justify-end gap-2 pt-4 border-t border-black/6 dark:border-white/6">
 						<Button
-							variant="outline"
-							className="rounded-lg px-6 h-11 "
+							variant="ghost"
 							onClick={() => {
 								setIsCloneModalOpen(false);
 								setSelectedStudent(null);
@@ -797,17 +715,15 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
 						>
 							{t("cancel")}
 						</Button>
-						<Button
-							disabled={isCloning}
-							onClick={confirmClone}
-							className="rounded-lg px-6 h-11  shadow-sm"
-						>
-							{isCloning && <span className="mr-2 animate-spin">⏳</span>}
+						<Button disabled={isCloning} onClick={confirmClone}>
+							{isCloning && (
+								<span className="mr-2 h-4 w-4 rounded-full border-2 border-primary-foreground/20 border-t-primary-foreground animate-spin inline-block" />
+							)}
 							{t("clone")}
 						</Button>
 					</div>
 				</DialogContent>
 			</Dialog>
-		</div>
+		</>
 	);
 };

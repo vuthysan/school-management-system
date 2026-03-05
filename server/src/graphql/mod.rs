@@ -13,13 +13,19 @@ pub mod grade;
 pub mod grade_level;
 pub mod graphql_context;
 pub mod hr;
+pub mod inventory;
+pub mod library;
 pub mod member;
+pub mod notification;
+pub mod parent;
+pub mod report_card;
 pub mod room;
 pub mod schema;
 pub mod school;
 pub mod student;
 pub mod subject;
 pub mod term;
+pub mod transport;
 pub mod user;
 
 use async_graphql::MergedObject;
@@ -48,6 +54,12 @@ pub struct QueryRoot(
     room::RoomQuery,
     announcement::AnnouncementQuery,
     analytics::AnalyticsQuery,
+    parent::ParentQuery,
+    notification::NotificationQuery,
+    report_card::ReportCardQuery,
+    transport::TransportQuery,
+    library::LibraryQuery,
+    inventory::InventoryQuery,
 );
 
 // Merged Mutation combining all domain mutations
@@ -70,4 +82,8 @@ pub struct MutationRoot(
     exam::ExamMutations,
     room::RoomMutation,
     announcement::AnnouncementMutation,
+    notification::NotificationMutation,
+    transport::TransportMutation,
+    library::LibraryMutation,
+    inventory::InventoryMutation,
 );

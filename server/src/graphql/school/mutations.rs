@@ -1,6 +1,8 @@
 // School GraphQL mutations
 use super::inputs::{ApproveSchoolInput, RegisterSchoolInput, RejectSchoolInput};
-use crate::models::school::{School, SchoolFeature, SchoolStatus};
+use crate::models::school::{
+    default_logo_url, default_lookup_values, School, SchoolFeature, SchoolStatus,
+};
 use crate::utils::common_types::{AuditInfo, LocalizedText, SoftDelete};
 use async_graphql::*;
 use mongodb::bson::DateTime;
@@ -50,6 +52,7 @@ impl SchoolMutation {
             gps_coordinates: None,
             contact: input.contact,
             website: input.website,
+            logo_url: default_logo_url(),
             logo: None,
             banner: None,
             primary_color: None,
@@ -64,6 +67,7 @@ impl SchoolMutation {
             rejection_reason: None,
             settings: Default::default(),
             features: vec![SchoolFeature::Attendance, SchoolFeature::Grading],
+            lookup_values: default_lookup_values(),
             subscription: None,
             audit,
             soft_delete: SoftDelete::default(),
@@ -180,5 +184,35 @@ impl SchoolMutation {
             .ok_or_else(|| Error::new("School not found"))?;
 
         Ok(school)
+    }
+
+    /// Update lookup values for a school (Owner/Admin only)
+    async fn update_lookup_values(
+        &self,
+        ctx: &Context<'_>,
+        school_id: String,
+        key: String,
+        values: Vec<String>,
+    ) -> Result<bool> {
+        let db = ctx.data::<Database>()?;
+        let collection = db.collection::<School>("schools");
+
+        let obj_id =
+            ObjectId::parse_str(&school_id).map_err(|_| Error::new("Invalid school ID"))?;
+
+        let field_path = format!("lookup_values.{}", key);
+        let update = doc! {
+            "$set": {
+                &field_path: &values,
+                "audit.updated_at": DateTime::now(),
+            }
+        };
+
+        collection
+            .update_one(doc! { "_id": obj_id }, update, None)
+            .await
+            .map_err(|e| Error::new(format!("Failed to update lookup values: {}", e)))?;
+
+        Ok(true)
     }
 }

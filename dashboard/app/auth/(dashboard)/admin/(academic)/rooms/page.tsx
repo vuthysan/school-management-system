@@ -13,7 +13,7 @@ import {
 	DoorOpen,
 } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,8 +40,14 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/components/dashboard/page-header";
+import { StatsCard } from "@/components/dashboard/stats-card";
+import { LoadingState } from "@/components/dashboard/loading-state";
+import { EmptyState } from "@/components/shared/empty-state";
+import { DeleteConfirmDialog } from "@/components/shared/delete-confirm-dialog";
 import { useLanguage } from "@/contexts/language-context";
 import { useDashboard } from "@/hooks/useDashboard";
+import { useLookupValues } from "@/hooks/useLookupValues";
 import {
 	useRooms,
 	useRoomMutations,
@@ -49,14 +55,14 @@ import {
 	CreateRoomInput,
 } from "@/hooks/useRooms";
 
-const ROOM_TYPES = [
+const DEFAULT_ROOM_TYPES = [
 	"Classroom",
 	"Lab",
 	"Library",
 	"Auditorium",
 	"Office",
 	"Other",
-] as const;
+];
 const ROOM_STATUSES = ["Available", "Occupied", "Maintenance"] as const;
 
 export default function RoomsPage() {
@@ -66,10 +72,15 @@ export default function RoomsPage() {
 
 	const { rooms, isLoading, error, refresh } = useRooms(schoolId);
 	const { createRoom, updateRoom, deleteRoom } = useRoomMutations();
+	const { getValues } = useLookupValues(schoolId);
+	const ROOM_TYPES = getValues("room_types").length > 0 ? getValues("room_types") : DEFAULT_ROOM_TYPES;
 
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [editingRoom, setEditingRoom] = useState<Room | null>(null);
 	const [isSaving, setIsSaving] = useState(false);
+	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+	const [roomToDelete, setRoomToDelete] = useState<Room | null>(null);
+	const [isDeleting, setIsDeleting] = useState(false);
 
 	// Form state
 	const [formData, setFormData] = useState({
@@ -136,144 +147,134 @@ export default function RoomsPage() {
 			refresh();
 		} catch (err) {
 			console.error("Failed to save room:", err);
-			alert(err instanceof Error ? err.message : "Failed to save room");
 		} finally {
 			setIsSaving(false);
 		}
 	};
 
-	const handleDelete = async (room: Room) => {
-		if (!confirm(`Delete room "${room.name}"?`)) return;
+	const handleDeleteClick = (room: Room) => {
+		setRoomToDelete(room);
+		setDeleteDialogOpen(true);
+	};
 
+	const handleDeleteConfirm = async () => {
+		if (!roomToDelete) return;
+		setIsDeleting(true);
 		try {
-			await deleteRoom(room.id);
+			await deleteRoom(roomToDelete.id);
+			setDeleteDialogOpen(false);
+			setRoomToDelete(null);
 			refresh();
 		} catch (err) {
 			console.error("Failed to delete room:", err);
-			alert(err instanceof Error ? err.message : "Failed to delete room");
+		} finally {
+			setIsDeleting(false);
 		}
 	};
 
 	const getStatusBadge = (status?: string) => {
 		switch (status) {
 			case "Available":
-				return <Badge className="bg-green-500">Available</Badge>;
+				return (
+					<Badge className="bg-emerald-500/10 text-emerald-600 border-none">
+						{t("available")}
+					</Badge>
+				);
 			case "Occupied":
-				return <Badge className="bg-blue-500">Occupied</Badge>;
+				return (
+					<Badge className="bg-blue-500/10 text-blue-600 border-none">
+						{t("occupied")}
+					</Badge>
+				);
 			case "Maintenance":
-				return <Badge className="bg-orange-500">Maintenance</Badge>;
+				return (
+					<Badge className="bg-amber-500/10 text-amber-600 border-none">
+						{t("maintenance")}
+					</Badge>
+				);
 			default:
-				return <Badge variant="outline">{status || "Unknown"}</Badge>;
+				return <Badge variant="outline">{status || t("status")}</Badge>;
 		}
 	};
 
 	if (isLoading) {
-		return (
-			<div className="flex items-center justify-center min-h-[400px]">
-				<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-			</div>
-		);
+		return <LoadingState message={t("loading")} />;
 	}
 
 	return (
-		<div className="flex flex-col gap-6">
+		<motion.div
+			initial={{ opacity: 0 }}
+			animate={{ opacity: 1 }}
+			className="space-y-6 pb-10"
+		>
 			{/* Header */}
-			<div className="flex justify-between items-start">
-				<div>
-					<h1 className="text-3xl font-bold">
-						{t("rooms_management") || "Rooms & Classrooms"}
-					</h1>
-					<p className="text-muted-foreground mt-1">
-						{t("manage_school_rooms") ||
-							"Manage classrooms, labs, and facilities"}
-					</p>
-				</div>
-				<Button onClick={handleOpenAdd}>
-					<Plus className="h-4 w-4 mr-2" />
-					{t("add_room") || "Add Room"}
+			<PageHeader
+				title={t("rooms_management")}
+				subtitle={t("manage_school_rooms")}
+				icon={DoorOpen}
+			>
+				<Button onClick={handleOpenAdd} className="gap-2">
+					<Plus className="h-4 w-4" />
+					{t("add_room")}
 				</Button>
-			</div>
+			</PageHeader>
 
 			{/* Stats Cards */}
-			<div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-				<Card>
-					<CardContent className="flex items-center gap-4 p-6">
-						<div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-							<DoorOpen className="h-6 w-6 text-blue-600" />
-						</div>
-						<div>
-							<p className="text-sm text-muted-foreground">Total Rooms</p>
-							<p className="text-2xl font-bold">{rooms.length}</p>
-						</div>
-					</CardContent>
-				</Card>
-				<Card>
-					<CardContent className="flex items-center gap-4 p-6">
-						<div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-							<Building2 className="h-6 w-6 text-green-600" />
-						</div>
-						<div>
-							<p className="text-sm text-muted-foreground">Available</p>
-							<p className="text-2xl font-bold">
-								{rooms.filter((r) => r.status === "Available").length}
-							</p>
-						</div>
-					</CardContent>
-				</Card>
-				<Card>
-					<CardContent className="flex items-center gap-4 p-6">
-						<div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-							<Users className="h-6 w-6 text-purple-600" />
-						</div>
-						<div>
-							<p className="text-sm text-muted-foreground">Total Capacity</p>
-							<p className="text-2xl font-bold">
-								{rooms.reduce((sum, r) => sum + (r.capacity || 0), 0)}
-							</p>
-						</div>
-					</CardContent>
-				</Card>
-				<Card>
-					<CardContent className="flex items-center gap-4 p-6">
-						<div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
-							<MapPin className="h-6 w-6 text-orange-600" />
-						</div>
-						<div>
-							<p className="text-sm text-muted-foreground">Buildings</p>
-							<p className="text-2xl font-bold">
-								{new Set(rooms.map((r) => r.building).filter(Boolean)).size}
-							</p>
-						</div>
-					</CardContent>
-				</Card>
+			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+				<StatsCard
+					title={t("total_rooms")}
+					value={rooms.length}
+					icon={DoorOpen}
+					color="blue"
+					delay={0}
+				/>
+				<StatsCard
+					title={t("available")}
+					value={rooms.filter((r) => r.status === "Available").length}
+					icon={Building2}
+					color="green"
+					delay={0.1}
+				/>
+				<StatsCard
+					title={t("total_capacity")}
+					value={rooms.reduce((sum, r) => sum + (r.capacity || 0), 0)}
+					icon={Users}
+					color="purple"
+					delay={0.2}
+				/>
+				<StatsCard
+					title={t("buildings")}
+					value={
+						new Set(rooms.map((r) => r.building).filter(Boolean)).size
+					}
+					icon={MapPin}
+					color="orange"
+					delay={0.3}
+				/>
 			</div>
 
 			{/* Rooms Table */}
 			<Card>
 				<CardContent className="p-0">
 					{rooms.length === 0 ? (
-						<div className="flex flex-col items-center justify-center py-12 text-center">
-							<Building2 className="h-12 w-12 text-muted-foreground mb-4" />
-							<h3 className="text-lg font-semibold">No Rooms Added</h3>
-							<p className="text-muted-foreground max-w-sm mt-1">
-								Start by adding classrooms, labs, and other facilities.
-							</p>
-							<Button className="mt-4" onClick={handleOpenAdd}>
-								<Plus className="h-4 w-4 mr-2" />
-								Add First Room
-							</Button>
-						</div>
+						<EmptyState
+							icon={Building2}
+							title={t("no_rooms_added")}
+							description={t("no_rooms_desc")}
+							actionLabel={t("add_first_room")}
+							onAction={handleOpenAdd}
+						/>
 					) : (
 						<Table>
 							<TableHeader>
 								<TableRow>
-									<TableHead>Name</TableHead>
-									<TableHead>Type</TableHead>
-									<TableHead>Building</TableHead>
-									<TableHead>Floor</TableHead>
-									<TableHead>Capacity</TableHead>
-									<TableHead>Status</TableHead>
-									<TableHead className="text-right">Actions</TableHead>
+									<TableHead>{t("name")}</TableHead>
+									<TableHead>{t("type")}</TableHead>
+									<TableHead>{t("building")}</TableHead>
+									<TableHead>{t("floor")}</TableHead>
+									<TableHead>{t("capacity")}</TableHead>
+									<TableHead>{t("status")}</TableHead>
+									<TableHead className="text-right">{t("actions")}</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
@@ -290,7 +291,7 @@ export default function RoomsPage() {
 										<TableCell>{room.capacity || "-"}</TableCell>
 										<TableCell>{getStatusBadge(room.status)}</TableCell>
 										<TableCell className="text-right">
-											<div className="flex justify-end gap-2">
+											<div className="flex justify-end gap-1">
 												<Button
 													size="icon"
 													variant="ghost"
@@ -302,7 +303,7 @@ export default function RoomsPage() {
 													size="icon"
 													variant="ghost"
 													className="text-destructive hover:text-destructive"
-													onClick={() => handleDelete(room)}
+													onClick={() => handleDeleteClick(room)}
 												>
 													<Trash2 className="h-4 w-4" />
 												</Button>
@@ -321,12 +322,12 @@ export default function RoomsPage() {
 				<DialogContent className="max-w-md">
 					<DialogHeader>
 						<DialogTitle>
-							{editingRoom ? "Edit Room" : "Add New Room"}
+							{editingRoom ? t("edit_room") : t("add_new_room")}
 						</DialogTitle>
 					</DialogHeader>
 					<div className="grid gap-4 py-4">
 						<div className="space-y-2">
-							<Label>Room Name *</Label>
+							<Label>{t("room_name")} *</Label>
 							<Input
 								placeholder="e.g., Room 101"
 								value={formData.name}
@@ -337,7 +338,7 @@ export default function RoomsPage() {
 						</div>
 						<div className="grid grid-cols-2 gap-4">
 							<div className="space-y-2">
-								<Label>Room Type</Label>
+								<Label>{t("room_type")}</Label>
 								<Select
 									value={formData.roomType}
 									onValueChange={(v) =>
@@ -357,7 +358,7 @@ export default function RoomsPage() {
 								</Select>
 							</div>
 							<div className="space-y-2">
-								<Label>Status</Label>
+								<Label>{t("status")}</Label>
 								<Select
 									value={formData.status}
 									onValueChange={(v) => setFormData({ ...formData, status: v })}
@@ -377,7 +378,7 @@ export default function RoomsPage() {
 						</div>
 						<div className="grid grid-cols-2 gap-4">
 							<div className="space-y-2">
-								<Label>Building</Label>
+								<Label>{t("building")}</Label>
 								<Input
 									placeholder="e.g., Building A"
 									value={formData.building}
@@ -387,7 +388,7 @@ export default function RoomsPage() {
 								/>
 							</div>
 							<div className="space-y-2">
-								<Label>Floor</Label>
+								<Label>{t("floor")}</Label>
 								<Input
 									placeholder="e.g., 1st Floor"
 									value={formData.floor}
@@ -398,7 +399,7 @@ export default function RoomsPage() {
 							</div>
 						</div>
 						<div className="space-y-2">
-							<Label>Capacity</Label>
+							<Label>{t("capacity")}</Label>
 							<Input
 								type="number"
 								placeholder="e.g., 30"
@@ -409,9 +410,9 @@ export default function RoomsPage() {
 							/>
 						</div>
 						<div className="space-y-2">
-							<Label>Description</Label>
+							<Label>{t("description")}</Label>
 							<Input
-								placeholder="Optional description"
+								placeholder={t("optional_description")}
 								value={formData.description}
 								onChange={(e) =>
 									setFormData({ ...formData, description: e.target.value })
@@ -421,15 +422,25 @@ export default function RoomsPage() {
 					</div>
 					<DialogFooter>
 						<Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-							Cancel
+							{t("cancel")}
 						</Button>
 						<Button disabled={isSaving || !formData.name} onClick={handleSave}>
 							{isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-							{editingRoom ? "Update" : "Create"}
+							{editingRoom ? t("update") : t("create")}
 						</Button>
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
-		</div>
+
+			{/* Delete Confirmation */}
+			<DeleteConfirmDialog
+				open={deleteDialogOpen}
+				onOpenChange={setDeleteDialogOpen}
+				title={t("delete_room")}
+				description={t("delete_room_confirm", { name: roomToDelete?.name || "" })}
+				onConfirm={handleDeleteConfirm}
+				isLoading={isDeleting}
+			/>
+		</motion.div>
 	);
 }

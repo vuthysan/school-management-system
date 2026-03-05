@@ -11,9 +11,22 @@ const config = {
 					DEFAULT: "var(--primary)",
 					foreground: "var(--primary-foreground)",
 				},
+				success: {
+					DEFAULT: "var(--success)",
+					foreground: "var(--success-foreground)",
+				},
+				warning: {
+					DEFAULT: "var(--warning)",
+					foreground: "var(--warning-foreground)",
+				},
+				info: {
+					DEFAULT: "var(--info)",
+					foreground: "var(--info-foreground)",
+				},
 			},
 			fontFamily: {
 				sans: ["var(--font-sans)", "var(--font-khmer)"],
+				serif: ["var(--font-serif)"],
 				mono: ["var(--font-mono)"],
 			},
 		},

@@ -3,7 +3,7 @@
 import Link, { LinkProps } from "next/link";
 import React, { useState, createContext, useContext } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Menu, X, ChevronsLeft, ChevronsRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -99,26 +99,17 @@ export const DesktopSidebar = ({
 	return (
 		<motion.div
 			animate={{
-				width: animate ? (open ? "280px" : "80px") : "280px",
+				width: animate ? (open ? "252px" : "68px") : "252px",
 			}}
+			transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
 			className={cn(
-				"h-full px-4 py-6 hidden md:flex md:flex-col flex-shrink-0 relative z-50 transition-all duration-300",
-				"bg-sidebar backdrop-blur-xl border-r border-white/10 dark:border-white/5 shadow-[5px_0_30px_0_rgba(0,0,0,0.02)]",
+				"h-full hidden md:flex md:flex-col shrink-0 relative",
+				"liquid-glass-surface border-r border-r-black/6 dark:border-r-white/6",
 				className
 			)}
 			{...props}
 		>
-			{children}
-			<button
-				className="absolute -right-3 top-20 z-50 rounded-full border border-white/20 bg-white/50 dark:bg-black/50 backdrop-blur-md p-1.5 shadow-lg hover:bg-white/80 dark:hover:bg-white/10 transition-colors text-primary"
-				onClick={() => setOpen(!open)}
-			>
-				{open ? (
-					<ChevronLeft size={14} strokeWidth={3} />
-				) : (
-					<ChevronRight size={14} strokeWidth={3} />
-				)}
-			</button>
+			<div className="flex flex-col h-full">{children}</div>
 		</motion.div>
 	);
 };
@@ -134,8 +125,8 @@ export const MobileSidebar = ({
 		<>
 			<div
 				className={cn(
-					"h-16 px-6 flex flex-row md:hidden items-center justify-between w-full z-50",
-					"bg-sidebar/90 backdrop-blur-xl border-b border-white/10"
+					"h-14 px-5 flex flex-row md:hidden items-center justify-between w-full z-50",
+					"liquid-glass-surface border-b border-b-black/6 dark:border-b-white/6"
 				)}
 				{...props}
 			>
@@ -145,7 +136,7 @@ export const MobileSidebar = ({
 						className="text-foreground cursor-pointer focus:outline-none hover:text-primary transition-colors"
 						onClick={() => setOpen(!open)}
 					>
-						<Menu />
+						<Menu size={20} />
 					</button>
 				</div>
 				<AnimatePresence>
@@ -153,23 +144,23 @@ export const MobileSidebar = ({
 						<motion.div
 							animate={{ x: 0, opacity: 1 }}
 							className={cn(
-								"fixed h-full w-full inset-0 p-8 z-[100] flex flex-col justify-between",
-								"bg-background/95 backdrop-blur-2xl",
+								"fixed h-full w-full inset-0 p-6 z-[100] flex flex-col justify-between",
+								"bg-white dark:bg-background",
 								className
 							)}
 							exit={{ x: "-100%", opacity: 0 }}
 							initial={{ x: "-100%", opacity: 0 }}
 							transition={{
-								duration: 0.3,
+								duration: 0.25,
 								ease: "easeInOut",
 							}}
 						>
 							<button
 								aria-label="Close Menu"
-								className="absolute right-8 top-8 z-50 text-foreground cursor-pointer focus:outline-none hover:text-red-500 transition-colors"
+								className="absolute right-6 top-6 z-50 text-foreground cursor-pointer focus:outline-none hover:text-destructive transition-colors"
 								onClick={() => setOpen(!open)}
 							>
-								<X />
+								<X size={20} />
 							</button>
 							{children}
 						</motion.div>
@@ -196,29 +187,28 @@ export const SidebarLink = ({
 	return (
 		<Link
 			className={cn(
-				"flex items-center justify-start gap-4 group/sidebar py-3 px-4 rounded-2xl transition-all smooth-transition relative overflow-hidden",
+				"flex items-center gap-2.5 group/sidebar py-2.5 px-3 rounded-lg transition-all duration-150 relative",
 				active
-					? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
-					: "hover:bg-primary/10 hover:text-primary text-muted-foreground",
+					? "bg-primary text-primary-foreground font-medium shadow-sm"
+					: "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
 				className
 			)}
 			href={link.href}
 			{...props}
 		>
-			{/* Active Glow/Shine */}
-			{active && (
-				<div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover/sidebar:opacity-100 transition-opacity" />
-			)}
-
 			{link.icon}
 			<motion.span
 				animate={{
-					display: animate ? (open ? "inline-block" : "none") : "inline-block",
+					display: animate
+						? open
+							? "inline-block"
+							: "none"
+						: "inline-block",
 					opacity: animate ? (open ? 1 : 0) : 1,
 				}}
 				className={cn(
-					"text-sm font-medium transition duration-150 whitespace-pre inline-block !p-0 !m-0",
-					active && "font-bold tracking-wide"
+					"text-[13px] whitespace-pre inline-block p-0! m-0! leading-none",
+					active ? "font-medium" : "font-normal"
 				)}
 			>
 				{link.label}

@@ -11,6 +11,7 @@ interface PageHeaderProps {
 	icon?: LucideIcon;
 	children?: React.ReactNode;
 	className?: string;
+	gradient?: string;
 }
 
 export function PageHeader({
@@ -22,37 +23,38 @@ export function PageHeader({
 }: PageHeaderProps) {
 	return (
 		<motion.div
-			initial={{ opacity: 0, y: -20 }}
+			initial={{ opacity: 0, y: -8 }}
 			animate={{ opacity: 1, y: 0 }}
-			transition={{ duration: 0.6, ease: "easeOut" }}
-			className={cn("w-full mb-8 relative z-10", className)}
+			transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+			className={cn("w-full", className)}
 		>
-			<div className="glass-panel p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden group">
-				{/* Subtle Shimmer Effect on Load/Hover */}
-				<div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12 translate-x-[-150%] group-hover:translate-x-[150%] transition-transform duration-1000 ease-in-out pointer-events-none" />
+			<div className="relative liquid-glass-card px-6 py-4">
+				{/* Decorative element */}
+				<div className="absolute top-0 right-0 w-48 h-48 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/4 blur-2xl" />
 
-				<div className="flex items-center gap-6 relative z-10">
-					{Icon && (
-						<div className="relative shrink-0">
-							<div className="absolute -inset-2 bg-primary/20 blur-xl rounded-full opacity-50 group-hover:opacity-75 transition-opacity duration-500" />
-							<div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/20 text-white group-hover:scale-105 transition-transform duration-300">
-								<Icon className="w-8 h-8" strokeWidth={2} />
+				<div className="relative flex flex-col md:flex-row md:items-center justify-between gap-3">
+					<div className="flex items-center gap-4">
+						{Icon && (
+							<div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/15 flex items-center justify-center text-primary shrink-0">
+								<Icon className="w-5 h-5" strokeWidth={1.8} />
 							</div>
-						</div>
-					)}
-					<div className="space-y-1">
-						<h1 className="text-3xl md:text-4xl font-black tracking-tight text-foreground/90">
-							{title}
-						</h1>
-						{subtitle && (
-							<p className="text-base text-muted-foreground/80 font-medium max-w-2xl">
-								{subtitle}
-							</p>
 						)}
+						<div>
+							<h1 className="text-lg font-semibold text-foreground tracking-tight leading-tight">
+								{title}
+							</h1>
+							{subtitle && (
+								<p className="text-sm text-muted-foreground mt-0.5 leading-relaxed">
+									{subtitle}
+								</p>
+							)}
+						</div>
+					</div>
+
+					<div className="flex items-center gap-3 shrink-0">
+						{children}
 					</div>
 				</div>
-
-				<div className="flex items-center gap-3 relative z-10">{children}</div>
 			</div>
 		</motion.div>
 	);

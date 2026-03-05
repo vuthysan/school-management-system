@@ -1,203 +1,297 @@
 "use client";
 
-import { PageHeader } from "@/components/dashboard/page-header";
-import { DashboardCard } from "@/components/dashboard/dashboard-card";
-import { BookOpen, Search, Plus, Bookmark, Clock, User } from "lucide-react";
+import { useState } from "react";
+import {
+	Plus,
+	BookOpen,
+	AlertCircle,
+} from "lucide-react";
+import { useTranslation } from "react-i18next";
+
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogDescription,
+} from "@/components/ui/dialog";
+import { PageHeader } from "@/components/dashboard/page-header";
+import { DeleteConfirmDialog } from "@/components/shared/delete-confirm-dialog";
+import { useDashboard } from "@/hooks/useDashboard";
+import {
+	useBooks,
+	useBookMutations,
+	useBorrowRecords,
+	useBorrowMutations,
+} from "@/hooks/useLibrary";
+import { LibraryStats } from "@/components/library/library-stats";
+import { BooksTable } from "@/components/library/books-table";
+import { BorrowsTable } from "@/components/library/borrows-table";
+import { BookForm } from "@/components/library/book-form";
+import { BorrowForm } from "@/components/library/borrow-form";
+import type { Book, BorrowRecord } from "@/types/library";
 
 export default function LibraryPage() {
+	const { t } = useTranslation();
+	const { currentSchool, isLoading: isDashboardLoading } = useDashboard();
+	const schoolId = currentSchool?.idStr || currentSchool?.id || null;
+
+	const [activeTab, setActiveTab] = useState<"books" | "borrows">("books");
+	const [isFormOpen, setIsFormOpen] = useState(false);
+	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+	const [isSubmitting, setIsSubmitting] = useState(false);
+
+	const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+	const [selectedBorrow, setSelectedBorrow] = useState<BorrowRecord | null>(null);
+
+	// Data hooks
+	const { books, isLoading: isBooksLoading, error: booksError, refresh: refreshBooks } = useBooks(schoolId);
+	const { borrows, isLoading: isBorrowsLoading, error: borrowsError, refresh: refreshBorrows } = useBorrowRecords(schoolId);
+
+	// Mutation hooks
+	const { createBook, updateBook, deleteBook } = useBookMutations();
+	const { createBorrow, updateBorrow, deleteBorrow, returnBook } = useBorrowMutations();
+
+	// ========================================================================
+	// HANDLERS
+	// ========================================================================
+
+	const handleAddNew = () => {
+		setSelectedBook(null);
+		setSelectedBorrow(null);
+		setIsFormOpen(true);
+	};
+
+	const handleEditBook = (item: Book) => {
+		setSelectedBook(item);
+		setIsFormOpen(true);
+	};
+	const handleEditBorrow = (item: BorrowRecord) => {
+		setSelectedBorrow(item);
+		setIsFormOpen(true);
+	};
+
+	const handleDeleteBook = (item: Book) => {
+		setSelectedBook(item);
+		setIsDeleteOpen(true);
+	};
+	const handleDeleteBorrow = (item: BorrowRecord) => {
+		setSelectedBorrow(item);
+		setIsDeleteOpen(true);
+	};
+
+	const handleReturnBook = async (item: BorrowRecord) => {
+		setIsSubmitting(true);
+		try {
+			await returnBook(item.id);
+			refreshBorrows();
+			refreshBooks();
+		} catch (err) {
+			console.error("Return failed", err);
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
+	const onConfirmDelete = async () => {
+		if (!schoolId) return;
+		setIsSubmitting(true);
+		try {
+			if (activeTab === "books" && selectedBook) {
+				await deleteBook(selectedBook.id);
+				refreshBooks();
+			} else if (activeTab === "borrows" && selectedBorrow) {
+				await deleteBorrow(selectedBorrow.id);
+				refreshBorrows();
+			}
+			setIsDeleteOpen(false);
+		} catch (err) {
+			console.error("Delete failed", err);
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
+	const onBookSave = async (values: any) => {
+		if (!schoolId) return;
+		setIsSubmitting(true);
+		try {
+			if (selectedBook) {
+				await updateBook(selectedBook.id, values);
+			} else {
+				await createBook({ ...values, schoolId });
+			}
+			refreshBooks();
+			setIsFormOpen(false);
+		} catch (err) {
+			console.error("Book save failed", err);
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
+	const onBorrowSave = async (values: any) => {
+		if (!schoolId) return;
+		setIsSubmitting(true);
+		try {
+			if (selectedBorrow) {
+				await updateBorrow(selectedBorrow.id, values);
+			} else {
+				await createBorrow({ ...values, schoolId });
+			}
+			refreshBorrows();
+			refreshBooks();
+			setIsFormOpen(false);
+		} catch (err) {
+			console.error("Borrow save failed", err);
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
+	// ========================================================================
+	// GUARDS
+	// ========================================================================
+
+	if (isDashboardLoading) {
+		return (
+			<div className="min-h-[60vh] flex items-center justify-center">
+				<div className="text-center space-y-3">
+					<div className="h-8 w-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin mx-auto" />
+					<p className="text-sm text-muted-foreground">{t("loading") || "Loading..."}</p>
+				</div>
+			</div>
+		);
+	}
+
+	if (!schoolId) {
+		return (
+			<div className="min-h-[60vh] flex items-center justify-center">
+				<div className="text-center space-y-3">
+					<div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center mx-auto">
+						<AlertCircle className="h-5 w-5 text-amber-500" />
+					</div>
+					<p className="text-sm text-muted-foreground">{t("no_school_selected") || "No school selected"}</p>
+				</div>
+			</div>
+		);
+	}
+
+	// ========================================================================
+	// RENDER
+	// ========================================================================
+
 	return (
-		<div className="p-6 space-y-10 max-w-[1600px] mx-auto bg-background/50">
+		<div className="space-y-6 pb-10">
 			<PageHeader
-				title="Library Management"
-				subtitle="Manage your school's library collection and tracking borrowing records."
+				title={t("library_management") || "Library Management"}
+				subtitle={t("manage_library_subtitle") || "Manage books, borrowing records, and library inventory"}
 				icon={BookOpen}
-				gradient="blue"
 			>
-				<Button className="rounded-2xl h-12 px-6 font-black uppercase tracking-widest shadow-xl shadow-blue-500/20 bg-blue-500 hover:bg-blue-600 border-none transition-all hover:scale-105 active:scale-95">
-					<Plus className="w-5 h-5 mr-2" strokeWidth={3} />
-					Add New Book
+				<Button onClick={handleAddNew} size="sm" className="gap-2">
+					<Plus className="h-4 w-4" />
+					{activeTab === "books"
+						? t("add_book") || "Add Book"
+						: t("add_borrow") || "Record Borrow"}
 				</Button>
 			</PageHeader>
 
-			<div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-				{[
-					{
-						label: "Total Books",
-						value: "12,450",
-						sub: "+120 this month",
-						color: "blue",
-					},
-					{
-						label: "Borrowed",
-						value: "842",
-						sub: "Currently out",
-						color: "purple",
-					},
-					{
-						label: "Overdue",
-						value: "24",
-						sub: "Needs attention",
-						color: "orange",
-					},
-					{
-						label: "Active Members",
-						value: "1,120",
-						sub: "Students & Staff",
-						color: "green",
-					},
-				].map((stat, i) => (
-					<DashboardCard key={i} delay={i * 0.1}>
-						<div className="space-y-1">
-							<p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">
-								{stat.label}
-							</p>
-							<p className="text-3xl font-black text-foreground">
-								{stat.value}
-							</p>
-							<p className="text-[10px] font-bold text-muted-foreground/40">
-								{stat.sub}
-							</p>
-						</div>
-					</DashboardCard>
-				))}
-			</div>
+			{/* Stats */}
+			<LibraryStats books={books} borrows={borrows} />
 
-			<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-				<div className="lg:col-span-2 space-y-6">
-					<DashboardCard title="Books Catalog">
-						<div className="space-y-6">
-							<div className="relative">
-								<Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-								<Input
-									placeholder="Search by title, author, or ISBN..."
-									className="pl-12 h-12 rounded-2xl bg-black/5 border-none"
-								/>
-							</div>
+			{/* Tabs */}
+			<Tabs
+				value={activeTab}
+				onValueChange={(v) => setActiveTab(v as any)}
+			>
+				<TabsList>
+					<TabsTrigger value="books">{t("books") || "Books"}</TabsTrigger>
+					<TabsTrigger value="borrows">{t("borrows") || "Borrows"}</TabsTrigger>
+				</TabsList>
 
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-								{[
-									{
-										title: "Quantum Physics",
-										author: "Dr. Richard Feynman",
-										status: "Available",
-										color: "text-green-500",
-									},
-									{
-										title: "World History Vol 2",
-										author: "Jane Doe",
-										status: "Borrowed",
-										color: "text-blue-500",
-									},
-									{
-										title: "Advanced Calculus",
-										author: "Isaac Newton",
-										status: "Available",
-										color: "text-green-500",
-									},
-									{
-										title: "Literature & Arts",
-										author: "Various Authors",
-										status: "Overdue",
-										color: "text-orange-500",
-									},
-								].map((book, i) => (
-									<div
-										key={i}
-										className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-black/5 hover:border-primary/20 smooth-transition glass-card"
-									>
-										<div className="flex items-start justify-between mb-2">
-											<div className="font-bold truncate max-w-[150px]">
-												{book.title}
-											</div>
-											<span
-												className={`text-[9px] font-black uppercase tracking-widest ${book.color}`}
-											>
-												{book.status}
-											</span>
-										</div>
-										<p className="text-xs text-muted-foreground mb-4">
-											{book.author}
-										</p>
-										<div className="flex gap-2">
-											<Button
-												variant="ghost"
-												className="h-8 text-[10px] font-black uppercase tracking-widest hover:bg-primary/5"
-											>
-												Details
-											</Button>
-											<Button className="h-8 text-[10px] font-black uppercase tracking-widest bg-black dark:bg-white text-white dark:text-black">
-												Borrow
-											</Button>
-										</div>
-									</div>
-								))}
+				<TabsContent value="books">
+					{booksError ? (
+						<div className="min-h-[40vh] flex items-center justify-center">
+							<div className="text-center space-y-3">
+								<p className="text-sm text-destructive">{booksError}</p>
+								<Button variant="outline" size="sm" onClick={refreshBooks}>{t("retry") || "Retry"}</Button>
 							</div>
 						</div>
-					</DashboardCard>
-				</div>
+					) : (
+						<BooksTable
+							books={books}
+							isLoading={isBooksLoading}
+							onEdit={handleEditBook}
+							onDelete={handleDeleteBook}
+						/>
+					)}
+				</TabsContent>
 
-				<div className="space-y-6">
-					<DashboardCard title="Recent Borrows">
-						<div className="space-y-4">
-							{[
-								{
-									user: "John Smith",
-									book: "Chemistry Lab",
-									time: "2 hours ago",
-								},
-								{
-									user: "Sarah Wilson",
-									book: "English Grammar",
-									time: "4 hours ago",
-								},
-								{ user: "Mike Johnson", book: "Modern Art", time: "Yesterday" },
-							].map((item, i) => (
-								<div
-									key={i}
-									className="flex items-center gap-3 p-3 rounded-2xl bg-black/5 dark:bg-white/5"
-								>
-									<div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
-										<User className="w-5 h-5" />
-									</div>
-									<div className="flex-1 min-w-0">
-										<p className="text-sm font-bold truncate">{item.user}</p>
-										<p className="text-[10px] text-muted-foreground truncate">
-											{item.book}
-										</p>
-									</div>
-									<div className="text-[9px] font-bold text-muted-foreground/40">
-										{item.time}
-									</div>
-								</div>
-							))}
+				<TabsContent value="borrows">
+					{borrowsError ? (
+						<div className="min-h-[40vh] flex items-center justify-center">
+							<div className="text-center space-y-3">
+								<p className="text-sm text-destructive">{borrowsError}</p>
+								<Button variant="outline" size="sm" onClick={refreshBorrows}>{t("retry") || "Retry"}</Button>
+							</div>
 						</div>
-					</DashboardCard>
+					) : (
+						<BorrowsTable
+							borrows={borrows}
+							books={books}
+							isLoading={isBorrowsLoading}
+							onEdit={handleEditBorrow}
+							onDelete={handleDeleteBorrow}
+							onReturn={handleReturnBook}
+						/>
+					)}
+				</TabsContent>
+			</Tabs>
 
-					<DashboardCard
-						title="Quick Options"
-						className="bg-orange-500/5 border-orange-500/20"
-					>
-						<div className="space-y-2">
-							<Button
-								variant="ghost"
-								className="w-full justify-start rounded-xl h-10 hover:bg-orange-500/10 text-orange-600 font-bold group"
-							>
-								<Bookmark className="w-4 h-4 mr-3 group-hover:scale-125 transition-transform" />
-								Reservations
-							</Button>
-							<Button
-								variant="ghost"
-								className="w-full justify-start rounded-xl h-10 hover:bg-orange-500/10 text-orange-600 font-bold group"
-							>
-								<Clock className="w-4 h-4 mr-3 group-hover:scale-125 transition-transform" />
-								Due Today
-							</Button>
-						</div>
-					</DashboardCard>
-				</div>
-			</div>
+			{/* Form Modal */}
+			<Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+				<DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+					<DialogHeader>
+						<DialogTitle>
+							{activeTab === "books"
+								? (selectedBook ? t("edit_book") || "Edit Book" : t("add_book") || "Add Book")
+								: (selectedBorrow ? t("edit_borrow") || "Edit Borrow" : t("add_borrow") || "Record Borrow")}
+						</DialogTitle>
+						<DialogDescription>{t("fill_form_details") || "Fill in the details below."}</DialogDescription>
+					</DialogHeader>
+
+					{activeTab === "books" ? (
+						<BookForm
+							initialData={selectedBook}
+							onSave={onBookSave}
+							onCancel={() => setIsFormOpen(false)}
+							isSaving={isSubmitting}
+						/>
+					) : (
+						<BorrowForm
+							initialData={selectedBorrow}
+							books={books}
+							onSave={onBorrowSave}
+							onCancel={() => setIsFormOpen(false)}
+							isSaving={isSubmitting}
+						/>
+					)}
+				</DialogContent>
+			</Dialog>
+
+			{/* Delete Confirmation */}
+			<DeleteConfirmDialog
+				open={isDeleteOpen}
+				onOpenChange={setIsDeleteOpen}
+				title={t("confirm_delete") || "Confirm Delete"}
+				description={t("delete_item_warning") || "This action cannot be undone."}
+				onConfirm={onConfirmDelete}
+				isLoading={isSubmitting}
+				cancelLabel={t("cancel") || "Cancel"}
+				confirmLabel={t("delete") || "Delete"}
+			/>
 		</div>
 	);
 }

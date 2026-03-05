@@ -1,17 +1,11 @@
 "use client";
 
-import { Building2, Globe, Mail, Phone } from "lucide-react";
+import { Building2, Globe, Mail, Phone, MapPin, Users, GraduationCap, ChevronRight } from "lucide-react";
+import { motion } from "framer-motion";
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/contexts/language-context";
 import { School } from "@/types/school";
 
 interface SchoolsTableProps {
@@ -27,114 +21,161 @@ export function SchoolsTable({
   onSelectSchool,
   loading = false,
 }: SchoolsTableProps) {
+  const { language, t } = useLanguage();
+
+  const getLocalizedName = (name: { en: string; km: string } | string): string => {
+    if (typeof name === "string") return name;
+    return language === "km" ? (name.km || name.en) : (name.en || name.km);
+  };
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <div className="text-muted-foreground">Loading schools...</div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        {[1, 2].map((i) => (
+          <div key={i} className="liquid-glass-card p-5 animate-pulse">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-11 h-11 rounded-xl bg-muted" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 bg-muted rounded w-2/3" />
+                <div className="h-3 bg-muted rounded w-1/3" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="h-3 bg-muted rounded w-full" />
+              <div className="h-3 bg-muted rounded w-4/5" />
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
 
   if (schools.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center border rounded-lg">
-        <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
-        <h3 className="text-lg font-semibold mb-2">No Schools Yet</h3>
-        <p className="text-muted-foreground">
-          Create your first school to get started.
+      <div className="liquid-glass-card flex flex-col items-center justify-center py-16 text-center">
+        <div className="w-14 h-14 rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-center mb-4">
+          <Building2 className="h-7 w-7 text-primary/40" />
+        </div>
+        <h3 className="text-sm font-semibold mb-1">{t("no_schools") || "No Schools Yet"}</h3>
+        <p className="text-xs text-muted-foreground max-w-xs">
+          {t("no_schools_desc") || "Create your first school to get started."}
         </p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>School Name</TableHead>
-            <TableHead>Contact</TableHead>
-            <TableHead>Website</TableHead>
-            <TableHead>Created</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {schools.map((school) => (
-            <TableRow
-              key={school.id}
-              className={selectedSchoolId === school.id ? "bg-muted/50" : ""}
+    <div className="grid gap-4 sm:grid-cols-2">
+      {schools.map((school, i) => {
+        const isSelected = selectedSchoolId === school.idStr;
+        const name = getLocalizedName(school.name);
+        const province = school.address?.province;
+
+        return (
+          <motion.div
+            key={school.idStr}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: i * 0.05, ease: [0.25, 0.46, 0.45, 0.94] }}
+          >
+            <div
+              className={`liquid-glass-card p-5 cursor-pointer transition-all duration-200 ${
+                isSelected
+                  ? "ring-2 ring-primary/30 border-primary/20"
+                  : "hover:border-primary/10"
+              }`}
+              onClick={() => onSelectSchool(school)}
             >
-              <TableCell>
-                <div className="flex items-center gap-3">
-                  {school.logoUrl ? (
-                    <img
-                      alt={school.name}
-                      className="h-10 w-10 rounded-lg object-cover"
-                      src={school.logoUrl}
-                    />
-                  ) : (
-                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Building2 className="h-5 w-5 text-primary" />
-                    </div>
-                  )}
-                  <div>
-                    <p className="font-semibold">{school.name}</p>
-                    {selectedSchoolId === school.id && (
-                      <Badge className="mt-1" variant="secondary">
-                        Selected
+              {/* Header */}
+              <div className="flex items-start gap-3 mb-3">
+                {school.logoUrl ? (
+                  <img
+                    alt={name}
+                    className="w-11 h-11 rounded-xl object-cover shrink-0 ring-1 ring-border"
+                    src={school.logoUrl}
+                  />
+                ) : (
+                  <div className="w-11 h-11 rounded-xl bg-primary/10 border border-primary/15 flex items-center justify-center shrink-0">
+                    <Building2 className="h-5 w-5 text-primary" strokeWidth={1.8} />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-foreground truncate">{name}</h3>
+                    {isSelected && (
+                      <Badge variant="default" className="text-[10px] px-1.5 py-0">
+                        {t("selected") || "Selected"}
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    {school.code && (
+                      <span className="text-xs text-muted-foreground font-mono">{school.code}</span>
+                    )}
+                    {school.status && (
+                      <Badge
+                        variant="secondary"
+                        className="text-[10px] px-1.5 py-0 font-normal"
+                      >
+                        {school.status}
                       </Badge>
                     )}
                   </div>
                 </div>
-              </TableCell>
-              <TableCell>
-                <div className="flex flex-col gap-1 text-sm">
-                  <div className="flex items-center gap-1 text-muted-foreground">
-                    <Mail className="h-3 w-3" />
-                    {school.contactEmail}
+                <ChevronRight className={`w-4 h-4 shrink-0 transition-colors ${isSelected ? "text-primary" : "text-muted-foreground/30"}`} />
+              </div>
+
+              {/* Info rows */}
+              <div className="space-y-1.5 text-xs text-muted-foreground">
+                {province && (
+                  <div className="flex items-center gap-1.5">
+                    <MapPin className="w-3 h-3 shrink-0" />
+                    <span className="truncate">{province}</span>
                   </div>
-                  <div className="flex items-center gap-1 text-muted-foreground">
-                    <Phone className="h-3 w-3" />
-                    {school.contactPhone}
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell>
-                {school.website ? (
-                  <a
-                    className="flex items-center gap-1 text-primary hover:underline"
-                    href={school.website}
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
-                    <Globe className="h-3 w-3" />
-                    Visit
-                  </a>
-                ) : (
-                  <span className="text-muted-foreground">-</span>
                 )}
-              </TableCell>
-              <TableCell>
-                <span className="text-sm text-muted-foreground">
-                  {new Date(school.createdAt).toLocaleDateString()}
-                </span>
-              </TableCell>
-              <TableCell className="text-right">
-                <Button
-                  size="sm"
-                  variant={
-                    selectedSchoolId === school.id ? "secondary" : "outline"
-                  }
-                  onClick={() => onSelectSchool(school)}
-                >
-                  {selectedSchoolId === school.id ? "Selected" : "Select"}
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+                {school.contact?.email && (
+                  <div className="flex items-center gap-1.5">
+                    <Mail className="w-3 h-3 shrink-0" />
+                    <span className="truncate">{school.contact.email}</span>
+                  </div>
+                )}
+                {school.contact?.phone && (
+                  <div className="flex items-center gap-1.5">
+                    <Phone className="w-3 h-3 shrink-0" />
+                    <span>{school.contact.phone}</span>
+                  </div>
+                )}
+                {school.website && (
+                  <div className="flex items-center gap-1.5">
+                    <Globe className="w-3 h-3 shrink-0" />
+                    <span className="truncate text-primary/80">{school.website}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Stats footer */}
+              {school.stats && (
+                <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border/50">
+                  {school.stats.totalStudents != null && (
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <GraduationCap className="w-3 h-3" />
+                      <span className="font-medium text-foreground">{school.stats.totalStudents}</span>
+                      {t("students").toLowerCase()}
+                    </div>
+                  )}
+                  {school.stats.totalTeachers != null && (
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Users className="w-3 h-3" />
+                      <span className="font-medium text-foreground">{school.stats.totalTeachers}</span>
+                      {t("teachers_staff")?.split("&")[0]?.trim()?.toLowerCase() || "teachers"}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        );
+      })}
     </div>
   );
 }

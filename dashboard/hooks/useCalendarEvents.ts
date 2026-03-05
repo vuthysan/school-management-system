@@ -197,3 +197,74 @@ export function useDeleteCalendarEvent() {
 
 	return { deleteCalendarEvent, loading, error };
 }
+
+export function useCalendarEventsInRange(
+	schoolId: string | null,
+	startDate: string | null,
+	endDate: string | null
+) {
+	const { getAccessToken, isAuthenticated } = useAuth();
+	const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
+
+	const fetchCalendarEvents = useCallback(async () => {
+		if (!isAuthenticated || !schoolId || !startDate || !endDate) {
+			setCalendarEvents([]);
+			setLoading(false);
+			return;
+		}
+
+		setLoading(true);
+		setError(null);
+		try {
+			const token = getAccessToken();
+			const data = await graphqlRequest<{
+				calendarEventsInRange: CalendarEvent[];
+			}>(CALENDAR_QUERIES.GET_IN_RANGE, { schoolId, startDate, endDate }, token);
+			setCalendarEvents(data.calendarEventsInRange || []);
+		} catch (err) {
+			setError(
+				err instanceof Error ? err.message : "Failed to fetch calendar events"
+			);
+		} finally {
+			setLoading(false);
+		}
+	}, [schoolId, startDate, endDate, isAuthenticated, getAccessToken]);
+
+	useEffect(() => {
+		fetchCalendarEvents();
+	}, [fetchCalendarEvents]);
+
+	return { calendarEvents, loading, error, refetch: fetchCalendarEvents };
+}
+
+export function useSeedCambodianHolidays() {
+	const { getAccessToken } = useAuth();
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+
+	const seedHolidays = async (
+		schoolId: string,
+		year: number
+	): Promise<CalendarEvent[]> => {
+		setLoading(true);
+		setError(null);
+		try {
+			const token = getAccessToken();
+			const data = await graphqlRequest<{
+				seedCambodianHolidays: CalendarEvent[];
+			}>(CALENDAR_MUTATIONS.SEED_CAMBODIAN_HOLIDAYS, { schoolId, year }, token);
+			return data.seedCambodianHolidays;
+		} catch (err) {
+			const errorMessage =
+				err instanceof Error ? err.message : "Failed to seed holidays";
+			setError(errorMessage);
+			throw new Error(errorMessage);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	return { seedHolidays, loading, error };
+}

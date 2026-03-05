@@ -43,6 +43,8 @@ export interface School {
   schoolType?: string;
   status?: string;
   stats?: SchoolStats;
+  logoUrl?: string;
+  effectiveLogoUrl?: string;
 }
 
 export interface DashboardData {
@@ -76,7 +78,6 @@ export function useDashboard() {
   const fetchMemberships = useCallback(async () => {
     if (!isAuthenticated) {
       setIsLoading(false);
-
       return;
     }
 
@@ -86,33 +87,24 @@ export function useDashboard() {
     try {
       const token = getAccessToken();
 
-      // Fetch memberships
-      console.log("useDashboard: Fetching memberships...");
-      const memberData = await graphqlRequest<{ myMemberships: Membership[] }>(
-        MEMBER_QUERIES.MY_MEMBERSHIPS,
-        undefined,
-        token,
-      );
+      // Fetch memberships and pending schools in parallel
+      const [memberData, pendingData] = await Promise.all([
+        graphqlRequest<{ myMemberships: Membership[] }>(
+          MEMBER_QUERIES.MY_MEMBERSHIPS,
+          undefined,
+          token,
+        ),
+        graphqlRequest<{ pendingSchools: PendingSchool[] }>(
+          SCHOOL_QUERIES.PENDING_SCHOOLS,
+          undefined,
+          token,
+        ).catch(() => ({ pendingSchools: [] as PendingSchool[] })),
+      ]);
 
-      console.log(
-        "useDashboard: Received memberships:",
-        memberData.myMemberships,
-      );
       setMemberships(memberData.myMemberships || []);
+      setPendingSchools(pendingData.pendingSchools || []);
 
-      // Also fetch pending schools for this user
-      try {
-        const pendingData = await graphqlRequest<{
-          pendingSchools: PendingSchool[];
-        }>(SCHOOL_QUERIES.PENDING_SCHOOLS, undefined, token);
-
-        setPendingSchools(pendingData.pendingSchools || []);
-      } catch {
-        // User may not have permission to view pending schools
-        setPendingSchools([]);
-      }
-
-      // If user has memberships, use saved school or first one
+      // If user has memberships, fetch all school details in parallel
       if (memberData.myMemberships && memberData.myMemberships.length > 0) {
         const savedSchoolId = localStorage.getItem(CURRENT_SCHOOL_KEY);
         const validSavedSchool =
@@ -125,22 +117,25 @@ export function useDashboard() {
 
         setCurrentSchoolId(selectedSchoolId);
 
-        // Fetch school details for each membership
-        const schoolMap = new Map<string, School>();
+        // Deduplicate school IDs and fetch all in parallel
+        const uniqueSchoolIds = Array.from(
+          new Set(memberData.myMemberships.map((m) => m.schoolId))
+        );
 
-        for (const membership of memberData.myMemberships) {
-          try {
-            const schoolData = await graphqlRequest<{ school: School }>(
+        const schoolResults = await Promise.allSettled(
+          uniqueSchoolIds.map((id) =>
+            graphqlRequest<{ school: School }>(
               SCHOOL_QUERIES.GET_BY_ID,
-              { id: membership.schoolId },
+              { id },
               token,
-            );
+            ).then((data) => ({ id, school: data.school }))
+          )
+        );
 
-            if (schoolData.school) {
-              schoolMap.set(membership.schoolId, schoolData.school);
-            }
-          } catch {
-            console.warn(`Failed to fetch school ${membership.schoolId}`);
+        const schoolMap = new Map<string, School>();
+        for (const result of schoolResults) {
+          if (result.status === "fulfilled" && result.value.school) {
+            schoolMap.set(result.value.id, result.value.school);
           }
         }
         setSchools(schoolMap);
@@ -232,7 +227,6 @@ export function useDashboardStats(
   useEffect(() => {
     if (!schoolId) {
       setStats(null);
-
       return;
     }
 

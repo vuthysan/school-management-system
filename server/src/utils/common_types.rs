@@ -324,6 +324,7 @@ impl DateOfBirth {
 
 /// Day of week for scheduling
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Enum)]
+#[graphql(rename_items = "PascalCase")]
 pub enum DayOfWeek {
     Monday,
     Tuesday,
@@ -356,4 +357,38 @@ impl DayOfWeek {
             DayOfWeek::Friday,
         ]
     }
+}
+
+// ============================================================================
+// BUDDHIST ERA (ពុទ្ធសករាជ) CALENDAR
+// ============================================================================
+
+/// Convert a Gregorian (CE) year to Buddhist Era (BE) year.
+/// In Cambodia, BE = CE + 543.
+/// Example: 2025 CE = 2568 BE
+pub fn to_buddhist_era(ce_year: i32) -> i32 {
+    ce_year + 543
+}
+
+/// Convert a Buddhist Era (BE) year to Gregorian (CE) year.
+pub fn from_buddhist_era(be_year: i32) -> i32 {
+    be_year - 543
+}
+
+/// Format a year as "CE / BE" display string.
+/// Example: "2025 / ព.ស. 2568"
+pub fn format_year_with_be(ce_year: i32) -> String {
+    format!("{} / ព.ស. {}", ce_year, to_buddhist_era(ce_year))
+}
+
+/// Format academic year in Cambodian style.
+/// Example: "2025-2026 (ព.ស. 2568-2569)"
+pub fn format_academic_year_with_be(start_year: i32, end_year: i32) -> String {
+    format!(
+        "{}-{} (ព.ស. {}-{})",
+        start_year,
+        end_year,
+        to_buddhist_era(start_year),
+        to_buddhist_era(end_year)
+    )
 }

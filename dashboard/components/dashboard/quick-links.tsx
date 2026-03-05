@@ -22,7 +22,7 @@ export function QuickLinks() {
           {links.map((l) => (
             <Link
               key={l.label}
-              className="p-3 rounded-md border border-border hover:bg-muted transition-colors"
+              className="p-3 rounded-md border border-black/6 dark:border-white/6 hover:bg-muted/30 transition-colors"
               href={l.href}
             >
               <div className="font-medium">{l.label}</div>

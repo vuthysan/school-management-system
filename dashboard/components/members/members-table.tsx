@@ -3,7 +3,6 @@
 import React, { useMemo, useState, useCallback } from "react";
 import {
 	Search,
-	Eye,
 	Trash2,
 	Filter,
 	Pencil,
@@ -28,7 +27,6 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -45,73 +43,24 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { SearchInput } from "@/components/shared/search-input";
 import { Member } from "@/hooks/useMembers";
 import { useLanguage } from "@/contexts/language-context";
 import { cn } from "@/lib/utils";
 
 // Role configuration
 const ROLE_CONFIG = [
-	{ value: "Owner", labelKey: "role_owner", icon: Crown, color: "bg-blue-500" },
-	{
-		value: "Director",
-		labelKey: "role_director",
-		icon: GraduationCap,
-		color: "bg-cyan-500",
-	},
-	{
-		value: "DeputyDirector",
-		labelKey: "role_deputy_director",
-		icon: GraduationCap,
-		color: "bg-teal-500",
-	},
-	{
-		value: "Admin",
-		labelKey: "role_admin",
-		icon: UserCog,
-		color: "bg-green-500",
-	},
-	{
-		value: "HeadTeacher",
-		labelKey: "role_head_teacher",
-		icon: GraduationCap,
-		color: "bg-amber-500",
-	},
-	{
-		value: "Teacher",
-		labelKey: "role_teacher",
-		icon: GraduationCap,
-		color: "bg-orange-500",
-	},
-	{
-		value: "Staff",
-		labelKey: "role_staff",
-		icon: Briefcase,
-		color: "bg-gray-500",
-	},
-	{
-		value: "Accountant",
-		labelKey: "role_accountant",
-		icon: Shield,
-		color: "bg-purple-500",
-	},
-	{
-		value: "Librarian",
-		labelKey: "role_librarian",
-		icon: Shield,
-		color: "bg-pink-500",
-	},
-	{
-		value: "Student",
-		labelKey: "role_student",
-		icon: Users,
-		color: "bg-indigo-500",
-	},
-	{
-		value: "Parent",
-		labelKey: "role_parent",
-		icon: Users,
-		color: "bg-rose-500",
-	},
+	{ value: "Owner", labelKey: "role_owner", icon: Crown, color: "bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400" },
+	{ value: "Director", labelKey: "role_director", icon: GraduationCap, color: "bg-cyan-50 text-cyan-600 dark:bg-cyan-950/50 dark:text-cyan-400" },
+	{ value: "DeputyDirector", labelKey: "role_deputy_director", icon: GraduationCap, color: "bg-teal-50 text-teal-600 dark:bg-teal-950/50 dark:text-teal-400" },
+	{ value: "Admin", labelKey: "role_admin", icon: UserCog, color: "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400" },
+	{ value: "HeadTeacher", labelKey: "role_head_teacher", icon: GraduationCap, color: "bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400" },
+	{ value: "Teacher", labelKey: "role_teacher", icon: GraduationCap, color: "bg-orange-50 text-orange-600 dark:bg-orange-950/50 dark:text-orange-400" },
+	{ value: "Staff", labelKey: "role_staff", icon: Briefcase, color: "bg-gray-50 text-gray-600 dark:bg-gray-950/50 dark:text-gray-400" },
+	{ value: "Accountant", labelKey: "role_accountant", icon: Shield, color: "bg-violet-50 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400" },
+	{ value: "Librarian", labelKey: "role_librarian", icon: Shield, color: "bg-pink-50 text-pink-600 dark:bg-pink-950/50 dark:text-pink-400" },
+	{ value: "Student", labelKey: "role_student", icon: Users, color: "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400" },
+	{ value: "Parent", labelKey: "role_parent", icon: Users, color: "bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400" },
 ] as const;
 
 function getRoleInfo(role: string) {
@@ -126,7 +75,7 @@ const ROWS_PER_PAGE_OPTIONS = [10, 25, 50, 100];
 
 interface MembersTableProps {
 	members: Member[];
-	branches: any[]; // Use any for simplicity or correct type if known
+	branches: any[];
 	onEdit: (member: Member) => void;
 	onDelete: (member: Member) => void;
 }
@@ -143,14 +92,6 @@ export const MembersTable: React.FC<MembersTableProps> = ({
 	const [roleFilter, setRoleFilter] = useState("all");
 	const [page, setPage] = useState(1);
 	const [rowsPerPage, setRowsPerPage] = useState(10);
-
-	const columns = [
-		{ key: "user", label: t("user").toUpperCase() },
-		{ key: "role", label: t("role").toUpperCase() },
-		{ key: "branch", label: t("branch").toUpperCase() },
-		{ key: "status", label: t("status").toUpperCase() },
-		{ key: "actions", label: t("actions").toUpperCase() },
-	];
 
 	// Filter and search
 	const filteredMembers = useMemo(() => {
@@ -192,100 +133,102 @@ export const MembersTable: React.FC<MembersTableProps> = ({
 	const hasActiveFilters = searchQuery || roleFilter !== "all";
 
 	return (
-		<div className="flex flex-col gap-6">
-			{/* Toolbar */}
-			<motion.div
-				initial={{ opacity: 0, y: -10 }}
-				animate={{ opacity: 1, y: 0 }}
-			>
-				<div className="flex flex-col md:flex-row gap-4">
-					<div className="relative flex-1 group">
-						<Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
-						<Input
-							className="pl-10 h-11 transition-all"
-							placeholder={
-								t("search_members_placeholder") || "Search members..."
-							}
-							value={searchQuery}
-							onChange={(e) => setSearchQuery(e.target.value)}
-						/>
+		<motion.div
+			initial={{ opacity: 0, y: 8 }}
+			animate={{ opacity: 1, y: 0 }}
+			transition={{ delay: 0.15, duration: 0.3 }}
+		>
+			<div className="liquid-glass-card rounded-2xl overflow-hidden">
+				{/* Card header with search + filter */}
+				<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-4 py-3 border-b border-black/6 dark:border-white/6">
+					<div className="flex items-center gap-3">
+						<div className="w-6 h-6 rounded-md bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center">
+							<Users className="w-3 h-3 text-blue-600 dark:text-blue-400" strokeWidth={2} />
+						</div>
+						<h2 className="text-sm font-semibold text-foreground">
+							{t("all_members") || "All Members"}
+						</h2>
+						<span className="text-xs text-muted-foreground/60 tabular-nums">
+							{filteredMembers.length}
+						</span>
 					</div>
-					<div className="flex flex-wrap gap-3">
+					<div className="flex items-center gap-2 w-full sm:w-auto">
 						<Select value={roleFilter} onValueChange={setRoleFilter}>
-							<SelectTrigger className="w-[180px] h-11 rounded-lg">
-								<div className="flex items-center gap-2">
-									<Filter className="h-3.5 w-3.5 text-muted-foreground" />
+							<SelectTrigger className="w-[150px] h-9 text-xs">
+								<div className="flex items-center gap-1.5">
+									<Filter className="h-3 w-3 text-muted-foreground" />
 									<SelectValue placeholder={t("all_roles")} />
 								</div>
 							</SelectTrigger>
-							<SelectContent className="rounded-xl shadow-xl">
-								<SelectItem value="all" className="rounded-lg">
+							<SelectContent>
+								<SelectItem value="all">
 									{t("all_roles")}
 								</SelectItem>
 								{ROLE_CONFIG.map((role) => (
-									<SelectItem
-										key={role.value}
-										value={role.value}
-										className="rounded-lg"
-									>
+									<SelectItem key={role.value} value={role.value}>
 										{t(role.labelKey as any)}
 									</SelectItem>
 								))}
 							</SelectContent>
 						</Select>
-
 						{hasActiveFilters && (
 							<Button
 								size="sm"
 								variant="ghost"
 								onClick={handleClearFilters}
-								className="h-11 px-4 rounded-lg hover:bg-destructive/5 text-destructive font-medium"
+								className="h-9 text-xs text-muted-foreground"
 							>
 								{t("clear")}
 							</Button>
 						)}
+						<SearchInput
+							placeholder={t("search_members_placeholder") || "Search..."}
+							value={searchQuery}
+							onChange={setSearchQuery}
+							className="w-full sm:w-56"
+						/>
 					</div>
 				</div>
-			</motion.div>
 
-			{/* Table */}
-			<div className="rounded-lg border-none shadow-sm overflow-hidden bg-card">
+				{/* Table */}
 				<Table>
 					<TableHeader>
-						<TableRow>
-							{columns.map((column) => (
-								<TableHead
-									key={column.key}
-									className={cn(
-										"uppercase tracking-widest px-4",
-										column.key === "actions" && "text-right"
-									)}
-								>
-									{column.label}
-								</TableHead>
-							))}
+						<TableRow className="hover:bg-transparent border-b border-black/6 dark:border-white/6">
+							<TableHead className="w-75 h-10 text-xs font-medium text-muted-foreground">
+								{t("user")}
+							</TableHead>
+							<TableHead className="h-10 text-xs font-medium text-muted-foreground">
+								{t("role")}
+							</TableHead>
+							<TableHead className="h-10 text-xs font-medium text-muted-foreground">
+								{t("branch")}
+							</TableHead>
+							<TableHead className="h-10 text-xs font-medium text-muted-foreground">
+								{t("status")}
+							</TableHead>
+							<TableHead className="text-right h-10 text-xs font-medium text-muted-foreground">
+								{t("actions")}
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						<AnimatePresence mode="popLayout">
 							{paginatedMembers.length === 0 ? (
-								<motion.tr
-									initial={{ opacity: 0 }}
-									animate={{ opacity: 1 }}
-									exit={{ opacity: 0 }}
-								>
+								<TableRow>
 									<TableCell
-										className="h-64 text-center text-muted-foreground font-medium"
-										colSpan={columns.length}
+										className="h-60 text-center"
+										colSpan={5}
 									>
-										<div className="flex flex-col items-center gap-3">
-											<div className="p-4 bg-secondary/20 rounded-full">
-												<Search className="h-6 w-6 opacity-20" />
+										<div className="flex flex-col items-center justify-center gap-3">
+											<div className="w-12 h-12 rounded-2xl bg-muted/60 flex items-center justify-center">
+												<Users className="h-5 w-5 text-muted-foreground" />
 											</div>
-											{hasActiveFilters ? t("no_results") : t("no_members")}
+											<p className="text-sm font-medium text-foreground">
+												{hasActiveFilters ? t("no_results") : t("no_members")}
+											</p>
 										</div>
 									</TableCell>
-								</motion.tr>
+								</TableRow>
 							) : (
 								paginatedMembers.map((member, index) => {
 									const roleInfo = getRoleInfo(member.role);
@@ -293,14 +236,15 @@ export const MembersTable: React.FC<MembersTableProps> = ({
 									return (
 										<motion.tr
 											key={member.idStr}
-											initial={{ opacity: 0, y: 10 }}
-											animate={{ opacity: 1, y: 0 }}
-											transition={{ duration: 0.3, delay: index * 0.05 }}
-											className="group transition-all hover:bg-secondary/10 cursor-pointer"
+											initial={{ opacity: 0 }}
+											animate={{ opacity: 1 }}
+											exit={{ opacity: 0 }}
+											transition={{ delay: index * 0.03 }}
+											className="group hover:bg-muted/30 transition-colors border-b border-black/6 dark:border-white/6"
 										>
-											<TableCell className="px-6 py-4">
-												<div className="flex items-center gap-4">
-													<Avatar className="h-10 w-10 border-2 border-background shadow-sm transition-transform group-hover:scale-110">
+											<TableCell className="py-3">
+												<div className="flex items-center gap-3">
+													<Avatar className="h-9 w-9 border border-black/6 dark:border-white/6">
 														{member.user?.avatarUrl ? (
 															<img
 																src={member.user.avatarUrl}
@@ -308,18 +252,18 @@ export const MembersTable: React.FC<MembersTableProps> = ({
 																className="h-full w-full object-cover"
 															/>
 														) : (
-															<AvatarFallback className="bg-gradient-to-br from-primary/10 to-primary/20 text-primary text-xs">
-																<Users className="h-4 w-4" />
+															<AvatarFallback className="bg-muted text-muted-foreground text-xs font-semibold">
+																<Users className="h-3.5 w-3.5" />
 															</AvatarFallback>
 														)}
 													</Avatar>
-													<div className="flex flex-col">
-														<span className="text-foreground group-hover:text-primary transition-colors font-medium">
+													<div className="min-w-0">
+														<p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors truncate">
 															{member.user?.fullName || member.userId}
-														</span>
-														<span className="text-[11px] text-muted-foreground/80 font-medium tracking-wide">
+														</p>
+														<p className="text-xs text-muted-foreground/60 truncate mt-0.5">
 															{member.user?.email || member.userId}
-														</span>
+														</p>
 													</div>
 												</div>
 											</TableCell>
@@ -327,13 +271,13 @@ export const MembersTable: React.FC<MembersTableProps> = ({
 												<div className="flex items-center gap-2">
 													<div
 														className={cn(
-															"p-1.5 rounded-lg text-white",
+															"w-6 h-6 rounded-md flex items-center justify-center",
 															roleInfo.color
 														)}
 													>
-														<RoleIcon className="h-3.5 w-3.5" />
+														<RoleIcon className="h-3 w-3" />
 													</div>
-													<span className="text-sm font-medium">
+													<span className="text-sm text-foreground/80">
 														{t(roleInfo.labelKey as any)}
 													</span>
 												</div>
@@ -341,62 +285,69 @@ export const MembersTable: React.FC<MembersTableProps> = ({
 											<TableCell>
 												{member.branchId ? (
 													<Badge
-														variant="outline"
-														className="rounded-lg gap-1 px-2.5 py-0.5 font-medium border-primary/20 text-primary bg-primary/5"
+														variant="secondary"
+														className="bg-primary/8 text-primary border-none text-xs font-medium gap-1"
 													>
 														<Building2 className="h-3 w-3" />
 														{branches.find((b) => b.id === member.branchId)
 															?.name || member.branchId}
 													</Badge>
 												) : (
-													<Badge
-														variant="secondary"
-														className="rounded-lg px-2.5 py-0.5 font-medium bg-muted text-muted-foreground border-none"
-													>
+													<span className="text-xs text-muted-foreground">
 														{t("school_wide") || "School-wide"}
-													</Badge>
+													</span>
 												)}
 											</TableCell>
 											<TableCell>
-												<Badge
-													className={cn(
-														"rounded-lg px-2.5 py-0.5 text-[11px] border-none font-bold",
-														member.status === "Active"
-															? "bg-emerald-500/10 text-emerald-600"
-															: "bg-muted text-muted-foreground"
-													)}
-												>
-													{member.status}
-												</Badge>
+												<div className="flex items-center gap-1.5">
+													<div
+														className={cn(
+															"w-1.5 h-1.5 rounded-full",
+															member.status === "Active"
+																? "bg-emerald-500"
+																: "bg-muted-foreground/30"
+														)}
+													/>
+													<span
+														className={cn(
+															"text-xs font-medium",
+															member.status === "Active"
+																? "text-emerald-600 dark:text-emerald-400"
+																: "text-muted-foreground"
+														)}
+													>
+														{member.status}
+													</span>
+												</div>
 											</TableCell>
-											<TableCell className="px-6 text-right">
+											<TableCell className="text-right">
 												<DropdownMenu>
 													<DropdownMenuTrigger asChild>
 														<Button
 															variant="ghost"
-															className="h-8 w-8 p-0 hover:bg-muted rounded-full"
+															size="sm"
+															className="h-7 w-7 p-0 hover:bg-muted"
 														>
 															<MoreHorizontal className="h-4 w-4" />
 														</Button>
 													</DropdownMenuTrigger>
 													<DropdownMenuContent
 														align="end"
-														className="w-[160px] rounded-lg"
+														className="w-[150px]"
 													>
 														<DropdownMenuItem
 															onClick={() => onEdit(member)}
-															className="text-emerald-500 focus:text-emerald-600 focus:bg-emerald-50"
 														>
-															<Pencil className="mr-2 h-4 w-4" />
-															<span>{t("edit_role")}</span>
+															<Pencil className="mr-2 h-3.5 w-3.5" />
+															{t("edit_role")}
 														</DropdownMenuItem>
 														<DropdownMenuItem
 															onClick={() => onDelete(member)}
 															className="text-destructive focus:text-destructive focus:bg-destructive/10"
 															disabled={member.role === "Owner"}
 														>
-															<Trash2 className="mr-2 h-4 w-4" />
-															<span>{t("remove")}</span>
+															<Trash2 className="mr-2 h-3.5 w-3.5" />
+															{t("remove")}
 														</DropdownMenuItem>
 													</DropdownMenuContent>
 												</DropdownMenu>
@@ -408,95 +359,65 @@ export const MembersTable: React.FC<MembersTableProps> = ({
 						</AnimatePresence>
 					</TableBody>
 				</Table>
-			</div>
 
-			{/* Pagination */}
-			<div className="flex flex-col sm:flex-row items-center justify-between gap-6 px-4 py-2">
-				<div className="flex flex-col gap-1 items-center sm:items-start order-2 sm:order-1">
-					<span className="text-xs text-muted-foreground/60 uppercase tracking-widest">
-						{t("total_members_count", { count: filteredMembers.length })}
-					</span>
-					<div className="flex items-center gap-2 mt-1">
-						<span className="text-xs font-medium text-muted-foreground/60">
-							{t("rows_per_page")}
-						</span>
-						<Select
-							value={rowsPerPage.toString()}
-							onValueChange={(value) => {
-								setRowsPerPage(parseInt(value));
-								setPage(1);
-							}}
-						>
-							<SelectTrigger className="w-[70px] h-8 rounded-lg text-xs ">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent className="rounded-xl shadow-xl min-w-[70px]">
-								{ROWS_PER_PAGE_OPTIONS.map((option) => (
-									<SelectItem
-										key={option}
-										value={option.toString()}
-										className="rounded-lg text-xs"
-									>
-										{option}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
-				</div>
-
-				{totalPages > 1 && (
-					<div className="flex items-center gap-2 order-1 sm:order-2">
-						<Button
-							disabled={page === 1}
-							size="icon"
-							variant="outline"
-							className="h-10 w-10 rounded-xl hover:bg-primary/5 hover:text-primary transition-all disabled:opacity-30"
-							onClick={() => setPage(Math.max(1, page - 1))}
-						>
-							<ChevronLeft className="h-5 w-5" />
-						</Button>
-
-						<div className="flex items-center gap-1.5 mx-2">
-							{Array.from({ length: Math.min(totalPages, 5) }).map((_, i) => {
-								let pageNum = page;
-								if (page <= 3) pageNum = i + 1;
-								else if (page >= totalPages - 2) pageNum = totalPages - 4 + i;
-								else pageNum = page - 2 + i;
-
-								if (pageNum > 0 && pageNum <= totalPages) {
-									return (
-										<Button
-											key={pageNum}
-											variant={page === pageNum ? "default" : "ghost"}
-											className={cn(
-												"h-10 w-10 rounded-xl transition-all text-sm",
-												page === pageNum
-													? "shadow-md shadow-primary/5 scale-110"
-													: "hover:bg-primary/5 hover:text-primary text-muted-foreground"
-											)}
-											onClick={() => setPage(pageNum)}
+				{/* Pagination */}
+				{totalPages > 0 && (
+					<div className="flex items-center justify-between px-4 py-3 border-t border-black/6 dark:border-white/6">
+						<div className="flex items-center gap-2">
+							<span className="text-xs text-muted-foreground">
+								{filteredMembers.length} {t("total_members") || "members"}
+							</span>
+							<Select
+								value={rowsPerPage.toString()}
+								onValueChange={(value) => {
+									setRowsPerPage(parseInt(value));
+									setPage(1);
+								}}
+							>
+								<SelectTrigger className="w-[65px] h-7 text-xs">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									{ROWS_PER_PAGE_OPTIONS.map((option) => (
+										<SelectItem
+											key={option}
+											value={option.toString()}
 										>
-											{pageNum}
-										</Button>
-									);
-								}
-								return null;
-							})}
+											{option}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
 						</div>
 
-						<Button
-							disabled={page === totalPages}
-							size="icon"
-							variant="outline"
-							className="h-10 w-10 rounded-xl hover:bg-primary/5 hover:text-primary transition-all disabled:opacity-30"
-							onClick={() => setPage(Math.min(totalPages, page + 1))}
-						>
-							<ChevronRight className="h-5 w-5" />
-						</Button>
+						{totalPages > 1 && (
+							<div className="flex items-center gap-1">
+								<Button
+									disabled={page === 1}
+									size="sm"
+									variant="ghost"
+									className="h-7 w-7 p-0"
+									onClick={() => setPage(Math.max(1, page - 1))}
+								>
+									<ChevronLeft className="h-4 w-4" />
+								</Button>
+								<span className="text-xs text-muted-foreground px-2 tabular-nums">
+									{page} / {totalPages}
+								</span>
+								<Button
+									disabled={page === totalPages}
+									size="sm"
+									variant="ghost"
+									className="h-7 w-7 p-0"
+									onClick={() => setPage(Math.min(totalPages, page + 1))}
+								>
+									<ChevronRight className="h-4 w-4" />
+								</Button>
+							</div>
+						)}
 					</div>
 				)}
 			</div>
-		</div>
+		</motion.div>
 	);
 };

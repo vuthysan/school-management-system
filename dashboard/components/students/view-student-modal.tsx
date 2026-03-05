@@ -49,7 +49,7 @@ export const ViewStudentModal: React.FC<ViewStudentModalProps> = ({
 	}) => (
 		<div
 			className={cn(
-				"flex flex-col sm:flex-row sm:justify-between py-3 px-4 rounded-lg bg-card border border-transparent hover:border-border/50 transition-colors gap-1 sm:gap-4",
+				"flex flex-col sm:flex-row sm:justify-between py-3 px-4 rounded-lg bg-card border border-transparent hover:border-black/6 dark:border-white/6 transition-colors gap-1 sm:gap-4",
 				fullWidth ? "sm:col-span-2" : ""
 			)}
 		>

@@ -7,23 +7,20 @@ pub struct UserQuery;
 
 #[Object]
 impl UserQuery {
-    /// Search for a user by email or username (minimum 5 characters required)
+    /// Search for a user by their unique user_id (e.g., "00000001")
     async fn search_user(&self, ctx: &Context<'_>, query: String) -> Result<Option<User>> {
-        // Require minimum 5 characters to prevent fetching too many users
         let trimmed_query = query.trim();
-        if trimmed_query.len() < 5 {
-            return Err(Error::new("Search query must be at least 5 characters"));
+        if trimmed_query.is_empty() {
+            return Err(Error::new("User ID is required"));
         }
 
         let db = ctx.data::<Database>()?;
         let users_collection = db.collection::<User>("users");
 
-        // Search by email or username (case-insensitive)
+        // Search by the sequential user_id field
         let filter = doc! {
-            "$or": [
-                { "email": { "$regex": trimmed_query, "$options": "i" } },
-                { "username": { "$regex": trimmed_query, "$options": "i" } }
-            ]
+            "user_id": trimmed_query,
+            "soft_delete.is_deleted": false
         };
 
         let user = users_collection

@@ -1,163 +1,188 @@
 "use client";
 
-import { PageHeader } from "@/components/dashboard/page-header";
-import { DashboardCard } from "@/components/dashboard/dashboard-card";
-import {
-	Package,
-	Search,
-	Plus,
-	Filter,
-	ArrowUpRight,
-	AlertTriangle,
-} from "lucide-react";
+import { useState } from "react";
+import { Package, Plus, AlertCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
+
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogDescription,
+} from "@/components/ui/dialog";
+import { PageHeader } from "@/components/dashboard/page-header";
+import { DeleteConfirmDialog } from "@/components/shared/delete-confirm-dialog";
+import { useDashboard } from "@/hooks/useDashboard";
+import { useInventoryItems, useInventoryMutations } from "@/hooks/useInventory";
+import { InventoryStats } from "@/components/inventory/inventory-stats";
+import { InventoryTable } from "@/components/inventory/inventory-table";
+import { InventoryForm } from "@/components/inventory/inventory-form";
+import type { InventoryItem } from "@/types/inventory";
 
 export default function InventoryPage() {
-	return (
-		<div className="p-6 space-y-10 max-w-[1600px] mx-auto bg-background/50">
-			<PageHeader
-				title="Inventory System"
-				subtitle="Manage assets, track stock levels, and optimize school supplies."
-				icon={Package}
-				gradient="orange"
-			>
-				<div className="flex items-center gap-3">
-					<Button className="rounded-2xl h-12 px-6 font-black uppercase tracking-widest shadow-xl shadow-orange-500/20 bg-orange-500 hover:bg-orange-600 border-none transition-all hover:scale-105 active:scale-95">
-						<Plus className="w-5 h-5 mr-2" strokeWidth={3} />
-						Receive Stock
-					</Button>
+	const { t } = useTranslation();
+	const { currentSchool, isLoading: isDashboardLoading } = useDashboard();
+	const schoolId = currentSchool?.idStr || currentSchool?.id || null;
+
+	const [isFormOpen, setIsFormOpen] = useState(false);
+	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+
+	const { items, isLoading: isItemsLoading, error: itemsError, refresh: refreshItems } = useInventoryItems(schoolId);
+	const { createItem, updateItem, deleteItem } = useInventoryMutations();
+
+	// ========================================================================
+	// HANDLERS
+	// ========================================================================
+
+	const handleAddNew = () => {
+		setSelectedItem(null);
+		setIsFormOpen(true);
+	};
+
+	const handleEdit = (item: InventoryItem) => {
+		setSelectedItem(item);
+		setIsFormOpen(true);
+	};
+
+	const handleDelete = (item: InventoryItem) => {
+		setSelectedItem(item);
+		setIsDeleteOpen(true);
+	};
+
+	const onConfirmDelete = async () => {
+		if (!schoolId || !selectedItem) return;
+		setIsSubmitting(true);
+		try {
+			await deleteItem(selectedItem.id);
+			refreshItems();
+			setIsDeleteOpen(false);
+		} catch (err) {
+			console.error("Delete failed", err);
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
+	const onSave = async (values: Record<string, unknown>) => {
+		if (!schoolId) return;
+		setIsSubmitting(true);
+		try {
+			if (selectedItem) {
+				await updateItem(selectedItem.id, values as any);
+			} else {
+				await createItem({ ...values, schoolId } as any);
+			}
+			refreshItems();
+			setIsFormOpen(false);
+		} catch (err) {
+			console.error("Save failed", err);
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
+	// ========================================================================
+	// GUARDS
+	// ========================================================================
+
+	if (isDashboardLoading) {
+		return (
+			<div className="min-h-[60vh] flex items-center justify-center">
+				<div className="text-center space-y-3">
+					<div className="h-8 w-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin mx-auto" />
+					<p className="text-sm text-muted-foreground">{t("loading") || "Loading..."}</p>
 				</div>
+			</div>
+		);
+	}
+
+	if (!schoolId) {
+		return (
+			<div className="min-h-[60vh] flex items-center justify-center">
+				<div className="text-center space-y-3">
+					<div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center mx-auto">
+						<AlertCircle className="h-5 w-5 text-amber-500" />
+					</div>
+					<p className="text-sm text-muted-foreground">{t("no_school_selected") || "No school selected"}</p>
+				</div>
+			</div>
+		);
+	}
+
+	// ========================================================================
+	// RENDER
+	// ========================================================================
+
+	return (
+		<div className="space-y-6 pb-10">
+			<PageHeader
+				title={t("inventory_management") || "Inventory Management"}
+				subtitle={t("manage_inventory_subtitle") || "Track assets, stock levels, and school supplies"}
+				icon={Package}
+			>
+				<Button onClick={handleAddNew} size="sm" className="gap-2">
+					<Plus className="h-4 w-4" />
+					{t("add_item") || "Add Item"}
+				</Button>
 			</PageHeader>
 
-			<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-				<DashboardCard
-					delay={0.1}
-					className="bg-gradient-to-br from-white to-blue-50/30 dark:from-neutral-900 dark:to-blue-900/10 border-blue-500/10"
-				>
-					<div className="space-y-2 text-center">
-						<p className="text-[10px] font-black uppercase tracking-widest text-blue-500/60">
-							Total Assets
-						</p>
-						<p className="text-4xl font-black text-foreground tracking-tighter">
-							1,284
-						</p>
-					</div>
-				</DashboardCard>
-				<DashboardCard
-					delay={0.2}
-					className="bg-gradient-to-br from-white to-orange-50/30 dark:from-neutral-900 dark:to-orange-900/10 border-orange-500/10"
-				>
-					<div className="space-y-2 text-center">
-						<p className="text-[10px] font-black uppercase tracking-widest text-orange-500/60">
-							Low Stock Items
-						</p>
-						<p className="text-4xl font-black tracking-tighter text-orange-600">
-							12
-						</p>
-					</div>
-				</DashboardCard>
-				<DashboardCard
-					delay={0.3}
-					className="bg-gradient-to-br from-white to-purple-50/30 dark:from-neutral-900 dark:to-purple-900/10 border-purple-500/10"
-				>
-					<div className="space-y-2 text-center">
-						<p className="text-[10px] font-black uppercase tracking-widest text-purple-500/60">
-							Total Value
-						</p>
-						<p className="text-4xl font-black text-foreground tracking-tighter">
-							$42,500
-						</p>
-					</div>
-				</DashboardCard>
-			</div>
+			{/* Stats */}
+			<InventoryStats items={items} />
 
-			<DashboardCard delay={0.4} title="Stock Inventory">
-				<div className="space-y-6">
-					<div className="flex flex-col md:flex-row gap-4 justify-between">
-						<div className="relative flex-1 max-w-md">
-							<Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-							<Input
-								placeholder="Search items, categories, or serial numbers..."
-								className="pl-12 h-12 rounded-2xl bg-black/5 border-none focus-visible:ring-primary/20"
-							/>
-						</div>
-						<div className="flex items-center gap-3">
-							<Button
-								variant="outline"
-								className="h-12 rounded-2xl border-black/5 hover:bg-black/5 px-6 font-bold text-xs uppercase tracking-widest"
-							>
-								<Filter className="w-4 h-4 mr-2" />
-								Category
-							</Button>
-						</div>
-					</div>
-
-					<div className="rounded-[2rem] border border-black/5 overflow-hidden">
-						<div className="bg-black/5 p-4 grid grid-cols-4 font-black uppercase tracking-widest text-[10px] text-muted-foreground">
-							<div>Item Name</div>
-							<div>Category</div>
-							<div>Quantity</div>
-							<div>Status</div>
-						</div>
-						<div className="divide-y divide-black/5">
-							{[
-								{
-									name: "MacBook Air M2",
-									cat: "Electronics",
-									qty: "24 Units",
-									status: "In Stock",
-									color: "text-green-500",
-								},
-								{
-									name: "Whiteboard Markers",
-									cat: "Stationery",
-									qty: "5 Units",
-									status: "Low Stock",
-									color: "text-orange-500",
-								},
-								{
-									name: "Classroom Desks",
-									cat: "Furniture",
-									qty: "120 Units",
-									status: "In Stock",
-									color: "text-green-500",
-								},
-								{
-									name: "Physics Lab Kit",
-									cat: "Lab Equipment",
-									qty: "12 Units",
-									status: "In Stock",
-									color: "text-green-500",
-								},
-							].map((item, i) => (
-								<div
-									key={i}
-									className="p-5 grid grid-cols-4 items-center hover:bg-black/5 smooth-transition cursor-pointer group"
-								>
-									<div className="font-bold text-foreground group-hover:text-primary transition-colors">
-										{item.name}
-									</div>
-									<div className="text-sm text-muted-foreground">
-										{item.cat}
-									</div>
-									<div className="text-sm font-bold">{item.qty}</div>
-									<div className="flex items-center gap-2">
-										<div
-											className={`w-2 h-2 rounded-full ${item.color.replace("text-", "bg-")}`}
-										/>
-										<span
-											className={`text-[10px] font-black uppercase tracking-widest ${item.color}`}
-										>
-											{item.status}
-										</span>
-									</div>
-								</div>
-							))}
-						</div>
+			{/* Table */}
+			{itemsError ? (
+				<div className="min-h-[40vh] flex items-center justify-center">
+					<div className="text-center space-y-3">
+						<p className="text-sm text-destructive">{itemsError}</p>
+						<Button variant="outline" size="sm" onClick={refreshItems}>
+							{t("retry") || "Retry"}
+						</Button>
 					</div>
 				</div>
-			</DashboardCard>
+			) : (
+				<InventoryTable
+					items={items}
+					isLoading={isItemsLoading}
+					onEdit={handleEdit}
+					onDelete={handleDelete}
+				/>
+			)}
+
+			{/* Form Modal */}
+			<Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+				<DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+					<DialogHeader>
+						<DialogTitle>
+							{selectedItem ? t("edit_item") || "Edit Item" : t("add_item") || "Add Item"}
+						</DialogTitle>
+						<DialogDescription>
+							{t("fill_form_details") || "Fill in the details below."}
+						</DialogDescription>
+					</DialogHeader>
+					<InventoryForm
+						initialData={selectedItem}
+						onSave={onSave}
+						onCancel={() => setIsFormOpen(false)}
+						isSaving={isSubmitting}
+					/>
+				</DialogContent>
+			</Dialog>
+
+			{/* Delete Confirmation */}
+			<DeleteConfirmDialog
+				open={isDeleteOpen}
+				onOpenChange={setIsDeleteOpen}
+				title={t("confirm_delete") || "Confirm Delete"}
+				description={t("delete_item_warning") || "This action cannot be undone."}
+				onConfirm={onConfirmDelete}
+				isLoading={isSubmitting}
+				cancelLabel={t("cancel") || "Cancel"}
+				confirmLabel={t("delete") || "Delete"}
+			/>
 		</div>
 	);
 }

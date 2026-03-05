@@ -56,25 +56,25 @@ export const MemberStats: React.FC<MemberStatsProps> = ({
 	}) => {
 		const variants = {
 			blue: {
-				bg: "bg-card",
+				bg: "liquid-glass-card",
 				icon: "bg-blue-500 text-white shadow-blue-500/20",
 				glow: "from-blue-500/10 to-transparent",
 				label: "text-muted-foreground",
 			},
 			emerald: {
-				bg: "bg-card",
+				bg: "liquid-glass-card",
 				icon: "bg-emerald-500 text-white shadow-emerald-500/20",
 				glow: "from-emerald-500/10 to-transparent",
 				label: "text-muted-foreground",
 			},
 			amber: {
-				bg: "bg-card",
+				bg: "liquid-glass-card",
 				icon: "bg-amber-500 text-white shadow-amber-500/20",
 				glow: "from-amber-500/10 to-transparent",
 				label: "text-muted-foreground",
 			},
 			violet: {
-				bg: "bg-card",
+				bg: "liquid-glass-card",
 				icon: "bg-violet-500 text-white shadow-violet-500/20",
 				glow: "from-violet-500/10 to-transparent",
 				label: "text-muted-foreground",
@@ -90,8 +90,9 @@ export const MemberStats: React.FC<MemberStatsProps> = ({
 				transition={{ duration: 0.4, delay: index * 0.1 }}
 			>
 				<Card
+					variant="ghost"
 					className={cn(
-						"relative overflow-hidden border-none rounded-lg shadow-sm transition-all duration-300 hover:shadow-md group h-[140px]",
+						"group h-[140px]",
 						style.bg
 					)}
 				>

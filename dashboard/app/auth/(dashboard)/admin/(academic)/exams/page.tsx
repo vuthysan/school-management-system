@@ -8,18 +8,19 @@ import { useSubjects } from "@/hooks/useSubjects";
 import { ExamsTable } from "@/components/academic/exams-table";
 import { ExamForm } from "@/components/academic/exam-form";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Calendar as CalendarIcon, Filter } from "lucide-react";
+import { Plus, ClipboardList } from "lucide-react";
 import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
 	DialogTitle,
 	DialogDescription,
-	DialogFooter,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { ExamSchedule, ExamScheduleFormData } from "@/types/academic";
 import { motion } from "framer-motion";
+import { PageHeader } from "@/components/dashboard/page-header";
+import { SearchInput } from "@/components/shared/search-input";
+import { DeleteConfirmDialog } from "@/components/shared/delete-confirm-dialog";
 
 export default function ExamsPage() {
 	const { t } = useTranslation();
@@ -43,11 +44,11 @@ export default function ExamsPage() {
 		filter: searchTerm ? { search: searchTerm } : undefined,
 	});
 
-	const { classes, isLoading: classesLoading } = useClasses({
+	const { classes } = useClasses({
 		schoolId,
 		pageSize: 1000,
 	});
-	const { subjects, isLoading: subjectsLoading } = useSubjects({
+	const { subjects } = useSubjects({
 		schoolId,
 		pageSize: 1000,
 	});
@@ -55,6 +56,7 @@ export default function ExamsPage() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [selectedExam, setSelectedExam] = useState<ExamSchedule | null>(null);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+	const [isDeleting, setIsDeleting] = useState(false);
 
 	const handleCreate = async (data: ExamScheduleFormData) => {
 		try {
@@ -78,31 +80,32 @@ export default function ExamsPage() {
 
 	const handleDelete = async () => {
 		if (!selectedExam) return;
+		setIsDeleting(true);
 		try {
 			await deleteExam(selectedExam.id);
 			setDeleteDialogOpen(false);
 			setSelectedExam(null);
 		} catch (error) {
 			console.error("Failed to delete exam", error);
+		} finally {
+			setIsDeleting(false);
 		}
 	};
 
 	return (
 		<motion.div
-			initial={{ opacity: 0, y: 20 }}
-			animate={{ opacity: 1, y: 0 }}
-			className="p-6 space-y-6"
+			initial={{ opacity: 0 }}
+			animate={{ opacity: 1 }}
+			className="space-y-6 pb-10"
 		>
-			<div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-				<div>
-					<h1 className="text-3xl font-bold tracking-tight">
-						{t("exam_management") || "Exam Management"}
-					</h1>
-					<p className="text-muted-foreground">
-						{t("manage_exam_schedules_desc") ||
-							"Schedule and manage class assessments"}
-					</p>
-				</div>
+			<PageHeader
+				title={t("exam_management") || "Exam Management"}
+				subtitle={
+					t("manage_exam_schedules_desc") ||
+					"Schedule and manage class assessments"
+				}
+				icon={ClipboardList}
+			>
 				<Button
 					onClick={() => {
 						setSelectedExam(null);
@@ -113,23 +116,14 @@ export default function ExamsPage() {
 					<Plus className="h-4 w-4" />
 					{t("add_exam") || "Add Exam"}
 				</Button>
-			</div>
+			</PageHeader>
 
-			<div className="flex flex-col md:flex-row gap-4">
-				<div className="relative flex-1">
-					<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-					<Input
-						placeholder={t("search_exams") || "Search exams..."}
-						className="pl-10"
-						value={searchTerm}
-						onChange={(e) => setSearchTerm(e.target.value)}
-					/>
-				</div>
-				<Button variant="outline" className="gap-2">
-					<Filter className="h-4 w-4" />
-					{t("filters")}
-				</Button>
-			</div>
+			<SearchInput
+				placeholder={t("search_exams") || "Search exams..."}
+				value={searchTerm}
+				onChange={setSearchTerm}
+				className="max-w-md"
+			/>
 
 			<ExamsTable
 				exams={exams}
@@ -173,28 +167,19 @@ export default function ExamsPage() {
 			</Dialog>
 
 			{/* Delete Confirmation */}
-			<Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>{t("confirm_delete")}</DialogTitle>
-						<DialogDescription>
-							{t("delete_exam_confirmation", { name: selectedExam?.name }) ||
-								`Are you sure you want to delete "${selectedExam?.name}"?`}
-						</DialogDescription>
-					</DialogHeader>
-					<DialogFooter>
-						<Button
-							variant="outline"
-							onClick={() => setDeleteDialogOpen(false)}
-						>
-							{t("cancel")}
-						</Button>
-						<Button variant="destructive" onClick={handleDelete}>
-							{t("delete")}
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
+			<DeleteConfirmDialog
+				open={deleteDialogOpen}
+				onOpenChange={setDeleteDialogOpen}
+				title={t("confirm_delete") || "Confirm Delete"}
+				description={
+					t("delete_exam_confirmation", { name: selectedExam?.name }) ||
+					`Are you sure you want to delete "${selectedExam?.name}"?`
+				}
+				onConfirm={handleDelete}
+				isLoading={isDeleting}
+				cancelLabel={t("cancel") || "Cancel"}
+				confirmLabel={t("delete") || "Delete"}
+			/>
 		</motion.div>
 	);
 }

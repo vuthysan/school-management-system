@@ -17,10 +17,12 @@ pub struct SubjectInput {
     pub description: Option<String>,
     /// Applicable grade levels
     pub grade_levels: Option<Vec<String>>,
-    /// Number of credits
-    pub credits: Option<i32>,
-    /// Department
-    pub department: Option<String>,
+    /// Hours per week (teaching hours)
+    pub hours_per_week: Option<i32>,
+    /// Coefficient (grade weighting factor)
+    pub coefficient: Option<f64>,
+    /// Subject category (e.g., "Science", "Language")
+    pub subject_category: Option<String>,
 }
 
 impl From<SubjectInput> for Subject {
@@ -29,8 +31,9 @@ impl From<SubjectInput> for Subject {
         subject.branch_id = input.branch_id;
         subject.description = input.description.unwrap_or_default();
         subject.grade_levels = input.grade_levels.unwrap_or_default();
-        subject.credits = input.credits.unwrap_or(0);
-        subject.department = input.department;
+        subject.hours_per_week = input.hours_per_week.unwrap_or(0);
+        subject.coefficient = input.coefficient.unwrap_or(1.0);
+        subject.subject_category = input.subject_category;
         subject
     }
 }
@@ -45,10 +48,12 @@ pub struct UpdateSubjectInput {
     pub description: Option<String>,
     /// Applicable grade levels
     pub grade_levels: Option<Vec<String>>,
-    /// Number of credits
-    pub credits: Option<i32>,
-    /// Department
-    pub department: Option<String>,
+    /// Hours per week (teaching hours)
+    pub hours_per_week: Option<i32>,
+    /// Coefficient (grade weighting factor)
+    pub coefficient: Option<f64>,
+    /// Subject category
+    pub subject_category: Option<String>,
     /// Status
     pub status: Option<Status>,
 }
@@ -64,8 +69,8 @@ pub struct SubjectFilterInput {
     pub search: Option<String>,
     /// Filter by status
     pub status: Option<Status>,
-    /// Filter by department
-    pub department: Option<String>,
+    /// Filter by subject category
+    pub subject_category: Option<String>,
     /// Filter by grade level
     pub grade_level: Option<String>,
     /// Filter by branch ID
@@ -75,7 +80,7 @@ pub struct SubjectFilterInput {
 /// Input for sorting subjects
 #[derive(InputObject, Default)]
 pub struct SubjectSortInput {
-    /// Field to sort by: "subjectName", "subjectCode", "credits", "createdAt"
+    /// Field to sort by: "subjectName", "subjectCode", "hoursPerWeek", "createdAt"
     pub sort_by: Option<String>,
     /// Sort order: "asc" or "desc" (default: "asc")
     pub sort_order: Option<String>,

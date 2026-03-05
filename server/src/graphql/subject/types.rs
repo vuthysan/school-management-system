@@ -12,8 +12,9 @@ pub struct SubjectType {
     pub subject_code: String,
     pub description: String,
     pub grade_levels: Vec<String>,
-    pub credits: i32,
-    pub department: Option<String>,
+    pub hours_per_week: i32,
+    pub coefficient: f64,
+    pub subject_category: Option<String>,
     pub status: Status,
     pub created_at: String,
     pub updated_at: String,
@@ -29,8 +30,9 @@ impl From<Subject> for SubjectType {
             subject_code: s.subject_code,
             description: s.description,
             grade_levels: s.grade_levels,
-            credits: s.credits,
-            department: s.department,
+            hours_per_week: s.hours_per_week,
+            coefficient: s.coefficient,
+            subject_category: s.subject_category,
             status: s.status,
             created_at: s
                 .audit

@@ -59,11 +59,14 @@ impl SubjectMutation {
         if let Some(levels) = &input.grade_levels {
             update_doc.insert("grade_levels", levels);
         }
-        if let Some(credits) = input.credits {
-            update_doc.insert("credits", credits);
+        if let Some(hours) = input.hours_per_week {
+            update_doc.insert("hours_per_week", hours);
         }
-        if let Some(dept) = &input.department {
-            update_doc.insert("department", dept);
+        if let Some(coeff) = input.coefficient {
+            update_doc.insert("coefficient", coeff);
+        }
+        if let Some(cat) = &input.subject_category {
+            update_doc.insert("subject_category", cat);
         }
         if let Some(status) = &input.status {
             update_doc.insert("status", mongodb::bson::to_bson(status).unwrap());

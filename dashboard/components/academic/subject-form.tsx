@@ -20,29 +20,47 @@ import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/language-context";
 import { Subject, SubjectFormData } from "@/types/academic";
 
+const DEFAULT_CATEGORIES = [
+  "Science",
+  "Mathematics",
+  "Language",
+  "Social Studies",
+  "Arts",
+  "Physical Education",
+  "Technology",
+  "Other",
+];
+
 const subjectSchema = z.object({
   subjectName: z.string().min(1, "Subject name is required"),
   subjectCode: z.string().min(1, "Subject code is required"),
   description: z.string().optional(),
-  credits: z.preprocess(
+  hoursPerWeek: z.preprocess(
     (val) => Number(val),
-    z.number().min(1, "Credits must be at least 1"),
+    z.number().min(1, "Hours per week must be at least 1"),
   ),
-  department: z.string().min(1, "Department is required"),
+  coefficient: z.preprocess(
+    (val) => Number(val),
+    z.number().min(0.5, "Coefficient must be at least 0.5"),
+  ),
+  subjectCategory: z.string().optional(),
   status: z.enum(["Active", "Inactive", "Archived"]),
 });
 
 interface SubjectFormProps {
   initialData?: Subject | null;
+  categories?: string[];
   onSuccess?: (data: SubjectFormData) => void;
   onCancel?: () => void;
 }
 
 export const SubjectForm: React.FC<SubjectFormProps> = ({
   initialData,
+  categories,
   onSuccess,
   onCancel,
 }) => {
+  const categoryOptions = categories && categories.length > 0 ? categories : DEFAULT_CATEGORIES;
   const { t } = useLanguage();
 
   const {
@@ -56,8 +74,9 @@ export const SubjectForm: React.FC<SubjectFormProps> = ({
       subjectName: "",
       subjectCode: "",
       description: "",
-      credits: 3,
-      department: "",
+      hoursPerWeek: 2,
+      coefficient: 1,
+      subjectCategory: "",
       status: "Active",
     },
   });
@@ -68,15 +87,15 @@ export const SubjectForm: React.FC<SubjectFormProps> = ({
         subjectName: initialData.subjectName,
         subjectCode: initialData.subjectCode,
         description: initialData.description,
-        credits: initialData.credits,
-        department: initialData.department,
+        hoursPerWeek: initialData.hoursPerWeek,
+        coefficient: initialData.coefficient,
+        subjectCategory: initialData.subjectCategory,
         status: initialData.status,
       });
     }
   }, [initialData, reset]);
 
   const onSubmit = async (data: SubjectFormData) => {
-    // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000));
     if (onSuccess) onSuccess(data);
   };
@@ -96,7 +115,7 @@ export const SubjectForm: React.FC<SubjectFormProps> = ({
                 {...field}
                 className={errors.subjectName ? "border-destructive" : ""}
                 id="subjectName"
-                placeholder="e.g. Mathematics"
+                placeholder={t("subject_name_placeholder")}
               />
               {errors.subjectName && (
                 <p className="text-sm text-destructive">
@@ -118,7 +137,7 @@ export const SubjectForm: React.FC<SubjectFormProps> = ({
                 {...field}
                 className={errors.subjectCode ? "border-destructive" : ""}
                 id="subjectCode"
-                placeholder="e.g. MATH101"
+                placeholder={t("subject_code_placeholder")}
               />
               {errors.subjectCode && (
                 <p className="text-sm text-destructive">
@@ -130,21 +149,45 @@ export const SubjectForm: React.FC<SubjectFormProps> = ({
         />
         <Controller
           control={control}
-          name="department"
+          name="subjectCategory"
           render={({ field }) => (
             <div className="space-y-2">
-              <Label htmlFor="department">
-                {t("department")} <span className="text-destructive">*</span>
+              <Label>{t("subject_category")}</Label>
+              <Select value={field.value || ""} onValueChange={field.onChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t("select_category")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {categoryOptions.map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {t(`category_${cat.toLowerCase().replace(/\s+/g, "_")}`) || cat}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        />
+        <Controller
+          control={control}
+          name="hoursPerWeek"
+          render={({ field }) => (
+            <div className="space-y-2">
+              <Label htmlFor="hoursPerWeek">
+                {t("hours_per_week")} <span className="text-destructive">*</span>
               </Label>
               <Input
                 {...field}
-                className={errors.department ? "border-destructive" : ""}
-                id="department"
-                placeholder="e.g. Science"
+                className={errors.hoursPerWeek ? "border-destructive" : ""}
+                id="hoursPerWeek"
+                placeholder="2"
+                type="number"
+                min={1}
+                max={20}
               />
-              {errors.department && (
+              {errors.hoursPerWeek && (
                 <p className="text-sm text-destructive">
-                  {errors.department.message}
+                  {errors.hoursPerWeek.message}
                 </p>
               )}
             </div>
@@ -152,22 +195,28 @@ export const SubjectForm: React.FC<SubjectFormProps> = ({
         />
         <Controller
           control={control}
-          name="credits"
+          name="coefficient"
           render={({ field }) => (
             <div className="space-y-2">
-              <Label htmlFor="credits">
-                {t("credits")} <span className="text-destructive">*</span>
+              <Label htmlFor="coefficient">
+                {t("coefficient")} <span className="text-destructive">*</span>
               </Label>
               <Input
                 {...field}
-                className={errors.credits ? "border-destructive" : ""}
-                id="credits"
-                placeholder="3"
+                className={errors.coefficient ? "border-destructive" : ""}
+                id="coefficient"
+                placeholder="1"
                 type="number"
+                min={0.5}
+                max={5}
+                step={0.5}
               />
-              {errors.credits && (
+              <p className="text-xs text-muted-foreground">
+                {t("coefficient_hint")}
+              </p>
+              {errors.coefficient && (
                 <p className="text-sm text-destructive">
-                  {errors.credits.message}
+                  {errors.coefficient.message}
                 </p>
               )}
             </div>
@@ -183,7 +232,7 @@ export const SubjectForm: React.FC<SubjectFormProps> = ({
                 <SelectTrigger
                   className={errors.status ? "border-destructive" : ""}
                 >
-                  <SelectValue placeholder="Select status" />
+                  <SelectValue placeholder={t("select_status")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Active">{t("active")}</SelectItem>
@@ -211,7 +260,7 @@ export const SubjectForm: React.FC<SubjectFormProps> = ({
               {...field}
               className={errors.description ? "border-destructive" : ""}
               id="description"
-              placeholder="Subject description..."
+              placeholder={t("subject_description_placeholder")}
             />
             {errors.description && (
               <p className="text-sm text-destructive">
@@ -224,11 +273,11 @@ export const SubjectForm: React.FC<SubjectFormProps> = ({
 
       <div className="flex justify-end gap-2 mt-4">
         <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
+          {t("cancel")}
         </Button>
         <Button disabled={isSubmitting} type="submit">
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {initialData ? t("save_changes") : "Create Subject"}
+          {initialData ? t("save_changes") : t("create_subject")}
         </Button>
       </div>
     </form>

@@ -45,3 +45,31 @@ export interface StudentProgress {
 	subjectGrades: SubjectPerformance[];
 	gradeHistory: AttendanceTrend[];
 }
+
+export interface MonthlyCollection {
+	month: string;
+	amount: number;
+}
+
+export interface FeeCollectionSummary {
+	totalExpected: number;
+	totalCollected: number;
+	collectionRate: number;
+	outstanding: number;
+	monthlyCollection: MonthlyCollection[];
+}
+
+export interface StaffStudentRatio {
+	totalTeachers: number;
+	totalStudents: number;
+	ratio: number;
+}
+
+export interface SchoolOverviewAnalytics {
+	totalStudents: number;
+	totalStaff: number;
+	totalClasses: number;
+	attendanceRate: number;
+	feeCollectionRate: number;
+	staffStudentRatio: number;
+}

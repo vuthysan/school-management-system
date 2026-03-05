@@ -11,8 +11,9 @@ export const SUBJECT_QUERIES = {
         subjectCode
         description
         gradeLevels
-        credits
-        department
+        hoursPerWeek
+        coefficient
+        subjectCategory
         status
         createdAt
         updatedAt
@@ -30,8 +31,9 @@ export const SUBJECT_QUERIES = {
         subjectCode
         description
         gradeLevels
-        credits
-        department
+        hoursPerWeek
+        coefficient
+        subjectCategory
         status
         createdAt
         updatedAt
@@ -62,8 +64,9 @@ export const SUBJECT_QUERIES = {
           subjectCode
           description
           gradeLevels
-          credits
-          department
+          hoursPerWeek
+          coefficient
+          subjectCategory
           status
           createdAt
           updatedAt

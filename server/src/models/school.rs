@@ -1,6 +1,7 @@
 use async_graphql::{ComplexObject, Enum, InputObject, SimpleObject};
 use mongodb::bson::{oid::ObjectId, DateTime};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 use crate::utils::common_types::{
     Address, Attachment, AuditInfo, ContactInfo, GpsCoordinates, LocalizedText, SoftDelete,
@@ -163,6 +164,10 @@ pub struct SchoolSettings {
     pub working_days: Vec<String>,
 }
 
+pub fn default_logo_url() -> String {
+    "https://ui-avatars.com/api/?name=School&background=4f46e5&color=fff&size=128&bold=true".to_string()
+}
+
 fn default_academic_start_month() -> i32 {
     9 // September
 }
@@ -189,6 +194,55 @@ fn default_working_days() -> Vec<String> {
         "Thursday".to_string(),
         "Friday".to_string(),
     ]
+}
+
+pub fn default_lookup_values() -> HashMap<String, Vec<String>> {
+    let mut map = HashMap::new();
+    map.insert(
+        "subject_categories".to_string(),
+        vec![
+            "Science".to_string(),
+            "Mathematics".to_string(),
+            "Language".to_string(),
+            "Social Studies".to_string(),
+            "Arts".to_string(),
+            "Physical Education".to_string(),
+            "Technology".to_string(),
+            "Other".to_string(),
+        ],
+    );
+    map.insert(
+        "room_types".to_string(),
+        vec![
+            "Classroom".to_string(),
+            "Lab".to_string(),
+            "Library".to_string(),
+            "Auditorium".to_string(),
+            "Office".to_string(),
+            "Other".to_string(),
+        ],
+    );
+    map.insert(
+        "leave_types".to_string(),
+        vec![
+            "Sick Leave".to_string(),
+            "Annual Leave".to_string(),
+            "Maternity Leave".to_string(),
+            "Personal Leave".to_string(),
+            "Other".to_string(),
+        ],
+    );
+    map.insert(
+        "payment_methods".to_string(),
+        vec![
+            "Cash".to_string(),
+            "Bank Transfer".to_string(),
+            "ABA".to_string(),
+            "Wing".to_string(),
+            "Other".to_string(),
+        ],
+    );
+    map
 }
 
 impl Default for SchoolSettings {
@@ -290,7 +344,10 @@ pub struct School {
     // ========================
     // Branding
     // ========================
-    /// School logo
+    /// School logo URL (simple string, with default placeholder)
+    #[serde(default = "default_logo_url")]
+    pub logo_url: String,
+    /// School logo (detailed attachment)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub logo: Option<Attachment>,
     /// Banner image
@@ -349,6 +406,11 @@ pub struct School {
     /// Enabled features/modules
     #[serde(default)]
     pub features: Vec<SchoolFeature>,
+    /// Configurable lookup values (dropdown options per school)
+    /// Keys: "subject_categories", "room_types", "leave_types", "payment_methods", etc.
+    #[graphql(skip)]
+    #[serde(default = "default_lookup_values")]
+    pub lookup_values: HashMap<String, Vec<String>>,
 
     // ========================
     // Subscription (SaaS)
@@ -365,11 +427,34 @@ pub struct School {
     pub soft_delete: SoftDelete,
 }
 
+/// A key-value pair for lookup values exposed via GraphQL
+#[derive(SimpleObject)]
+pub struct LookupEntry {
+    pub key: String,
+    pub values: Vec<String>,
+}
+
 #[ComplexObject]
 impl School {
     /// Returns the school's MongoDB ObjectId as a hex string
     async fn id_str(&self) -> Option<String> {
         self.id.as_ref().map(|id| id.to_hex())
+    }
+
+    /// Get all lookup values as a list of key-value entries
+    async fn lookup_values(&self) -> Vec<LookupEntry> {
+        self.lookup_values
+            .iter()
+            .map(|(k, v)| LookupEntry {
+                key: k.clone(),
+                values: v.clone(),
+            })
+            .collect()
+    }
+
+    /// Get lookup values for a specific key
+    async fn lookup_values_by_key(&self, key: String) -> Vec<String> {
+        self.lookup_values.get(&key).cloned().unwrap_or_default()
     }
 
     /// Get school name in specified language
@@ -381,6 +466,24 @@ impl School {
     /// Check if school is approved and active
     async fn is_active(&self) -> bool {
         matches!(self.status, SchoolStatus::Approved) && !self.soft_delete.is_deleted
+    }
+
+    /// Returns the effective logo URL (logo_url > logo attachment > generated placeholder)
+    async fn effective_logo_url(&self) -> String {
+        // If logo_url is set and not the default placeholder pattern
+        if !self.logo_url.is_empty() && !self.logo_url.contains("ui-avatars.com") {
+            return self.logo_url.clone();
+        }
+        // Fall back to logo attachment URL if available
+        if let Some(ref logo) = self.logo {
+            if !logo.url.is_empty() {
+                return logo.url.clone();
+            }
+        }
+        // Generate a placeholder with school name
+        let name = &self.name.en;
+        let encoded = name.replace(' ', "+");
+        format!("https://ui-avatars.com/api/?name={}&background=4f46e5&color=fff&size=128&bold=true", encoded)
     }
 }
 
@@ -399,6 +502,7 @@ impl School {
             gps_coordinates: None,
             contact: ContactInfo::default(),
             website: None,
+            logo_url: default_logo_url(),
             logo: None,
             banner: None,
             primary_color: None,
@@ -413,6 +517,7 @@ impl School {
             rejection_reason: None,
             settings: SchoolSettings::default(),
             features: vec![SchoolFeature::Attendance, SchoolFeature::Grading],
+            lookup_values: default_lookup_values(),
             subscription: None,
             audit: AuditInfo::default(),
             soft_delete: SoftDelete::default(),

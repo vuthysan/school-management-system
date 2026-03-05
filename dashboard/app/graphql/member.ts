@@ -15,6 +15,7 @@ export const MEMBER_QUERIES = {
         isPrimaryContact
         user {
           idStr
+          userId
           username
           email
           displayName
@@ -39,6 +40,7 @@ export const MEMBER_QUERIES = {
         isPrimaryContact
         user {
           idStr
+          userId
           username
           email
           displayName
@@ -63,6 +65,7 @@ export const MEMBER_QUERIES = {
         isPrimaryContact
         user {
           idStr
+          userId
           username
           email
           displayName
@@ -83,6 +86,7 @@ export const MEMBER_QUERIES = {
         title
         user {
           idStr
+          userId
           username
           email
           displayName
@@ -97,6 +101,7 @@ export const MEMBER_QUERIES = {
     query SearchUser($query: String!) {
       searchUser(query: $query) {
         idStr
+        userId
         username
         email
         displayName

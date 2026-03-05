@@ -1,6 +1,7 @@
 // Finance GraphQL mutations
 use super::inputs::{CreateFeeInput, CreateInvoiceInput, CreatePaymentInput, UpdateFeeInput};
 use super::types::{FeeType, InvoiceType, PaymentType};
+use crate::graphql::graphql_context::get_graphql_context;
 use crate::models::finance::{Fee, Invoice, Payment};
 use async_graphql::*;
 use mongodb::{
@@ -142,8 +143,11 @@ impl FinanceMutation {
         // Generate receipt number
         let receipt_number = self.generate_receipt_number(db, &input.school_id).await?;
 
-        // For now, use a placeholder for processed_by (in real app, get from auth context)
-        let processed_by = ObjectId::new();
+        // Get authenticated user as the payment processor
+        let gql_ctx = get_graphql_context(ctx)?;
+        let auth_user = gql_ctx.require_auth()?;
+        let processed_by = ObjectId::parse_str(&auth_user.id)
+            .map_err(|_| Error::new("Invalid authenticated user ID"))?;
 
         let now = DateTime::now();
         let payment = Payment {

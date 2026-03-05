@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
+import { motion, AnimatePresence } from "framer-motion";
 import {
 	Table,
 	TableBody,
@@ -17,7 +18,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Edit, Trash, CheckCircle2, Clock } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { MoreHorizontal, Pencil, Trash2, CheckCircle2, Layers } from "lucide-react";
 import { Term } from "@/hooks/useTerms";
 import { AcademicYear } from "@/hooks/useAcademicYears";
 
@@ -42,100 +44,122 @@ export function TermsTable({
 		return academicYears.find((y) => y.idStr === yearId)?.name || "Unknown";
 	};
 
-	if (isLoading) {
-		return (
-			<div className="flex items-center justify-center h-64 border rounded-xl bg-muted/10">
-				<Clock className="h-8 w-8 animate-spin text-muted-foreground" />
-			</div>
-		);
-	}
-
-	if (items.length === 0) {
-		return (
-			<div className="flex flex-col items-center justify-center h-64 border border-dashed rounded-xl bg-muted/5 gap-4">
-				<Clock className="h-8 w-8 text-neutral-400" />
-				<div className="text-center">
-					<h3 className="font-semibold">{t("no_terms")}</h3>
-					<p className="text-sm text-neutral-500">
-						{t("start_by_adding_term")}
-					</p>
-				</div>
-			</div>
-		);
-	}
-
 	return (
-		<div className="border rounded-xl overflow-hidden bg-background shadow-sm">
-			<Table>
-				<TableHeader>
-					<TableRow className="bg-muted/30">
-						<TableHead className="font-bold">{t("name")}</TableHead>
-						<TableHead className="font-bold">{t("academic_year")}</TableHead>
-						<TableHead className="font-bold">{t("dates")}</TableHead>
-						<TableHead className="font-bold">{t("type")}</TableHead>
-						<TableHead className="font-bold">{t("current")}</TableHead>
-						<TableHead className="text-right font-bold">
-							{t("actions")}
-						</TableHead>
-					</TableRow>
-				</TableHeader>
-				<TableBody>
-					{items.map((item) => (
-						<TableRow
-							key={item.idStr}
-							className="hover:bg-muted/10 transition-colors"
-						>
-							<TableCell className="font-medium">{item.name}</TableCell>
-							<TableCell>
-								{getAcademicYearName(item.academicYearIdStr)}
-							</TableCell>
-							<TableCell className="text-sm">
-								{new Date(item.startDateStr).toLocaleDateString("en-US", {
-									month: "short",
-									day: "numeric",
-								})}{" "}
-								-{" "}
-								{new Date(item.endDateStr).toLocaleDateString("en-US", {
-									month: "short",
-									day: "numeric",
-									year: "numeric",
-								})}
-							</TableCell>
-							<TableCell>
-								<Badge variant="outline">{t(item.termType)}</Badge>
-							</TableCell>
-							<TableCell>
-								{item.isCurrent && (
-									<Badge className="bg-primary/20 text-primary border-primary/30 flex w-fit items-center gap-1">
-										<CheckCircle2 className="h-3 w-3" />
-										{t("current")}
-									</Badge>
-								)}
-							</TableCell>
-							<TableCell className="text-right">
-								<DropdownMenu>
-									<DropdownMenuTrigger asChild>
-										<Button variant="ghost" size="icon" className="h-8 w-8">
-											<MoreHorizontal className="h-4 w-4" />
-										</Button>
-									</DropdownMenuTrigger>
-									<DropdownMenuContent align="end">
-										<DropdownMenuItem onClick={() => onEdit(item)}>
-											<Edit className="mr-2 h-4 w-4" /> {t("edit")}
-										</DropdownMenuItem>
-										<DropdownMenuItem
-											className="text-destructive"
-											onClick={() => onDelete(item)}
-										>
-											<Trash className="mr-2 h-4 w-4" /> {t("delete")}
-										</DropdownMenuItem>
-									</DropdownMenuContent>
-								</DropdownMenu>
-							</TableCell>
+		<motion.div
+			initial={{ opacity: 0, y: 8 }}
+			animate={{ opacity: 1, y: 0 }}
+			transition={{ delay: 0.15, duration: 0.3 }}
+		>
+			<div className="liquid-glass-card rounded-2xl overflow-hidden">
+				{/* Header */}
+				<div className="flex items-center gap-3 px-4 py-3 border-b border-black/6 dark:border-white/6">
+					<div className="w-6 h-6 rounded-md bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center">
+						<Layers className="w-3 h-3 text-emerald-600 dark:text-emerald-400" strokeWidth={2} />
+					</div>
+					<h2 className="text-sm font-semibold text-foreground">{t("terms")}</h2>
+					<span className="text-xs text-muted-foreground/60 tabular-nums">{items.length}</span>
+				</div>
+
+				<Table>
+					<TableHeader>
+						<TableRow className="hover:bg-transparent border-b border-black/6 dark:border-white/6">
+							<TableHead className="h-10 text-xs font-medium text-muted-foreground">{t("name")}</TableHead>
+							<TableHead className="h-10 text-xs font-medium text-muted-foreground">{t("academic_year")}</TableHead>
+							<TableHead className="h-10 text-xs font-medium text-muted-foreground">{t("dates")}</TableHead>
+							<TableHead className="h-10 text-xs font-medium text-muted-foreground">{t("type")}</TableHead>
+							<TableHead className="h-10 text-xs font-medium text-muted-foreground">{t("current")}</TableHead>
+							<TableHead className="h-10 text-xs font-medium text-muted-foreground text-right">{t("actions")}</TableHead>
 						</TableRow>
-					))}
-				</TableBody>
-			</Table>
-		</div>
+					</TableHeader>
+					<TableBody>
+						<AnimatePresence mode="popLayout">
+							{isLoading ? (
+								Array.from({ length: 3 }).map((_, i) => (
+									<TableRow key={i} className="border-b border-black/6 dark:border-white/6">
+										{[1, 2, 3, 4, 5, 6].map((col) => (
+											<TableCell key={col} className="py-3">
+												<Skeleton className="h-5 w-full rounded-md" />
+											</TableCell>
+										))}
+									</TableRow>
+								))
+							) : items.length === 0 ? (
+								<TableRow>
+									<TableCell className="h-60 text-center" colSpan={6}>
+										<div className="flex flex-col items-center justify-center gap-3">
+											<div className="w-12 h-12 rounded-2xl bg-muted/60 flex items-center justify-center">
+												<Layers className="h-5 w-5 text-muted-foreground" />
+											</div>
+											<p className="text-sm font-medium text-foreground">{t("no_terms")}</p>
+											<p className="text-xs text-muted-foreground">{t("start_by_adding_term")}</p>
+										</div>
+									</TableCell>
+								</TableRow>
+							) : (
+								items.map((item, index) => (
+									<motion.tr
+										key={item.idStr}
+										initial={{ opacity: 0 }}
+										animate={{ opacity: 1 }}
+										exit={{ opacity: 0 }}
+										transition={{ delay: index * 0.03 }}
+										className="group hover:bg-muted/30 transition-colors border-b border-black/6 dark:border-white/6"
+									>
+										<TableCell className="py-3">
+											<p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+												{item.name}
+											</p>
+										</TableCell>
+										<TableCell className="py-3">
+											<span className="text-sm text-muted-foreground">{getAcademicYearName(item.academicYearIdStr)}</span>
+										</TableCell>
+										<TableCell className="py-3">
+											<span className="text-sm text-muted-foreground">
+												{new Date(item.startDateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+												{" - "}
+												{new Date(item.endDateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+											</span>
+										</TableCell>
+										<TableCell className="py-3">
+											<Badge variant="secondary" className="bg-muted/50 text-muted-foreground border-none font-medium">
+												{t(item.termType)}
+											</Badge>
+										</TableCell>
+										<TableCell className="py-3">
+											{item.isCurrent && (
+												<Badge variant="secondary" className="bg-primary/8 text-primary border-none text-xs font-medium gap-1">
+													<CheckCircle2 className="h-3 w-3" />
+													{t("current")}
+												</Badge>
+											)}
+										</TableCell>
+										<TableCell className="py-3 text-right">
+											<DropdownMenu>
+												<DropdownMenuTrigger asChild>
+													<Button variant="ghost" size="sm" className="h-7 w-7 p-0 hover:bg-muted">
+														<MoreHorizontal className="h-4 w-4" />
+													</Button>
+												</DropdownMenuTrigger>
+												<DropdownMenuContent align="end" className="w-[150px]">
+													<DropdownMenuItem onClick={() => onEdit(item)}>
+														<Pencil className="mr-2 h-3.5 w-3.5" /> {t("edit")}
+													</DropdownMenuItem>
+													<DropdownMenuItem
+														className="text-destructive focus:text-destructive focus:bg-destructive/10"
+														onClick={() => onDelete(item)}
+													>
+														<Trash2 className="mr-2 h-3.5 w-3.5" /> {t("delete")}
+													</DropdownMenuItem>
+												</DropdownMenuContent>
+											</DropdownMenu>
+										</TableCell>
+									</motion.tr>
+								))
+							)}
+						</AnimatePresence>
+					</TableBody>
+				</Table>
+			</div>
+		</motion.div>
 	);
 }

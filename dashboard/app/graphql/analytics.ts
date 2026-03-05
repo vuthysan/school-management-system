@@ -54,4 +54,39 @@ export const ANALYTICS_QUERIES = {
       }
     }
   `,
+	GET_SCHOOL_OVERVIEW: `
+    query GetSchoolOverview($schoolId: String!) {
+      getSchoolOverview(schoolId: $schoolId) {
+        totalStudents
+        totalStaff
+        totalClasses
+        attendanceRate
+        feeCollectionRate
+        staffStudentRatio
+      }
+    }
+  `,
+	GET_FEE_COLLECTION_ANALYTICS: `
+    query GetFeeCollectionAnalytics($schoolId: String!) {
+      getFeeCollectionAnalytics(schoolId: $schoolId) {
+        totalExpected
+        totalCollected
+        collectionRate
+        outstanding
+        monthlyCollection {
+          month
+          amount
+        }
+      }
+    }
+  `,
+	GET_STAFF_STUDENT_RATIO: `
+    query GetStaffStudentRatio($schoolId: String!) {
+      getStaffStudentRatio(schoolId: $schoolId) {
+        totalTeachers
+        totalStudents
+        ratio
+      }
+    }
+  `,
 };

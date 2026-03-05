@@ -4,6 +4,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::utils::common_types::{AuditInfo, SoftDelete, Status};
 
+fn default_coefficient() -> f64 {
+    1.0
+}
+
 /// Subject - represents a subject in a school curriculum
 #[derive(Debug, Clone, Serialize, Deserialize, SimpleObject)]
 #[graphql(complex)]
@@ -34,12 +38,15 @@ pub struct Subject {
     /// Applicable grade levels
     #[serde(default)]
     pub grade_levels: Vec<String>,
-    /// Number of credits
+    /// Hours per week (teaching hours)
     #[serde(default)]
-    pub credits: i32,
-    /// Department (e.g., "Science", "Arts")
+    pub hours_per_week: i32,
+    /// Coefficient (grade weighting factor / មេគុណ)
+    #[serde(default = "default_coefficient")]
+    pub coefficient: f64,
+    /// Subject category (e.g., "Science", "Language", "Social Studies")
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub department: Option<String>,
+    pub subject_category: Option<String>,
 
     // ========================
     // Status
@@ -81,8 +88,9 @@ impl Subject {
             subject_code: subject_code.into(),
             description: String::new(),
             grade_levels: vec![],
-            credits: 0,
-            department: None,
+            hours_per_week: 0,
+            coefficient: 1.0,
+            subject_category: None,
             status: Status::Active,
             audit: AuditInfo::default(),
             soft_delete: SoftDelete::default(),

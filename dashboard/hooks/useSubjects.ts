@@ -26,8 +26,9 @@ export interface UpdateSubjectInput {
   subjectCode?: string;
   description?: string;
   gradeLevels?: string[];
-  credits?: number;
-  department?: string;
+  hoursPerWeek?: number;
+  coefficient?: number;
+  subjectCategory?: string;
   status?: string;
 }
 

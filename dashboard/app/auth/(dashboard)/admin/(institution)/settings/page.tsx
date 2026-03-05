@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Building2, Building } from "lucide-react";
+import { Plus, Settings2, Building2, Building } from "lucide-react";
+import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
-import { title } from "@/components/primitives";
+import { useLanguage } from "@/contexts/language-context";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,7 +13,9 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
+import { PageHeader } from "@/components/dashboard/page-header";
 import { useSchools, useCreateSchool } from "@/hooks/useSchools";
 import { useBranches, useCreateBranch } from "@/hooks/useBranches";
 import { SchoolsTable } from "@/components/settings/schools-table";
@@ -22,12 +26,13 @@ import { School, SchoolFormData, CreateSchoolInput } from "@/types/school";
 import { BranchFormData, CreateBranchInput } from "@/types/branch";
 
 export default function SettingsPage() {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const [activeTab, setActiveTab] = useState<"schools" | "branches">("schools");
   const [isSchoolModalOpen, setIsSchoolModalOpen] = useState(false);
   const [isBranchModalOpen, setIsBranchModalOpen] = useState(false);
   const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
 
-  // Hooks
   const {
     schools,
     loading: schoolsLoading,
@@ -38,8 +43,13 @@ export default function SettingsPage() {
     branches,
     loading: branchesLoading,
     refetch: refetchBranches,
-  } = useBranches(selectedSchool?.id);
+  } = useBranches(selectedSchool?.idStr);
   const { createBranch, loading: creatingBranch } = useCreateBranch();
+
+  const getLocalizedName = (name: { en: string; km: string } | string): string => {
+    if (typeof name === "string") return name;
+    return language === "km" ? (name.km || name.en) : (name.en || name.km);
+  };
 
   const handleCreateSchool = async (data: SchoolFormData) => {
     const input: CreateSchoolInput = {
@@ -77,90 +87,88 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex justify-between items-start gap-4">
-        <div className="flex-1">
-          <h1 className={title()}>System Settings</h1>
-          <p className="mt-2 text-muted-foreground">
-            Manage schools, branches, and system configuration.
-          </p>
-        </div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-6 pb-10"
+    >
+      <PageHeader
+        title={t("school_settings")}
+        subtitle={t("manage_schools_branches")}
+        icon={Settings2}
+      >
         {activeTab === "schools" && (
-          <Button onClick={() => setIsSchoolModalOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add School
+          <Button onClick={() => setIsSchoolModalOpen(true)} size="sm" className="gap-2">
+            <Plus className="w-4 h-4" />
+            {t("add_school")}
           </Button>
         )}
         {activeTab === "branches" && selectedSchool && (
-          <Button onClick={() => setIsBranchModalOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Branch
+          <Button onClick={() => setIsBranchModalOpen(true)} size="sm" className="gap-2">
+            <Plus className="w-4 h-4" />
+            {t("add_branch")}
           </Button>
         )}
-      </div>
+      </PageHeader>
 
       <Tabs
         value={activeTab}
         onValueChange={(v) => setActiveTab(v as "schools" | "branches")}
       >
-        <TabsList className="w-full justify-start border-b rounded-none bg-transparent p-0 h-auto">
-          <TabsTrigger
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3 gap-2"
-            value="schools"
-          >
+        <TabsList>
+          <TabsTrigger value="schools">
             <Building2 className="w-4 h-4" />
-            Schools
+            {t("schools")}
           </TabsTrigger>
-          <TabsTrigger
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3 gap-2"
-            value="branches"
-          >
+          <TabsTrigger value="branches">
             <Building className="w-4 h-4" />
-            Branches
-            {selectedSchool && (
-              <span className="ml-1 text-xs text-muted-foreground">
-                ({selectedSchool.name})
-              </span>
-            )}
+            {t("branches")}
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent className="mt-6" value="schools">
+        <TabsContent value="schools">
           <SchoolsTable
             loading={schoolsLoading}
             schools={schools}
-            selectedSchoolId={selectedSchool?.id}
+            selectedSchoolId={selectedSchool?.idStr}
             onSelectSchool={handleSelectSchool}
           />
         </TabsContent>
 
-        <TabsContent className="mt-6" value="branches">
+        <TabsContent value="branches">
           {selectedSchool ? (
             <div className="space-y-4">
-              <div className="flex items-center gap-2 p-4 bg-muted/50 rounded-lg">
-                <Building2 className="w-5 h-5 text-primary" />
-                <span className="font-medium">Branches for:</span>
-                <span className="text-primary">{selectedSchool.name}</span>
+              <div className="liquid-glass-card flex items-center gap-3 px-4 py-3">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Building2 className="w-4 h-4 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">
+                    {getLocalizedName(selectedSchool.name)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{t("branches")}</p>
+                </div>
                 <Button
-                  className="ml-auto"
                   size="sm"
                   variant="ghost"
                   onClick={() => setActiveTab("schools")}
                 >
-                  Change School
+                  {t("change")}
                 </Button>
               </div>
               <BranchesTable branches={branches} loading={branchesLoading} />
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-12 text-center border rounded-lg">
-              <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No School Selected</h3>
-              <p className="text-muted-foreground mb-4">
-                Please select a school first to view or add branches.
+            <div className="liquid-glass-card flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-muted/80 flex items-center justify-center mb-4">
+                <Building2 className="h-7 w-7 text-muted-foreground/60" />
+              </div>
+              <h3 className="text-sm font-semibold mb-1">{t("no_school_selected_title")}</h3>
+              <p className="text-xs text-muted-foreground mb-4 max-w-xs">
+                {t("no_school_selected_desc")}
               </p>
-              <Button variant="outline" onClick={() => setActiveTab("schools")}>
-                Go to Schools
+              <Button variant="outline" size="sm" onClick={() => setActiveTab("schools")}>
+                {t("go_to_schools")}
               </Button>
             </div>
           )}
@@ -171,7 +179,8 @@ export default function SettingsPage() {
       <Dialog open={isSchoolModalOpen} onOpenChange={setIsSchoolModalOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Create New School</DialogTitle>
+            <DialogTitle>{t("add_school")}</DialogTitle>
+            <DialogDescription>{t("fill_form_details")}</DialogDescription>
           </DialogHeader>
           <SchoolForm
             isLoading={creatingSchool}
@@ -185,18 +194,19 @@ export default function SettingsPage() {
       <Dialog open={isBranchModalOpen} onOpenChange={setIsBranchModalOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Create New Branch</DialogTitle>
+            <DialogTitle>{t("add_branch")}</DialogTitle>
+            <DialogDescription>{t("fill_form_details")}</DialogDescription>
           </DialogHeader>
           {selectedSchool && (
             <BranchForm
               isLoading={creatingBranch}
-              schoolId={selectedSchool.id}
+              schoolId={selectedSchool.idStr}
               onCancel={() => setIsBranchModalOpen(false)}
               onSubmit={handleCreateBranch}
             />
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </motion.div>
   );
 }

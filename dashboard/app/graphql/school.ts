@@ -42,6 +42,8 @@ export const SCHOOL_QUERIES = {
         educationLevels
         status
         description
+        logoUrl
+        effectiveLogoUrl
         address {
           street
           village
@@ -71,6 +73,10 @@ export const SCHOOL_QUERIES = {
           timezone
         }
         features
+        lookupValues {
+          key
+          values
+        }
       }
     }
   `,
@@ -157,6 +163,12 @@ export const SCHOOL_MUTATIONS = {
         status
         rejectionReason
       }
+    }
+  `,
+
+  UPDATE_LOOKUP_VALUES: `
+    mutation UpdateLookupValues($schoolId: String!, $key: String!, $values: [String!]!) {
+      updateLookupValues(schoolId: $schoolId, key: $key, values: $values)
     }
   `,
 };

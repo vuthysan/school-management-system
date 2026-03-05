@@ -2,12 +2,11 @@
 
 import React, { useState, useMemo } from "react";
 import {
-	Search,
-	Eye,
 	ChevronLeft,
 	ChevronRight,
-	Loader2,
 	Calendar,
+	Filter,
+	ClipboardList,
 } from "lucide-react";
 
 import {
@@ -21,7 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import {
 	Select,
 	SelectContent,
@@ -29,9 +28,11 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { SearchInput } from "@/components/shared/search-input";
 import { useLanguage } from "@/contexts/language-context";
 import { useAttendanceByClass } from "@/hooks/useAttendance";
 import { Class } from "@/types/academic";
+import { cn } from "@/lib/utils";
 
 interface AttendanceHistoryProps {
 	classes: Class[];
@@ -53,7 +54,6 @@ export const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({
 	const [page, setPage] = useState(1);
 	const rowsPerPage = 10;
 
-	// Fetch attendance for selected class and date
 	const { attendance, isLoading, error } = useAttendanceByClass(
 		selectedClassId,
 		selectedDate || null
@@ -64,19 +64,11 @@ export const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({
 		setPage(1);
 	};
 
-	const columns = [
-		{ key: "studentId", label: t("student_id").toUpperCase() },
-		{ key: "date", label: t("date").toUpperCase() },
-		{ key: "status", label: t("status").toUpperCase() },
-		{ key: "remarks", label: t("remarks").toUpperCase() },
-	];
-
 	const filteredHistory = useMemo(() => {
 		return attendance.filter((record) => {
-			const matchesSearch = record.studentId
+			return record.studentId
 				.toLowerCase()
 				.includes(searchQuery.toLowerCase());
-			return matchesSearch;
 		});
 	}, [attendance, searchQuery]);
 
@@ -87,55 +79,38 @@ export const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({
 
 	const totalPages = Math.ceil(filteredHistory.length / rowsPerPage);
 
-	const getStatusBadge = (status: string) => {
+	const getStatusDisplay = (status: string) => {
 		const statusLower = status.toLowerCase();
-		switch (statusLower) {
-			case "present":
-				return (
-					<Badge className="bg-green-500/10 text-green-600" variant="secondary">
-						{t("present")}
-					</Badge>
-				);
-			case "absent":
-				return (
-					<Badge className="bg-red-500/10 text-red-600" variant="secondary">
-						{t("absent")}
-					</Badge>
-				);
-			case "late":
-				return (
-					<Badge
-						className="bg-yellow-500/10 text-yellow-600"
-						variant="secondary"
-					>
-						{t("late")}
-					</Badge>
-				);
-			case "excused":
-				return (
-					<Badge className="bg-primary/10 text-primary" variant="secondary">
-						{t("excused")}
-					</Badge>
-				);
-			default:
-				return <Badge variant="secondary">{status}</Badge>;
-		}
-	};
+		const config: Record<string, { dot: string; text: string }> = {
+			present: { dot: "bg-emerald-500", text: "text-emerald-600 dark:text-emerald-400" },
+			absent: { dot: "bg-rose-500", text: "text-rose-600 dark:text-rose-400" },
+			late: { dot: "bg-amber-500", text: "text-amber-600 dark:text-amber-400" },
+			excused: { dot: "bg-blue-500", text: "text-blue-600 dark:text-blue-400" },
+		};
+		const style = config[statusLower] || { dot: "bg-muted-foreground/30", text: "text-muted-foreground" };
 
-	const selectedClassName = classes.find((c) => c.id === selectedClassId)?.name;
+		return (
+			<div className="flex items-center gap-1.5">
+				<div className={cn("w-1.5 h-1.5 rounded-full", style.dot)} />
+				<span className={cn("text-xs font-medium", style.text)}>
+					{t(statusLower) || status}
+				</span>
+			</div>
+		);
+	};
 
 	return (
 		<div className="flex flex-col gap-4">
-			{/* Filters */}
-			<Card className="border">
-				<CardContent className="flex flex-col sm:flex-row gap-4 items-end p-6">
-					<div className="space-y-2 w-full sm:max-w-xs">
-						<label className="text-sm font-medium">{t("select_class")}</label>
+			{/* Controls */}
+			<div className="liquid-glass-card rounded-2xl px-4 py-3">
+				<div className="flex flex-col sm:flex-row gap-3 items-end">
+					<div className="space-y-1.5 w-full sm:max-w-xs">
+						<Label className="text-xs font-medium text-muted-foreground">{t("select_class")}</Label>
 						<Select
 							value={selectedClassId || ""}
 							onValueChange={handleClassChange}
 						>
-							<SelectTrigger className="h-11 rounded-lg">
+							<SelectTrigger className="h-9">
 								<SelectValue placeholder={t("select_class")} />
 							</SelectTrigger>
 							<SelectContent>
@@ -147,133 +122,170 @@ export const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({
 							</SelectContent>
 						</Select>
 					</div>
-					<div className="space-y-2 w-full sm:max-w-xs">
-						<label className="text-sm font-medium">{t("select_date")}</label>
+					<div className="space-y-1.5 w-full sm:max-w-xs">
+						<Label className="text-xs font-medium text-muted-foreground">{t("select_date")}</Label>
 						<Input
 							type="date"
-							className="h-11 rounded-lg"
+							className="h-9"
 							value={selectedDate}
 							onChange={(e) => onDateChange(e.target.value)}
 						/>
 					</div>
-					<div className="relative w-full sm:max-w-xs">
-						<Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-						<Input
-							className="pl-8 h-11 rounded-lg"
-							placeholder={t("search_placeholder")}
-							value={searchQuery}
-							onChange={(e) => setSearchQuery(e.target.value)}
-						/>
-					</div>
-				</CardContent>
-			</Card>
+				</div>
+			</div>
 
 			{/* Loading State */}
 			{isLoading && selectedClassId && (
-				<div className="flex items-center justify-center py-12">
-					<Loader2 className="h-8 w-8 animate-spin text-primary" />
+				<div className="min-h-[40vh] flex items-center justify-center">
+					<div className="text-center space-y-3">
+						<div className="h-8 w-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin mx-auto" />
+						<p className="text-sm text-muted-foreground">{t("loading") || "Loading..."}</p>
+					</div>
 				</div>
 			)}
 
-			{/* Empty State - No Class Selected */}
+			{/* No Class Selected */}
 			{!selectedClassId && (
-				<Card className="border">
-					<CardContent className="flex flex-col items-center justify-center py-12 gap-4">
-						<Calendar className="h-12 w-12 text-muted-foreground" />
-						<p className="text-muted-foreground">
+				<div className="min-h-[40vh] flex items-center justify-center">
+					<div className="text-center space-y-3">
+						<div className="w-12 h-12 rounded-2xl bg-muted/60 flex items-center justify-center mx-auto">
+							<Calendar className="h-5 w-5 text-muted-foreground" />
+						</div>
+						<p className="text-sm text-muted-foreground">
 							{t("select_class_to_view_history")}
 						</p>
-					</CardContent>
-				</Card>
+					</div>
+				</div>
 			)}
 
 			{/* Error State */}
 			{error && (
-				<Card className="border border-destructive/50">
-					<CardContent className="flex flex-col items-center justify-center py-12 gap-4">
-						<p className="text-destructive">{error}</p>
-					</CardContent>
-				</Card>
+				<div className="min-h-[40vh] flex items-center justify-center">
+					<div className="text-center space-y-3">
+						<p className="text-sm text-destructive">{error}</p>
+					</div>
+				</div>
 			)}
 
 			{/* Table */}
 			{selectedClassId && !isLoading && !error && (
-				<>
-					<div className="rounded-lg border overflow-hidden">
-						<Table>
-							<TableHeader>
-								<TableRow className="bg-muted/50">
-									{columns.map((column) => (
-										<TableHead key={column.key}>{column.label}</TableHead>
-									))}
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{paginatedHistory.length === 0 ? (
-									<TableRow>
-										<TableCell
-											className="h-24 text-center"
-											colSpan={columns.length}
-										>
-											{t("no_attendance_records")}
-										</TableCell>
-									</TableRow>
-								) : (
-									paginatedHistory.map((record) => (
-										<TableRow
-											key={record.id}
-											className="hover:bg-muted/50 transition-colors"
-										>
-											<TableCell>
-												<p className="font-medium text-sm">
-													{record.studentId}
-												</p>
-											</TableCell>
-											<TableCell>
-												<p className="text-sm text-muted-foreground">
-													{record.date.split("T")[0]}
-												</p>
-											</TableCell>
-											<TableCell>{getStatusBadge(record.status)}</TableCell>
-											<TableCell>
-												<p className="text-sm text-muted-foreground">
-													{record.remarks || "-"}
-												</p>
-											</TableCell>
-										</TableRow>
-									))
-								)}
-							</TableBody>
-						</Table>
+				<div className="liquid-glass-card rounded-2xl overflow-hidden">
+					{/* Card header */}
+					<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-4 py-3 border-b border-black/6 dark:border-white/6">
+						<div className="flex items-center gap-3">
+							<div className="w-6 h-6 rounded-md bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center">
+								<ClipboardList className="w-3 h-3 text-blue-600 dark:text-blue-400" strokeWidth={2} />
+							</div>
+							<h2 className="text-sm font-semibold text-foreground">
+								{t("attendance_history")}
+							</h2>
+							<span className="text-xs text-muted-foreground/60 tabular-nums">
+								{filteredHistory.length}
+							</span>
+						</div>
+						<SearchInput
+							placeholder={t("search_placeholder") || "Search..."}
+							value={searchQuery}
+							onChange={setSearchQuery}
+							className="w-full sm:w-56"
+						/>
 					</div>
 
+					<Table>
+						<TableHeader>
+							<TableRow className="hover:bg-transparent border-b border-black/6 dark:border-white/6">
+								<TableHead className="h-10 text-xs font-medium text-muted-foreground">
+									{t("student_id")}
+								</TableHead>
+								<TableHead className="h-10 text-xs font-medium text-muted-foreground">
+									{t("date")}
+								</TableHead>
+								<TableHead className="h-10 text-xs font-medium text-muted-foreground">
+									{t("status")}
+								</TableHead>
+								<TableHead className="h-10 text-xs font-medium text-muted-foreground">
+									{t("remarks")}
+								</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{paginatedHistory.length === 0 ? (
+								<TableRow>
+									<TableCell className="h-60 text-center" colSpan={4}>
+										<div className="flex flex-col items-center justify-center gap-3">
+											<div className="w-12 h-12 rounded-2xl bg-muted/60 flex items-center justify-center">
+												<ClipboardList className="h-5 w-5 text-muted-foreground" />
+											</div>
+											<p className="text-sm font-medium text-foreground">
+												{t("no_attendance_records")}
+											</p>
+										</div>
+									</TableCell>
+								</TableRow>
+							) : (
+								paginatedHistory.map((record) => (
+									<TableRow
+										key={record.id}
+										className="hover:bg-muted/30 transition-colors border-b border-black/6 dark:border-white/6"
+									>
+										<TableCell className="py-3">
+											<p className="text-sm font-medium text-foreground">
+												{record.studentId}
+											</p>
+										</TableCell>
+										<TableCell className="py-3">
+											<span className="text-sm text-muted-foreground">
+												{record.date.split("T")[0]}
+											</span>
+										</TableCell>
+										<TableCell className="py-3">
+											{getStatusDisplay(record.status)}
+										</TableCell>
+										<TableCell className="py-3">
+											<span className="text-sm text-muted-foreground">
+												{record.remarks || "-"}
+											</span>
+										</TableCell>
+									</TableRow>
+								))
+							)}
+						</TableBody>
+					</Table>
+
 					{/* Pagination */}
-					{totalPages > 1 && (
-						<div className="flex items-center justify-center gap-2">
-							<Button
-								disabled={page === 1}
-								size="icon"
-								variant="outline"
-								className="rounded-lg"
-								onClick={() => setPage(Math.max(1, page - 1))}
-							>
-								<ChevronLeft className="h-4 w-4" />
-							</Button>
-							<span className="text-sm text-muted-foreground">
-								{t("page")} {page} {t("of")} {totalPages}
+					{totalPages > 0 && (
+						<div className="flex items-center justify-between px-4 py-3 border-t border-black/6 dark:border-white/6">
+							<span className="text-xs text-muted-foreground">
+								{filteredHistory.length} {t("records") || "records"}
 							</span>
-							<Button
-								disabled={page === totalPages}
-								size="icon"
-								variant="outline"
-								className="rounded-lg"
-								onClick={() => setPage(Math.min(totalPages, page + 1))}
-							>
-								<ChevronRight className="h-4 w-4" />
-							</Button>
+							{totalPages > 1 && (
+								<div className="flex items-center gap-1">
+									<Button
+										disabled={page === 1}
+										size="sm"
+										variant="ghost"
+										className="h-7 w-7 p-0"
+										onClick={() => setPage(Math.max(1, page - 1))}
+									>
+										<ChevronLeft className="h-4 w-4" />
+									</Button>
+									<span className="text-xs text-muted-foreground px-2 tabular-nums">
+										{page} / {totalPages}
+									</span>
+									<Button
+										disabled={page === totalPages}
+										size="sm"
+										variant="ghost"
+										className="h-7 w-7 p-0"
+										onClick={() => setPage(Math.min(totalPages, page + 1))}
+									>
+										<ChevronRight className="h-4 w-4" />
+									</Button>
+								</div>
+							)}
 						</div>
 					)}
-				</>
+				</div>
 			)}
 		</div>
 	);

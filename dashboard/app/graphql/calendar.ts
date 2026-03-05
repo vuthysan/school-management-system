@@ -17,6 +17,24 @@ export const CALENDAR_QUERIES = {
       }
     }
   `,
+	GET_IN_RANGE: `
+    query CalendarEventsInRange($schoolId: String!, $startDate: String!, $endDate: String!) {
+      calendarEventsInRange(schoolId: $schoolId, startDate: $startDate, endDate: $endDate) {
+        idStr
+        title
+        description
+        eventType
+        startDateStr
+        endDateStr
+        isAllDay
+        isRecurring
+        recurrencePattern
+        color
+        location
+        isSchoolClosed
+      }
+    }
+  `,
 };
 
 export const CALENDAR_MUTATIONS = {
@@ -45,6 +63,21 @@ export const CALENDAR_MUTATIONS = {
 	DELETE: `
     mutation DeleteCalendarEvent($id: String!) {
       deleteCalendarEvent(id: $id)
+    }
+  `,
+	SEED_CAMBODIAN_HOLIDAYS: `
+    mutation SeedCambodianHolidays($schoolId: String!, $year: Int!) {
+      seedCambodianHolidays(schoolId: $schoolId, year: $year) {
+        idStr
+        title
+        description
+        eventType
+        startDateStr
+        endDateStr
+        isAllDay
+        isSchoolClosed
+        color
+      }
     }
   `,
 };

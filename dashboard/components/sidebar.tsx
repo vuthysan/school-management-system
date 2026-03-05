@@ -1,31 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
-import { LogOut, ChevronUp, User, Palette } from "lucide-react";
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-
 import { useLanguage } from "@/contexts/language-context";
-import { useAuth } from "@/contexts/auth-context";
 import { useDashboard } from "@/hooks/useDashboard";
 import { getModulesByRole } from "@/config/sidebar-modules";
 import {
-	Sidebar as SidebarContainer,
 	SidebarBody,
 	SidebarLink,
+	useSidebar,
 } from "@/components/ui/sidebar";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { SupportedLang } from "@/config/translations";
 import { cn } from "@/lib/utils";
-import { ThemeCustomizer } from "@/components/theme-customizer";
-import Image from "next/image";
 
 // Define user roles mapping
 export type UserRole =
@@ -67,37 +53,67 @@ const mapBackendRoleToUserRole = (backendRole: string | null): UserRole => {
 
 export const Sidebar = () => {
 	const pathname = usePathname();
-	const { t, language, setLanguage } = useLanguage();
-	const { user, logout } = useAuth();
-	const { currentRole: backendRole } = useDashboard();
-	const [open, setOpen] = useState(true);
-	const [profileExpanded, setProfileExpanded] = useState(false);
+	const { t } = useLanguage();
+	const { currentRole: backendRole, currentSchool } = useDashboard();
+	const { open } = useSidebar();
+	const lang = (typeof window !== "undefined" && localStorage.getItem("sms-language")) || "en";
 
-	// Determine current role and modules
 	const currentRole = mapBackendRoleToUserRole(backendRole);
 	const modules = getModulesByRole(currentRole, t);
 
 	return (
-		<SidebarContainer open={open} setOpen={setOpen}>
-			<SidebarBody className="justify-between gap-10">
-				<div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin">
-					{open ? <Logo /> : <LogoIcon />}
-					<div className="mt-8 flex flex-col gap-4">
+		<SidebarBody>
+				<div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+					{/* Logo header */}
+					<div className="px-4 py-4 shrink-0">
+						{open ? <Logo /> : <LogoIcon />}
+					</div>
+
+					{/* School logo & name */}
+					{currentSchool && (
+						<div className="mx-3 mb-1 px-2.5 py-2 rounded-xl bg-primary/5 dark:bg-primary/10">
+							{open ? (
+								<div className="flex items-center gap-2">
+									<img
+										src={currentSchool.effectiveLogoUrl || currentSchool.logoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentSchool.name.en || "S")}&background=4f46e5&color=fff&size=64&bold=true`}
+										alt=""
+										className="w-7 h-7 rounded-lg shrink-0 object-cover"
+									/>
+									<p className="text-xs font-semibold text-foreground truncate">
+										{lang === "km" ? currentSchool.name.km : currentSchool.name.en}
+									</p>
+								</div>
+							) : (
+								<div className="flex justify-center" title={currentSchool.name.en}>
+									<img
+										src={currentSchool.effectiveLogoUrl || currentSchool.logoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentSchool.name.en || "S")}&background=4f46e5&color=fff&size=64&bold=true`}
+										alt=""
+										className="w-7 h-7 rounded-lg object-cover"
+									/>
+								</div>
+							)}
+						</div>
+					)}
+
+					{/* Divider */}
+					<div className="mx-4 border-t border-black/6 dark:border-white/6" />
+
+					{/* Navigation */}
+					<nav className="flex-1 px-3 py-3 space-y-4">
 						{modules.map((module, idx) => (
-							<div key={module.id + idx} className="flex flex-col gap-2 mb-4">
-								{/* Module Label (only if open) */}
+							<div key={module.id + idx}>
+								{/* Section label */}
 								{open && (
-									<div className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mt-2 first:mt-0">
-										{module.label}
+									<div className="flex items-center gap-2 px-2.5 mb-1.5">
+										<span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/40">
+											{module.label}
+										</span>
 									</div>
 								)}
-								{/* Flatten sections and items */}
-								{module.sections.map((section, sIdx) => (
-									<div
-										key={section.title + sIdx}
-										className="flex flex-col gap-1"
-									>
-										{section.items.map((item, iIdx) => {
+								{/* Items */}
+								<div className="space-y-0.5">
+									{module.sections.map((section, sIdx) =>
+										section.items.map((item, iIdx) => {
 											const Icon = item.icon;
 											const isActive =
 												pathname === item.href ||
@@ -107,7 +123,7 @@ export const Sidebar = () => {
 
 											return (
 												<SidebarLink
-													key={item.href + iIdx}
+													key={item.href + sIdx + iIdx}
 													active={isActive}
 													link={{
 														label: item.label,
@@ -115,161 +131,45 @@ export const Sidebar = () => {
 														icon: (
 															<Icon
 																className={cn(
-																	"h-5 w-5 flex-shrink-0",
+																	"h-4 w-4 shrink-0 transition-colors duration-150",
 																	isActive
-																		? "text-primary dark:text-primary"
-																		: "text-neutral-700 dark:text-neutral-200"
+																		? "text-primary-foreground"
+																		: "text-muted-foreground/60 group-hover/sidebar:text-foreground"
 																)}
-																strokeWidth={isActive ? 2.5 : 2}
+																strokeWidth={isActive ? 2 : 1.5}
 															/>
 														),
 													}}
 												/>
 											);
-										})}
-									</div>
-								))}
+										})
+									)}
+								</div>
 							</div>
 						))}
-					</div>
+					</nav>
 				</div>
 
-				{/* User Profile Section - Collapsible */}
-				<motion.div
-					animate={{ opacity: 1, y: 0 }}
-					className="flex flex-col gap-2 mt-auto pt-4 border-t border-neutral-200 dark:border-neutral-700"
-					initial={{ opacity: 0, y: 10 }}
-					transition={{ duration: 0.2, ease: "easeOut" }}
-				>
-					{/* Profile Toggle Button */}
-					<motion.button
-						className="flex items-center gap-2 py-2 px-1 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors w-full"
-						whileHover={{ scale: 1.01 }}
-						whileTap={{ scale: 0.99 }}
-						onClick={() => setProfileExpanded(!profileExpanded)}
-					>
-						<div className="h-7 w-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-xs shadow-sm flex-shrink-0">
-							{user?.name?.charAt(0).toUpperCase() || "U"}
-						</div>
-						{open && (
-							<>
-								<div className="flex flex-col items-start flex-1 min-w-0">
-									<span className="text-sm font-medium text-neutral-700 dark:text-neutral-200 truncate w-full text-left">
-										{user?.name || "Profile"}
-									</span>
-									<span className="text-xs text-neutral-500 dark:text-neutral-400 truncate w-full text-left">
-										{currentRole}
-									</span>
-								</div>
-								<motion.div
-									animate={{ rotate: profileExpanded ? 180 : 0 }}
-									transition={{ duration: 0.2 }}
-								>
-									<ChevronUp className="h-4 w-4 text-neutral-500" />
-								</motion.div>
-							</>
-						)}
-					</motion.button>
-
-					{/* Collapsible Profile Menu */}
-					<AnimatePresence>
-						{profileExpanded && open && (
-							<motion.div
-								animate={{ height: "auto", opacity: 1 }}
-								className="overflow-hidden"
-								exit={{ height: 0, opacity: 0 }}
-								initial={{ height: 0, opacity: 0 }}
-								transition={{ duration: 0.2, ease: "easeInOut" }}
-							>
-								<div className="flex flex-col gap-1 pl-2 pb-2">
-									<Link
-										className="flex items-center gap-2 py-2 px-2 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors text-sm text-neutral-700 dark:text-neutral-200"
-										href="/auth/settings/profile"
-									>
-										<User className="h-4 w-4" />
-										{t("profile")}
-									</Link>
-
-									<div className="flex items-center justify-between gap-2 py-2 px-2 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">
-										<div className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-200">
-											<Palette className="h-4 w-4" />
-											{t("theme")}
-										</div>
-										<ThemeCustomizer />
-									</div>
-
-									<button
-										className="flex items-center gap-2 py-2 px-2 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors text-sm text-red-600 w-full text-left"
-										onClick={logout}
-									>
-										<LogOut className="h-4 w-4" />
-										{t("logout")}
-									</button>
-								</div>
-							</motion.div>
-						)}
-					</AnimatePresence>
-
-					{/* Language Switcher - Always visible below profile */}
-					<motion.div
-						animate={{ opacity: 1 }}
-						className={cn(
-							"flex items-center gap-2",
-							open ? "px-0" : "justify-center"
-						)}
-						initial={{ opacity: 0 }}
-						transition={{ delay: 0.1, duration: 0.2 }}
-					>
-						{open ? (
-							<Select
-								value={language}
-								onValueChange={(v) => setLanguage(v as SupportedLang)}
-							>
-								<SelectTrigger className="h-8 w-full text-xs">
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="en">🇺🇸 English</SelectItem>
-									<SelectItem value="km">🇰🇭 Khmer</SelectItem>
-								</SelectContent>
-							</Select>
-						) : (
-							<button
-								className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 text-xs transition-colors"
-								title={
-									language === "en" ? "Switch to Khmer" : "Switch to English"
-								}
-								onClick={() => setLanguage(language === "en" ? "km" : "en")}
-							>
-								{language === "en" ? "🇺🇸" : "🇰🇭"}
-							</button>
-						)}
-					</motion.div>
-				</motion.div>
 			</SidebarBody>
-		</SidebarContainer>
 	);
 };
 
 export const Logo = () => {
 	return (
 		<Link
-			className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20"
+			className="flex items-center gap-2.5 relative z-20"
 			href="/auth"
 		>
 			<img
 				src="https://gateway.stadiumx.asia/file-1766072912641-586620334.png"
-				width={40}
-				height={40}
+				width={28}
+				height={28}
 				alt="Logo"
+				className="rounded-lg"
 			/>
-			<motion.span
-				animate={{ opacity: 1 }}
-				className="font-black text-xl text-black dark:text-white whitespace-pre"
-				initial={{ opacity: 0 }}
-			>
+			<span className="font-serif text-[15px] font-semibold text-foreground tracking-tight whitespace-pre">
 				KOOMPI SMS
-			</motion.span>
+			</span>
 		</Link>
 	);
 };
@@ -277,14 +177,15 @@ export const Logo = () => {
 export const LogoIcon = () => {
 	return (
 		<Link
-			className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20"
+			className="flex items-center justify-center relative z-20"
 			href="/auth"
 		>
 			<img
 				src="https://gateway.stadiumx.asia/file-1766072912641-586620334.png"
-				width={40}
-				height={40}
+				width={28}
+				height={28}
 				alt="Logo"
+				className="rounded-lg"
 			/>
 		</Link>
 	);

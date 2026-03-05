@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Plus, GraduationCap, Sparkles, Users } from "lucide-react";
+import { Plus, GraduationCap } from "lucide-react";
 
 import { StudentsTable } from "@/components/students/students-table";
 import { PageHeader } from "@/components/dashboard/page-header";
@@ -15,7 +15,6 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Card } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/language-context";
 import { useStudents } from "@/hooks/useStudents";
 import { useDashboard } from "@/hooks/useDashboard";
@@ -51,7 +50,7 @@ export default function StudentsPage() {
 		<motion.div
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
-			className="space-y-4 pb-10"
+			className="space-y-6 pb-10"
 		>
 			{/* Header Section */}
 			<PageHeader
@@ -63,16 +62,16 @@ export default function StudentsPage() {
 					<Button
 						onClick={() => setIsPromotionModalOpen(true)}
 						variant="outline"
-						className="rounded-lg px-6 h-12 gap-2"
+						className="gap-2"
 					>
-						<GraduationCap className="w-5 h-5" />
+						<GraduationCap className="h-4 w-4" />
 						{t("promote")}
 					</Button>
 					<Button
 						onClick={() => setIsAddModalOpen(true)}
-						className="rounded-lg px-6 h-12 bg-primary hover:opacity-90 text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95 text-sm gap-2"
+						className="gap-2"
 					>
-						<Plus className="w-5 h-5" />
+						<Plus className="h-4 w-4" />
 						{t("add_student")}
 					</Button>
 				</div>
@@ -81,25 +80,17 @@ export default function StudentsPage() {
 			{/* Statistics Section */}
 			{students.length > 0 && <StudentStats students={students} />}
 
-			{/* StudentsTable handles its own container */}
-			<div className="relative">
-				<div className="absolute -bottom-40 -right-20 w-96 h-96 bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
-				<StudentsTable
-					schoolId={schoolId}
-					onSelectionChange={handleSelectionChange}
-				/>
-			</div>
+			{/* Students Table */}
+			<StudentsTable
+				schoolId={schoolId}
+				onSelectionChange={handleSelectionChange}
+			/>
 
 			{/* Add Student Modal */}
 			<Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
 				<DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
 					<DialogHeader>
-						<DialogTitle className="flex items-center gap-3">
-							<div className="p-2 bg-primary/10 rounded-lg">
-								<GraduationCap className="w-5 h-5 text-primary" />
-							</div>
-							{t("add_new_student")}
-						</DialogTitle>
+						<DialogTitle>{t("add_new_student")}</DialogTitle>
 					</DialogHeader>
 					<StudentForm schoolId={schoolId} onSuccess={handleAddSuccess} />
 				</DialogContent>

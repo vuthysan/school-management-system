@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/language-context";
 import { Class, ClassFormData } from "@/types/academic";
 import { useGradeLevels } from "@/hooks/useGradeLevels";
+import { useStaff } from "@/hooks/useStaff";
 import { useDashboard } from "@/hooks/useDashboard";
 
 const classSchema = z.object({
@@ -26,7 +27,7 @@ const classSchema = z.object({
 	code: z.string().min(1, "Class code is required"),
 	gradeLevel: z.string().min(1, "Grade level is required"),
 	section: z.string().min(1, "Section is required"),
-	homeroomTeacherId: z.string().min(1, "Teacher name is required"),
+	homeroomTeacherId: z.string().min(1, "Teacher is required"),
 	roomNumber: z.string().min(1, "Room is required"),
 	capacity: z.preprocess(
 		(val) => Number(val),
@@ -61,6 +62,16 @@ export const ClassForm: React.FC<ClassFormProps> = ({
 	const { gradeLevels, isLoading: isLoadingGradeLevels } =
 		useGradeLevels(gradeLevelOptions);
 
+	const schoolId = currentSchool?.idStr || undefined;
+	const { staffList, loading: isLoadingStaff } = useStaff(schoolId);
+
+	// Filter staff with teacher-like roles, fall back to all staff if no teachers found
+	const teachers = useMemo(() => {
+		const teacherRoles = ["Teacher", "HeadTeacher", "Head Teacher", "TEACHER", "HEAD_TEACHER"];
+		const filtered = staffList.filter((s) => teacherRoles.includes(s.role));
+		return filtered.length > 0 ? filtered : staffList;
+	}, [staffList]);
+
 	const {
 		control,
 		handleSubmit,
@@ -83,15 +94,6 @@ export const ClassForm: React.FC<ClassFormProps> = ({
 
 	useEffect(() => {
 		if (initialData) {
-			console.log(
-				"ClassForm edit - initialData.gradeLevel:",
-				initialData.gradeLevel
-			);
-			console.log(
-				"ClassForm edit - gradeLevels:",
-				gradeLevels.map((l) => ({ id: l.id, name: l.name, code: l.code }))
-			);
-
 			// Convert legacy academicYearId values to proper format
 			let academicYear = initialData.academicYearId;
 			const currentYear = new Date().getFullYear();
@@ -118,7 +120,6 @@ export const ClassForm: React.FC<ClassFormProps> = ({
 	}, [initialData, reset, gradeLevels]);
 
 	const onSubmit = async (data: ClassFormData) => {
-		// Simulate API call
 		await new Promise((resolve) => setTimeout(resolve, 1000));
 		if (onSuccess) onSuccess(data);
 	};
@@ -237,17 +238,33 @@ export const ClassForm: React.FC<ClassFormProps> = ({
 					name="homeroomTeacherId"
 					render={({ field }) => (
 						<div className="space-y-2">
-							<Label htmlFor="homeroomTeacherId">
+							<Label>
 								{t("teacher")} <span className="text-destructive">*</span>
 							</Label>
-							<Input
-								{...field}
-								className={errors.homeroomTeacherId ? "border-destructive" : ""}
-								id="homeroomTeacherId"
-								placeholder="Teacher Name"
-								value={field.value || ""}
-								onChange={field.onChange}
-							/>
+							<Select value={field.value || ""} onValueChange={field.onChange}>
+								<SelectTrigger
+									className={errors.homeroomTeacherId ? "border-destructive" : ""}
+								>
+									<SelectValue placeholder={t("select_teacher")} />
+								</SelectTrigger>
+								<SelectContent>
+									{isLoadingStaff ? (
+										<SelectItem disabled value="loading">
+											{t("loading")}
+										</SelectItem>
+									) : teachers.length > 0 ? (
+										teachers.map((teacher) => (
+											<SelectItem key={teacher.id} value={teacher.id}>
+												{teacher.firstName} {teacher.lastName}
+											</SelectItem>
+										))
+									) : (
+										<SelectItem disabled value="no_data">
+											{t("no_staff")}
+										</SelectItem>
+									)}
+								</SelectContent>
+							</Select>
 							{errors.homeroomTeacherId && (
 								<p className="text-sm text-destructive">
 									{errors.homeroomTeacherId.message}
@@ -307,7 +324,6 @@ export const ClassForm: React.FC<ClassFormProps> = ({
 					control={control}
 					name="academicYearId"
 					render={({ field }) => {
-						// Generate academic year options (current year -2 to +2)
 						const currentYear = new Date().getFullYear();
 						const yearOptions = [];
 						for (let i = currentYear - 2; i <= currentYear + 2; i++) {

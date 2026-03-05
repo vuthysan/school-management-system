@@ -20,6 +20,7 @@ struct TokenResponse {
 #[derive(Serialize)]
 struct UserProfile {
     id: String,
+    user_id: String,
     email: Option<String>,
     name: String,
     picture: Option<String>,
@@ -30,7 +31,7 @@ struct UserProfile {
 
 use crate::{
     models::member::Member,
-    models::user::{SystemRole, User},
+    models::user::{generate_user_id, SystemRole, User},
     utils::jwt_token::sign_token,
 };
 use mongodb::{bson::doc, Collection, Database};
@@ -191,17 +192,47 @@ pub async fn auth_callback(
 
     let user_record =
         match existing_user {
-            Ok(Some(user)) => {
+            Ok(Some(mut user)) => {
                 println!("Found existing user: {:?}", user.id);
+
+                // Backfill user_id for existing users who don't have one
+                if user.user_id.is_empty() {
+                    if let Ok(new_user_id) = generate_user_id(&db).await {
+                        if let Some(oid) = &user.id {
+                            let _ = users_collection
+                                .update_one(
+                                    doc! { "_id": oid },
+                                    doc! { "$set": { "user_id": &new_user_id } },
+                                    None,
+                                )
+                                .await;
+                            user.user_id = new_user_id;
+                            println!("Backfilled user_id for existing user");
+                        }
+                    }
+                }
+
                 user
             }
             Ok(None) => {
                 println!("User not found, creating new user...");
+
+                // Generate sequential user_id
+                let user_id = match generate_user_id(&db).await {
+                    Ok(id) => id,
+                    Err(err) => {
+                        return HttpResponse::InternalServerError().json(serde_json::json!({
+                            "error": format!("Failed to generate user ID: {}", err)
+                        }));
+                    }
+                };
+
                 // Create new user - first user gets SuperAdmin, others get User role
                 let mut new_user = User::new(
                     koompi_user.id.clone(),
                     koompi_user.username.clone(),
                     Some(user_email.clone()),
+                    user_id,
                 );
 
                 // Assign SuperAdmin to first user
@@ -274,6 +305,7 @@ pub async fn auth_callback(
 
     let user_profile = UserProfile {
         id: user_id_str.clone(),
+        user_id: user_record.user_id.clone(),
         email: user_record.email.clone(),
         name: user_record.username.clone(),
         picture: koompi_user.picture,
@@ -333,7 +365,7 @@ pub async fn get_me(req: HttpRequest, db: web::Data<Database>) -> impl Responder
         }
     };
 
-    let user_record = match users_collection
+    let mut user_record = match users_collection
         .find_one(doc! { "_id": object_id }, None)
         .await
     {
@@ -348,8 +380,23 @@ pub async fn get_me(req: HttpRequest, db: web::Data<Database>) -> impl Responder
         }
     };
 
+    // Backfill user_id for existing users who don't have one
+    if user_record.user_id.is_empty() {
+        if let Ok(new_user_id) = generate_user_id(&db).await {
+            let _ = users_collection
+                .update_one(
+                    doc! { "_id": object_id },
+                    doc! { "$set": { "user_id": &new_user_id } },
+                    None,
+                )
+                .await;
+            user_record.user_id = new_user_id;
+        }
+    }
+
     let user_profile = UserProfile {
         id: user_record.id.map(|oid| oid.to_hex()).unwrap_or_default(),
+        user_id: user_record.user_id,
         email: user_record.email,
         name: user_record.username,
         picture: None,

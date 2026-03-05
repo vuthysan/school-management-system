@@ -14,8 +14,6 @@ export const CLASS_QUERIES = {
         capacity
         currentEnrollment
         status
-        hasCapacity
-        availableSpots
       }
     }
   `,
@@ -43,10 +41,9 @@ export const CLASS_QUERIES = {
             teacherId
             startTime
             endTime
+            room
           }
         }
-        hasCapacity
-        availableSpots
       }
     }
   `,
@@ -79,6 +76,17 @@ export const CLASS_QUERIES = {
           capacity
           currentEnrollment
           status
+          schedule {
+            day
+            periods {
+              periodNumber
+              subjectId
+              teacherId
+              startTime
+              endTime
+              room
+            }
+          }
         }
         total
         page

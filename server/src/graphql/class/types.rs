@@ -2,7 +2,7 @@
 // NOTE: The Class model now derives SimpleObject directly with ComplexObject
 // These legacy types are kept for backward compatibility
 
-use crate::models::class::Class;
+use crate::models::class::{Class, ClassSchedule};
 use crate::utils::common_types::Status;
 use async_graphql::*;
 
@@ -23,6 +23,7 @@ pub struct ClassType {
     pub room_number: Option<String>,
     pub capacity: i32,
     pub current_enrollment: i32,
+    pub schedule: Vec<ClassSchedule>,
     pub status: Status,
 }
 
@@ -40,6 +41,7 @@ impl From<Class> for ClassType {
             room_number: c.room_number,
             capacity: c.capacity,
             current_enrollment: c.current_enrollment,
+            schedule: c.schedule,
             status: c.status,
         }
     }

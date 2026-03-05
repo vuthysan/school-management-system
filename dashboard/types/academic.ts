@@ -94,8 +94,9 @@ export interface Subject {
 	subjectCode: string;
 	description: string;
 	gradeLevels: string[];
-	credits: number;
-	department?: string;
+	hoursPerWeek: number;
+	coefficient: number;
+	subjectCategory?: string;
 	status: Status;
 	createdAt: string;
 	updatedAt: string;
@@ -104,13 +105,13 @@ export interface Subject {
 export interface SubjectFilterInput {
 	search?: string;
 	status?: Status;
-	department?: string;
+	subjectCategory?: string;
 	gradeLevel?: string;
 	branchId?: string;
 }
 
 export interface SubjectSortInput {
-	sortBy?: "subjectName" | "subjectCode" | "credits" | "createdAt";
+	sortBy?: "subjectName" | "subjectCode" | "hoursPerWeek" | "createdAt";
 	sortOrder?: "asc" | "desc";
 }
 
@@ -129,8 +130,9 @@ export interface SubjectFormData {
 	subjectCode: string;
 	description?: string;
 	gradeLevels?: string[];
-	credits?: number;
-	department?: string;
+	hoursPerWeek?: number;
+	coefficient?: number;
+	subjectCategory?: string;
 	status?: Status;
 }
 

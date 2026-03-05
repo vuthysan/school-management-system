@@ -102,9 +102,9 @@ impl SubjectQuery {
                 filter_doc.insert("status", mongodb::bson::to_bson(status).unwrap());
             }
 
-            // Filter by department
-            if let Some(ref department) = f.department {
-                filter_doc.insert("department", department);
+            // Filter by subject category
+            if let Some(ref category) = f.subject_category {
+                filter_doc.insert("subject_category", category);
             }
 
             // Filter by grade level (any matching)
@@ -170,9 +170,9 @@ fn build_sort_document(sort: &Option<SubjectSortInput>) -> Document {
         let sort_field = match s.sort_by.as_deref() {
             Some("subjectName") => "subject_name",
             Some("subjectCode") => "subject_code",
-            Some("credits") => "credits",
+            Some("hoursPerWeek") => "hours_per_week",
             Some("createdAt") => "audit.created_at",
-            Some("department") => "department",
+            Some("subjectCategory") => "subject_category",
             _ => "subject_name", // Default sort by name
         };
 

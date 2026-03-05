@@ -3,6 +3,7 @@ import {
 	Users,
 	BookOpen,
 	Calendar,
+	CalendarDays,
 	FileText,
 	DollarSign,
 	Settings,
@@ -18,6 +19,7 @@ import {
 	UserCheck,
 	ClipboardList,
 	DoorOpen,
+	Settings2,
 } from "lucide-react";
 
 import { UserRole } from "@/components/sidebar";
@@ -89,7 +91,7 @@ export const getModulesByRole = (
 		case "director":
 		case "deputyDirector":
 		case "headTeacher":
-			// School Management
+			// Management
 			modules.push({
 				id: "management",
 				label: t("management"),
@@ -109,14 +111,14 @@ export const getModulesByRole = (
 								: []),
 							{ label: t("members"), href: "/auth/admin/members", icon: Users },
 							{
-								label: t("students"),
-								href: "/auth/admin/students",
-								icon: GraduationCap,
-							},
-							{
 								label: t("teachers_staff"),
 								href: "/auth/admin/hr",
 								icon: UserCog,
+							},
+							{
+								label: t("students"),
+								href: "/auth/admin/students",
+								icon: GraduationCap,
 							},
 						],
 					},
@@ -137,6 +139,84 @@ export const getModulesByRole = (
 								label: t("inventory"),
 								href: "/auth/admin/inventory",
 								icon: Package,
+							},
+						],
+					},
+				],
+			});
+
+			// Academic
+			modules.push({
+				id: "academic",
+				label: t("academic"),
+				icon: BookOpen,
+				sections: [
+					{
+						title: t("configuration"),
+						items: [
+							{
+								label: t("school_setup"),
+								href: "/auth/admin/setup",
+								icon: Settings,
+							},
+							{
+								label: t("school_calendar"),
+								href: "/auth/admin/calendar",
+								icon: CalendarDays,
+							},
+							{
+								label: t("rooms"),
+								href: "/auth/admin/rooms",
+								icon: DoorOpen,
+							},
+						],
+					},
+					{
+						title: t("structure"),
+						items: [
+							{
+								label: t("grade_levels"),
+								href: "/auth/admin/grade-levels",
+								icon: GraduationCap,
+							},
+							{
+								label: t("subjects"),
+								href: "/auth/admin/subjects",
+								icon: ClipboardList,
+							},
+						],
+					},
+					{
+						title: t("daily_operations"),
+						items: [
+							{
+								label: t("attendance"),
+								href: "/auth/admin/attendance",
+								icon: Calendar,
+							},
+							{
+								label: t("grading"),
+								href: "/auth/admin/grading",
+								icon: FileText,
+							},
+						],
+					},
+				],
+			});
+
+			// Finance
+			modules.push({
+				id: "finance",
+				label: t("finance"),
+				icon: DollarSign,
+				sections: [
+					{
+						title: t("financials"),
+						items: [
+							{
+								label: t("overview"),
+								href: "/auth/admin/finance",
+								icon: BarChart3,
 							},
 						],
 					},
@@ -166,64 +246,6 @@ export const getModulesByRole = (
 					},
 				],
 			});
-
-			// Academic
-			modules.push({
-				id: "academic",
-				label: t("academic"),
-				icon: BookOpen,
-				sections: [
-					{
-						title: t("academics"),
-						items: [
-							{
-								label: t("classes_subjects"),
-								href: "/auth/admin/academic",
-								icon: BookOpen,
-							},
-							{
-								label: t("rooms") || "Rooms",
-								href: "/auth/admin/rooms",
-								icon: DoorOpen,
-							},
-							{
-								label: t("attendance"),
-								href: "/auth/admin/attendance",
-								icon: Calendar,
-							},
-							{
-								label: t("grading"),
-								href: "/auth/admin/grading",
-								icon: FileText,
-							},
-							{
-								label: t("school_setup"),
-								href: "/auth/admin/setup",
-								icon: Settings,
-							},
-						],
-					},
-				],
-			});
-
-			// Finance
-			modules.push({
-				id: "finance",
-				label: t("finance"),
-				icon: DollarSign,
-				sections: [
-					{
-						title: t("financials"),
-						items: [
-							{
-								label: t("overview"),
-								href: "/auth/admin/finance",
-								icon: BarChart3,
-							},
-						],
-					},
-				],
-			});
 			break;
 
 		case "teacher":
@@ -236,9 +258,14 @@ export const getModulesByRole = (
 						title: t("academics"),
 						items: [
 							{
-								label: t("classes_subjects"),
-								href: "/auth/admin/academic",
-								icon: BookOpen,
+								label: t("grade_levels"),
+								href: "/auth/admin/grade-levels",
+								icon: GraduationCap,
+							},
+							{
+								label: t("subjects"),
+								href: "/auth/admin/subjects",
+								icon: ClipboardList,
 							},
 							{
 								label: t("attendance"),
@@ -276,14 +303,19 @@ export const getModulesByRole = (
 						title: t("academics"),
 						items: [
 							{
-								label: t("my_grades"),
-								href: "/auth/student/academic",
-								icon: FileText,
+								label: t("my_schedule"),
+								href: "/auth/student/schedule",
+								icon: Calendar,
 							},
 							{
-								label: t("my_schedule"),
-								href: "/auth/student/academic",
-								icon: Calendar,
+								label: t("my_attendance"),
+								href: "/auth/student/attendance",
+								icon: UserCheck,
+							},
+							{
+								label: t("my_grades"),
+								href: "/auth/student/grades",
+								icon: FileText,
 							},
 						],
 					},
@@ -304,6 +336,31 @@ export const getModulesByRole = (
 								label: t("children"),
 								href: "/auth/parent/children",
 								icon: Users,
+							},
+							{
+								label: t("attendance"),
+								href: "/auth/parent/attendance",
+								icon: UserCheck,
+							},
+							{
+								label: t("fees_payments"),
+								href: "/auth/parent/fees",
+								icon: DollarSign,
+							},
+						],
+					},
+					{
+						title: t("school_info"),
+						items: [
+							{
+								label: t("school_events"),
+								href: "/auth/parent/events",
+								icon: Calendar,
+							},
+							{
+								label: t("communication"),
+								href: "/auth/admin/communication",
+								icon: MessageSquare,
 							},
 						],
 					},
@@ -340,6 +397,11 @@ export const getModulesByRole = (
 			label: t("school_settings"),
 			href: "/auth/admin/settings",
 			icon: Settings,
+		});
+		settingsModule.sections[0].items.push({
+			label: t("system_configuration"),
+			href: "/auth/admin/settings/configuration",
+			icon: Settings2,
 		});
 	}
 	modules.push(settingsModule);

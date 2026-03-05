@@ -1,11 +1,9 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { motion } from "framer-motion";
-import { DollarSign, Plus, Loader2 } from "lucide-react";
+import { DollarSign, Plus, Loader2, AlertCircle } from "lucide-react";
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -43,6 +41,7 @@ import {
 	CreatePaymentInput,
 } from "@/types/finance";
 
+import { PageHeader } from "@/components/dashboard/page-header";
 import { FinanceStats } from "@/components/finance/finance-stats";
 import { FeeTable } from "@/components/finance/fee-table";
 import { FeeForm } from "@/components/finance/fee-form";
@@ -55,7 +54,6 @@ export default function FinancePage() {
 	const { currentSchool, isLoading: isDashboardLoading } = useDashboard();
 	const schoolId = currentSchool?.idStr || currentSchool?.id || null;
 
-	// UI State
 	const [activeTab, setActiveTab] = useState<"fees" | "payments" | "invoices">(
 		"fees"
 	);
@@ -65,7 +63,6 @@ export default function FinancePage() {
 	const [selectedFee, setSelectedFee] = useState<Fee | null>(null);
 	const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 
-	// Data hooks
 	const {
 		fees,
 		isLoading: isFeesLoading,
@@ -94,7 +91,6 @@ export default function FinancePage() {
 	} = useFeeMutations();
 	const { recordPayment } = usePaymentMutations();
 
-	// Handlers
 	const handleAddFee = () => {
 		setSelectedFee(null);
 		setIsFormOpen(true);
@@ -124,7 +120,6 @@ export default function FinancePage() {
 	};
 
 	const handleViewInvoice = (invoice: Invoice) => {
-		// For now just open the record payment if not paid
 		if (invoice.status !== "paid") {
 			handleRecordPayment(invoice);
 		}
@@ -178,85 +173,66 @@ export default function FinancePage() {
 		refreshFees();
 	}, [selectedFee, deleteFee, refreshFees]);
 
-	// Loading state
 	if (isDashboardLoading) {
 		return (
-			<div className="flex items-center justify-center h-64">
-				<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+			<div className="min-h-[60vh] flex items-center justify-center">
+				<div className="text-center space-y-3">
+					<div className="h-8 w-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin mx-auto" />
+					<p className="text-sm text-muted-foreground">{t("loading") || "Loading..."}</p>
+				</div>
 			</div>
 		);
 	}
 
 	if (!schoolId) {
 		return (
-			<div className="flex flex-col items-center justify-center h-64 gap-2">
-				<p className="text-muted-foreground">
-					{t("no_school_selected") || "No school selected"}
-				</p>
+			<div className="min-h-[60vh] flex items-center justify-center">
+				<div className="text-center space-y-3">
+					<div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center mx-auto">
+						<AlertCircle className="h-5 w-5 text-amber-500" />
+					</div>
+					<p className="text-sm text-muted-foreground">
+						{t("no_school_selected") || "No school selected"}
+					</p>
+				</div>
 			</div>
 		);
 	}
 
 	return (
-		<motion.div
-			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
-			className="space-y-6 pb-10"
-		>
-			{/* Hero Header Section */}
-			<Card className="p-4">
-				<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative">
-					<div className="flex items-center gap-5">
-						<div className="relative group">
-							<div className="absolute -inset-1 bg-emerald-500/20 blur opacity-0 group-hover:opacity-100 transition duration-500 rounded-lg" />
-							<div className="relative p-4 bg-emerald-500 rounded-lg shadow-lg shadow-emerald-500/20 text-white">
-								<DollarSign className="w-8 h-8" />
-							</div>
-						</div>
-						<div className="space-y-1">
-							<h1 className="text-3xl font-bold tracking-tight text-foreground/90">
-								{t("finance_management") || "Finance Management"}
-							</h1>
-							<p className="text-sm text-muted-foreground/80 font-medium">
-								{t("manage_fees_payments") ||
-									"Manage fees, payments, and invoices"}
-							</p>
-						</div>
-					</div>
-				</div>
-			</Card>
+		<div className="space-y-6 pb-10">
+			<PageHeader
+				title={t("finance_management") || "Finance Management"}
+				subtitle={t("manage_fees_payments") || "Manage fees, payments, and invoices"}
+				icon={DollarSign}
+			>
+				{activeTab === "fees" && (
+					<Button onClick={handleAddFee} size="sm" className="gap-2">
+						<Plus className="h-4 w-4" />
+						{t("add_new_fee") || "Add Fee"}
+					</Button>
+				)}
+			</PageHeader>
 
-			{/* Stats */}
 			<FinanceStats summary={summary} isLoading={isSummaryLoading} />
 
-			{/* Tabs */}
 			<Tabs
 				value={activeTab}
-				onValueChange={(v) => setActiveTab(v as "fees" | "payments")}
-				className="w-full"
+				onValueChange={(v) => setActiveTab(v as "fees" | "payments" | "invoices")}
 			>
-				<TabsList className="flex w-full justify-start border-b border-border/50 bg-transparent p-0 h-auto gap-8">
-					<TabsTrigger
-						className="relative h-12 rounded-none border-b-2 border-transparent bg-transparent px-2 pb-3 pt-2 font-semibold text-muted-foreground transition-all data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary/70"
-						value="fees"
-					>
+				<TabsList>
+					<TabsTrigger value="fees">
 						{t("fee_structure") || "Fee Structure"}
 					</TabsTrigger>
-					<TabsTrigger
-						className="relative h-12 rounded-none border-b-2 border-transparent bg-transparent px-2 pb-3 pt-2 font-semibold text-muted-foreground transition-all data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary/70"
-						value="payments"
-					>
+					<TabsTrigger value="payments">
 						{t("payments") || "Payments"}
 					</TabsTrigger>
-					<TabsTrigger
-						className="relative h-12 rounded-none border-b-2 border-transparent bg-transparent px-2 pb-3 pt-2 font-semibold text-muted-foreground transition-all data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary/70"
-						value="invoices"
-					>
+					<TabsTrigger value="invoices">
 						{t("invoices") || "Invoices"}
 					</TabsTrigger>
 				</TabsList>
 
-				<TabsContent className="mt-4" value="fees">
+				<TabsContent value="fees">
 					<FeeTable
 						fees={fees}
 						isLoading={isFeesLoading}
@@ -266,11 +242,11 @@ export default function FinancePage() {
 					/>
 				</TabsContent>
 
-				<TabsContent className="mt-4" value="payments">
+				<TabsContent value="payments">
 					<PaymentTable payments={payments} isLoading={isPaymentsLoading} />
 				</TabsContent>
 
-				<TabsContent className="mt-4" value="invoices">
+				<TabsContent value="invoices">
 					<InvoiceTable
 						invoices={invoices}
 						isLoading={isInvoicesLoading}
@@ -284,10 +260,7 @@ export default function FinancePage() {
 			<Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
 				<DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
 					<DialogHeader>
-						<DialogTitle className="flex items-center gap-3">
-							<div className="p-2 bg-emerald-500/10 rounded-lg">
-								<DollarSign className="w-5 h-5 text-emerald-600" />
-							</div>
+						<DialogTitle>
 							{selectedFee
 								? t("edit_fee") || "Edit Fee"
 								: t("add_new_fee") || "Add New Fee"}
@@ -301,7 +274,7 @@ export default function FinancePage() {
 				</DialogContent>
 			</Dialog>
 
-			{/* Delete Confirmation Dialog */}
+			{/* Delete Confirmation */}
 			<AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
@@ -310,9 +283,7 @@ export default function FinancePage() {
 						</AlertDialogTitle>
 						<AlertDialogDescription>
 							{t("delete_fee_warning", { name: selectedFee?.feeName }) ||
-								t("delete_confirmation") +
-									` "${selectedFee?.feeName}"? ` +
-									t("delete_warning")}
+								`Are you sure you want to delete "${selectedFee?.feeName}"?`}
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
@@ -336,12 +307,12 @@ export default function FinancePage() {
 					onSubmit={handlePaymentSubmit}
 					schoolId={schoolId}
 					studentId={selectedInvoice.studentId}
-					feeId={selectedInvoice.feeIds[0]} // Simplification: use first fee ID
+					feeId={selectedInvoice.feeIds[0]}
 					feeName={`${t("invoice")} #${selectedInvoice.invoiceNumber}`}
 					maxAmount={selectedInvoice.balance}
 					currency={selectedInvoice.currency}
 				/>
 			)}
-		</motion.div>
+		</div>
 	);
 }

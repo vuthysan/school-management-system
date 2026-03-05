@@ -15,13 +15,14 @@ import { ClassPerformanceChart } from "@/components/analytics/performance-chart"
 import { GradeDistributionChart } from "@/components/analytics/grade-distribution-chart";
 import { SubjectPerformanceChart } from "@/components/analytics/subject-performance-chart";
 import { AttendanceTrendChart } from "@/components/analytics/attendance-trend-chart";
-import { BarChart3, TrendingUp, Users, GraduationCap } from "lucide-react";
+import { BarChart3, TrendingUp, Users, GraduationCap, DollarSign, UserCog } from "lucide-react";
 import { motion } from "framer-motion";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { StatsCard } from "@/components/dashboard/stats-card";
-import { cn } from "@/lib/utils";
+import { DashboardCard } from "@/components/dashboard/dashboard-card";
+import { LoadingState } from "@/components/dashboard/loading-state";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-// Reusable glass container for charts - using glass-panel and rounded-2xl
 const ChartCard = ({
 	title,
 	children,
@@ -31,18 +32,9 @@ const ChartCard = ({
 	children: React.ReactNode;
 	delay: number;
 }) => (
-	<motion.div
-		initial={{ opacity: 0, y: 20 }}
-		animate={{ opacity: 1, y: 0 }}
-		transition={{ duration: 0.5, delay }}
-		className="glass-panel p-6 flex flex-col h-full rounded-2xl"
-	>
-		<h3 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
-			<div className="w-1 h-6 bg-primary rounded-full" />
-			{title}
-		</h3>
-		<div className="flex-1 min-h-[300px] w-full">{children}</div>
-	</motion.div>
+	<DashboardCard delay={delay} title={title} contentClassName="min-h-75">
+		{children}
+	</DashboardCard>
 );
 
 export default function AnalyticsPage() {
@@ -52,9 +44,15 @@ export default function AnalyticsPage() {
 	const {
 		performanceData,
 		attendanceData,
+		overviewData,
+		feeAnalytics,
+		ratioData,
 		isLoading: isAnalyticsLoading,
 		fetchPerformanceAnalytics,
 		fetchAttendanceAnalytics,
+		fetchSchoolOverview,
+		fetchFeeAnalytics,
+		fetchStaffStudentRatio,
 	} = useAnalytics(schoolId);
 
 	const [isLoading, setIsLoading] = useState(true);
@@ -74,6 +72,9 @@ export default function AnalyticsPage() {
 				await Promise.all([
 					fetchPerformanceAnalytics(selectedYear, selectedSemester),
 					fetchAttendanceAnalytics(),
+					fetchSchoolOverview(),
+					fetchFeeAnalytics(),
+					fetchStaffStudentRatio(),
 				]);
 				setIsLoading(false);
 			}
@@ -85,12 +86,15 @@ export default function AnalyticsPage() {
 		selectedSemester,
 		fetchPerformanceAnalytics,
 		fetchAttendanceAnalytics,
+		fetchSchoolOverview,
+		fetchFeeAnalytics,
+		fetchStaffStudentRatio,
 	]);
 
 	if (!schoolId) {
 		return (
-			<div className="flex items-center justify-center min-h-[400px]">
-				<p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">
+			<div className="flex items-center justify-center min-h-100">
+				<p className="text-sm text-muted-foreground">
 					Please select a school to view analytics.
 				</p>
 			</div>
@@ -111,109 +115,86 @@ export default function AnalyticsPage() {
 	const overallAvg = classCount > 0 ? (avgScore / classCount).toFixed(1) : "0";
 
 	return (
-		<div className="space-y-10 pb-10">
+		<motion.div
+			initial={{ opacity: 0 }}
+			animate={{ opacity: 1 }}
+			className="space-y-6 pb-10"
+		>
 			<PageHeader
 				title="Academic Analytics"
 				subtitle="Visualize and track school-wide performance trends with precision."
 				icon={BarChart3}
 			>
-				<div className="flex items-center gap-4 bg-white/5 backdrop-blur-md p-1.5 rounded-2xl border border-white/10">
-					<div className="flex flex-col gap-0.5 px-3">
-						<span className="text-[9px] font-black uppercase text-muted-foreground/70 tracking-widest">
-							Academic Year
-						</span>
-						<Select value={selectedYear} onValueChange={setSelectedYear}>
-							<SelectTrigger className="w-[140px] h-7 bg-transparent border-none font-bold text-sm focus:ring-0 p-0 text-foreground">
-								<SelectValue placeholder="Select Year" />
-							</SelectTrigger>
-							<SelectContent className="rounded-xl border-white/10 bg-black/80 backdrop-blur-xl">
-								{academicYears.map((year) => (
-									<SelectItem
-										key={year.idStr || year.name}
-										value={year.name}
-										className="rounded-lg focus:bg-white/10 focus:text-primary cursor-pointer font-medium"
-									>
-										{year.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
-
-					<div className="w-px h-8 bg-white/10" />
-
-					<div className="flex flex-col gap-0.5 px-3">
-						<span className="text-[9px] font-black uppercase text-muted-foreground/70 tracking-widest">
-							Semester
-						</span>
-						<Select
-							value={selectedSemester}
-							onValueChange={setSelectedSemester}
-						>
-							<SelectTrigger className="w-[120px] h-7 bg-transparent border-none font-bold text-sm focus:ring-0 p-0 text-foreground">
-								<SelectValue placeholder="Semester" />
-							</SelectTrigger>
-							<SelectContent className="rounded-xl border-white/10 bg-black/80 backdrop-blur-xl">
+				<div className="flex items-center gap-3">
+					<Select value={selectedYear} onValueChange={setSelectedYear}>
+						<SelectTrigger className="w-36">
+							<SelectValue placeholder="Select Year" />
+						</SelectTrigger>
+						<SelectContent>
+							{academicYears.map((year) => (
 								<SelectItem
-									value="1"
-									className="rounded-lg focus:bg-white/10 focus:text-primary cursor-pointer font-medium"
+									key={year.idStr || year.name}
+									value={year.name}
 								>
-									Semester 1
+									{year.name}
 								</SelectItem>
-								<SelectItem
-									value="2"
-									className="rounded-lg focus:bg-white/10 focus:text-primary cursor-pointer font-medium"
-								>
-									Semester 2
-								</SelectItem>
-							</SelectContent>
-						</Select>
-					</div>
+							))}
+						</SelectContent>
+					</Select>
+					<Select
+						value={selectedSemester}
+						onValueChange={setSelectedSemester}
+					>
+						<SelectTrigger className="w-32">
+							<SelectValue placeholder="Semester" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="1">Semester 1</SelectItem>
+							<SelectItem value="2">Semester 2</SelectItem>
+						</SelectContent>
+					</Select>
 				</div>
 			</PageHeader>
 
 			{isLoading ? (
-				<div className="flex flex-col items-center justify-center min-h-[400px] space-y-6">
-					<div className="w-16 h-16 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
-					<p className="text-xs font-black uppercase tracking-[0.3em] text-primary/60 animate-pulse">
-						Aggregating Analytics Data...
-					</p>
-				</div>
+				<LoadingState message="Loading analytics data..." />
 			) : (
 				<motion.div
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
-					className="space-y-10"
+					className="space-y-6"
 				>
 					{/* Stats Summary */}
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-						<StatsCard
-							title="Overall Average"
-							value={`${overallAvg}%`}
-							icon={BarChart3}
-							color="blue"
-							delay={0}
-						/>
+					<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
 						<StatsCard
 							title="Total Students"
-							value={totalStudents.toString()}
+							value={overviewData?.totalStudents || totalStudents}
 							icon={Users}
-							color="green"
-							delay={0.1}
+						/>
+						<StatsCard
+							title="Total Staff"
+							value={overviewData?.totalStaff || 0}
+							icon={UserCog}
 						/>
 						<StatsCard
 							title="Active Classes"
-							value={classCount.toString()}
+							value={overviewData?.totalClasses || classCount}
 							icon={GraduationCap}
-							color="purple"
-							delay={0.2}
 						/>
 						<StatsCard
 							title="Attendance Rate"
-							value={`${attendanceData?.averageRate.toFixed(1) || 0}%`}
+							value={`${(overviewData?.attendanceRate || attendanceData?.averageRate || 0).toFixed(1)}%`}
 							icon={TrendingUp}
-							color="orange"
-							delay={0.3}
+						/>
+						<StatsCard
+							title="Fee Collection"
+							value={`${(overviewData?.feeCollectionRate || 0).toFixed(1)}%`}
+							icon={DollarSign}
+						/>
+						<StatsCard
+							title="Staff:Student"
+							value={`1:${(ratioData?.ratio || overviewData?.staffStudentRatio || 0).toFixed(0)}`}
+							icon={BarChart3}
 						/>
 					</div>
 
@@ -244,8 +225,57 @@ export default function AnalyticsPage() {
 							/>
 						</ChartCard>
 					</div>
+
+					{/* Fee Collection Summary */}
+					{feeAnalytics && (
+						<DashboardCard delay={0.8} title="Fee Collection Summary">
+							<div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+								<div className="text-center">
+									<p className="text-xs text-muted-foreground">Expected</p>
+									<p className="text-lg font-bold text-foreground">${feeAnalytics.totalExpected.toLocaleString()}</p>
+								</div>
+								<div className="text-center">
+									<p className="text-xs text-muted-foreground">Collected</p>
+									<p className="text-lg font-bold text-emerald-600">${feeAnalytics.totalCollected.toLocaleString()}</p>
+								</div>
+								<div className="text-center">
+									<p className="text-xs text-muted-foreground">Outstanding</p>
+									<p className="text-lg font-bold text-red-600">${feeAnalytics.outstanding.toLocaleString()}</p>
+								</div>
+								<div className="text-center">
+									<p className="text-xs text-muted-foreground">Collection Rate</p>
+									<p className="text-lg font-bold text-primary">{feeAnalytics.collectionRate.toFixed(1)}%</p>
+								</div>
+							</div>
+							{feeAnalytics.monthlyCollection.length > 0 && (
+								<div className="space-y-2">
+									<p className="text-xs font-medium text-muted-foreground">Monthly Collection</p>
+									<div className="flex items-end gap-1 h-24">
+										{feeAnalytics.monthlyCollection.map((m) => {
+											const max = Math.max(...feeAnalytics.monthlyCollection.map(mc => mc.amount));
+											const height = max > 0 ? (m.amount / max) * 100 : 0;
+											return (
+												<div key={m.month} className="flex-1 flex flex-col items-center gap-1">
+													<div
+														className="w-full bg-primary/20 rounded-t"
+														style={{ height: `${height}%` }}
+													>
+														<div
+															className="w-full bg-primary rounded-t h-full"
+															style={{ opacity: 0.7 }}
+														/>
+													</div>
+													<span className="text-[9px] text-muted-foreground">{m.month.slice(5)}</span>
+												</div>
+											);
+										})}
+									</div>
+								</div>
+							)}
+						</DashboardCard>
+					)}
 				</motion.div>
 			)}
-		</div>
+		</motion.div>
 	);
 }

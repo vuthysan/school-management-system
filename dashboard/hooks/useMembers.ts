@@ -9,6 +9,7 @@ import { MEMBER_QUERIES, MEMBER_MUTATIONS } from "@/app/graphql/member";
 // Types
 export interface User {
   idStr?: string;
+  userId?: string;
   username?: string;
   email?: string;
   displayName?: string;

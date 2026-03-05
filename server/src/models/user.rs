@@ -1,8 +1,35 @@
 use async_graphql::{ComplexObject, Enum, SimpleObject};
-use mongodb::bson::{oid::ObjectId, DateTime};
+use mongodb::bson::{doc, oid::ObjectId, DateTime};
+use mongodb::options::{FindOneAndUpdateOptions, ReturnDocument};
+use mongodb::Database;
 use serde::{Deserialize, Serialize};
 
 use crate::utils::common_types::{AuditInfo, Gender, SoftDelete};
+
+/// Generate the next sequential user_id (e.g., "00000001")
+/// Uses a MongoDB "counters" collection for atomic auto-increment.
+pub async fn generate_user_id(db: &Database) -> Result<String, mongodb::error::Error> {
+    let counters = db.collection::<mongodb::bson::Document>("counters");
+
+    let options = FindOneAndUpdateOptions::builder()
+        .upsert(true)
+        .return_document(ReturnDocument::After)
+        .build();
+
+    let result = counters
+        .find_one_and_update(
+            doc! { "_id": "user_id" },
+            doc! { "$inc": { "seq": 1 } },
+            options,
+        )
+        .await?;
+
+    let seq = result
+        .and_then(|d| d.get_i64("seq").ok())
+        .unwrap_or(1);
+
+    Ok(format!("{:08}", seq))
+}
 
 // ============================================================================
 // SYSTEM ROLE (Platform-level)
@@ -65,6 +92,10 @@ pub struct User {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     #[graphql(skip)]
     pub id: Option<ObjectId>,
+
+    /// Sequential unique user ID (e.g., "00000001")
+    #[serde(default)]
+    pub user_id: String,
 
     // ========================
     // Authentication
@@ -203,9 +234,10 @@ impl User {
 
 impl User {
     /// Create a new user from KOOMPI OAuth
-    pub fn new(kid: String, username: String, email: Option<String>) -> Self {
+    pub fn new(kid: String, username: String, email: Option<String>, user_id: String) -> Self {
         Self {
             id: None,
+            user_id,
             kid,
             username,
             email,

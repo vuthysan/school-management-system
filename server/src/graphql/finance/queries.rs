@@ -123,6 +123,35 @@ impl FinanceQuery {
         Ok(payments)
     }
 
+    /// Get invoices for a specific student
+    async fn invoices_by_student(
+        &self,
+        ctx: &Context<'_>,
+        student_id: String,
+    ) -> Result<Vec<InvoiceType>> {
+        let db = ctx.data::<Database>()?;
+        let collection = db.collection::<Invoice>("invoices");
+
+        let obj_id =
+            ObjectId::parse_str(&student_id).map_err(|_| Error::new("Invalid student ID"))?;
+
+        let mut cursor = collection
+            .find(doc! { "student_id": obj_id }, None)
+            .await
+            .map_err(|e| Error::new(e.to_string()))?;
+
+        let mut invoices = Vec::new();
+        while let Some(invoice) = cursor
+            .try_next()
+            .await
+            .map_err(|e| Error::new(e.to_string()))?
+        {
+            invoices.push(invoice.into());
+        }
+
+        Ok(invoices)
+    }
+
     /// Get invoices for a school with optional filters
     async fn invoices(
         &self,
